@@ -85,6 +85,15 @@ for (const tpl of QB.templates) {
           inst.tpl.parts.forEach((pt, i) => { if (pt.kind === "text") resp.s[String(i)] = pt.rubric.map(() => true); });
           if (QB.pointsOf(inst, resp) !== QB.maxPoints(inst)) errors.push(`${tpl.id} (${l}): doğru cevaplarla tam puan alınamıyor (${QB.pointsOf(inst, resp)}/${QB.maxPoints(inst)})`);
         }
+        // Adım adım çözüm: her sayısal/seçmeli madde ve her test/kısa cevap sorusu için
+        const sols = inst.type === "yazili"
+          ? inst.tpl.parts.map((pt, i) => (pt.kind === "text" ? "-" : QB.partSolution(inst, i, l)))
+          : QB.solutionSteps(inst, l);
+        if (!sols.length || sols.some((x) => !x)) errors.push(`${tpl.id} (${l}): adım adım çözüm eksik (questions/cozumler.js)`);
+        for (const b of sols) {
+          if (/[{}]/.test(b)) errors.push(`${tpl.id} (${l}): çözümde çözülmemiş süslü parantez: ${b.slice(0, 160)}`);
+          if (/NaN|Infinity|undefined|\?(?= |$)/.test(b.replace(/\?\s*$/, ""))) errors.push(`${tpl.id} (${l}): çözümde geçersiz değer: ${b.slice(0, 160)}`);
+        }
         if (inst.choices) inst.choices.forEach((c, ci) => {
           const ct = QB.choiceText(inst, ci, l);
           if (!ct || /NaN|undefined/.test(ct)) errors.push(`${tpl.id} (${l}): ${ci + 1}. şık geçersiz: ${ct}`);
@@ -102,6 +111,20 @@ for (const tpl of QB.templates) {
   }
   if (shortChoices) warnings.push(`${tpl.id}: ${SAMPLES} sorunun ${shortChoices} tanesinde şık sayısı eksik kaldı`);
   if (answers.size < 5 && ["mc", "open"].includes(QB.kindOf(tpl))) warnings.push(`${tpl.id}: yalnızca ${answers.size} farklı cevap üretiliyor; öğrenciler arasında çeşitlilik az`);
+}
+
+// 4a) Çözüm dosyasındaki her kimlik bir şablona ait olmalı ve her dilde aynı sayıda adım içermeli.
+for (const [id, sol] of Object.entries(QB.SOLUTIONS)) {
+  const tpl = QB.templates.find((t) => t.id === id);
+  if (!tpl) { errors.push(`cozumler.js: '${id}' adında şablon yok`); continue; }
+  if (sol.tr) for (const l of QB.LANGS) {
+    if (!Array.isArray(sol[l])) errors.push(`cozumler.js: '${id}' için '${l}' adımları yok`);
+    else if (sol[l].length !== sol.tr.length) errors.push(`cozumler.js: '${id}' — '${l}' adım sayısı (${sol[l].length}) Türkçeden (${sol.tr.length}) farklı`);
+  }
+  if (sol.parts) for (const [i, txt] of Object.entries(sol.parts)) {
+    if (!tpl.parts || !tpl.parts[i]) errors.push(`cozumler.js: '${id}' şablonunda ${i}. madde yok`);
+    for (const l of QB.LANGS) if (!txt[l]) errors.push(`cozumler.js: '${id}' ${i}. madde için '${l}' çözümü yok`);
+  }
 }
 
 // 4b) SSS her dilde aynı sayıda soru içermeli.

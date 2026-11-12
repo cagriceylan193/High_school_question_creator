@@ -583,7 +583,9 @@
   function fill(text, inst, lang, mark) {
     const wrap = mark ? (s) => `<span class="v">${s}</span>` : (s) => s;
     // {if:koşul|doğruysa|yanlışsa} → koşula göre metin
-    text = text.replace(/\{if:([^{}|]+)\|([^{}|]*)\|([^{}|]*)\}/g, (m, c, a, b) => (evaluate(c, inst.scope) ? a : b));
+    // (dallar içinde {x} gibi yer tutucular ve iç içe bir {if:…} kullanılabilir)
+    const IF = /\{if:([^{}|]+)\|((?:[^{}|]|\{[^{}]*\})*)\|((?:[^{}|]|\{[^{}]*\})*)\}/g;
+    for (let k = 0; k < 4 && text.includes("{if:"); k++) text = text.replace(IF, (m, c, a, b) => (evaluate(c, inst.scope) ? a : b));
     return text.replace(/\{(=)?\s*([^{}]+?)\s*(?::(\d+))?\}/g, (m, eq, body, dd) => {
       let v, d = dd !== undefined ? Number(dd) : undefined;
       if (eq) v = evaluate(body, inst.scope);
@@ -720,7 +722,30 @@
   function partSolution(inst, i, lang) {
     const pt = inst.tpl.parts[i];
     if (pt.kind === "text") return partModel(inst, i, lang);
-    return pt.solution ? fill(localized(pt.solution, lang), inst, lang) : "";
+    const src = pt.solution || (SOLUTIONS[inst.tpl.id] && SOLUTIONS[inst.tpl.id].parts && SOLUTIONS[inst.tpl.id].parts[i]);
+    return src ? fill(localized(src, lang), inst, lang) : "";
+  }
+
+  // ---------------------------------------------------------------------------
+  // Adım adım çözümler (questions/cozumler.js):
+  //   QB.solve({ "şablon-id": { tr: ["1. adım", "2. adım", …], en: […], de: […] } })
+  //   Yazılı şablonların maddeleri için: { parts: { 0: { tr, en, de }, … } }
+  // Adımlarda soru metnindeki gibi {x}, {=ifade:ondalık} ve {if:koşul|…|…} kullanılabilir.
+  // ---------------------------------------------------------------------------
+  const SOLUTIONS = {};
+  function solve(map) {
+    for (const [id, sol] of Object.entries(map)) SOLUTIONS[id] = Object.assign(SOLUTIONS[id] || {}, sol);
+  }
+  function hasSteps(tpl) {
+    const s = SOLUTIONS[tpl.id];
+    return !!(s && Array.isArray(s.tr) && s.tr.length);
+  }
+  // Doldurulmuş çözüm adımları (HTML dizisi); çözüm yoksa boş dizi
+  function solutionSteps(inst, lang) {
+    const s = SOLUTIONS[inst.tpl.id];
+    if (!s || inst.error) return [];
+    const list = (Array.isArray(s[lang]) && s[lang]) || s.tr || [];
+    return list.map((x) => fill(x, inst, lang));
   }
   // MEB biçiminde alt madde numarası: 2. sorunun 3. maddesi → "2.3."
   function partLabel(qNo, i) {
@@ -943,6 +968,10 @@
     PART_LETTERS,
     partPoints,
     partSolution,
+    solve,
+    hasSteps,
+    solutionSteps,
+    SOLUTIONS,
     partLabel,
     outcomeOf,
     scale100,

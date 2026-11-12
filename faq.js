@@ -43,6 +43,10 @@ globalThis.QB_FAQ = {
       a: "Açık uçlu sorular, Maarif Modeli'ndeki ortak yazılılara benzer biçimde gerçek yaşamdan bir bağlam ve a), b), c) bölümlerinden oluşur. Hesap ve kısa cevap bölümleri (sayı yazma, “Artar / Azalır / Değişmez” seçme) otomatik puanlanır. Açıklama bölümlerinde ise kontrol ettikten sonra <b>örnek cevap</b> ve <b>dereceli puanlama anahtarı</b> (rubrik) açılır; cevabını karşılaştırıp karşıladığın ölçütleri işaretlersin, puanın buna göre hesaplanır. Öğretmenler PDF'in sonundaki dereceli puanlama anahtarıyla kâğıt sınavı değerlendirebilir. Soru sayfasında “Soru biçimi → Açık uçlu” seçerek yalnızca bu sorulardan oluşan bir sınav oluşturabilirsin.",
     },
     {
+      q: "Soruların çözümlerini nerede görürüm?",
+      a: "Cevaplarını kontrol ettikten sonra her sorunun altında <b>Adım adım çözüm</b> kutusu çıkar: verilenler, kullanılan bağıntı, sayıların yerine konması ve sonuç tek tek gösterilir; sık yapılan hatalar için uyarılar da vardır. Yanlış ya da boş bıraktığın sorularda kutu açık gelir, doğru yaptıklarında tıklayarak açabilirsin. Açık uçlu sorularda her maddenin çözümü ve puanlama ölçütleri gösterilir. Çözümler PDF'te ve cevap anahtarında da yer alır.",
+    },
+    {
       q: "Sanal laboratuvar nedir?",
       a: "<b>Laboratuvar</b> sekmesinde Fizik I (Mekanik) dersinin laboratuvar deneyleri var: kumpas ve mikrometre, Hooke yasası, kuvvet masası, Young modülü, serbest düşme, eğik atış, sarkaçlar, hava rayı, dönme hareketi, açısal momentum, merkezcil kuvvet, hava masasında çarpışmalar, Cavendish deneyi ve burulma modülü. Düzeneği kendin kurar, ölçümleri aletlerden kendin okursun (büyüteçle cetvel, verniye, kronometre, fotosel ve sayaç). Tablo doldukça grafik ve en küçük kareler doğrusu çizilir, sonuç hata payıyla hesaplanır. Her düzenekte aletlerin değerleri biraz farklıdır ve ölçümler gerçek bir laboratuvardaki gibi hata içerir. Ölçümlerin tarayıcında saklanır; deney raporunu PDF olarak indirebilirsin.",
     },
@@ -113,6 +117,10 @@ globalThis.QB_FAQ = {
       a: "Open-ended questions, like the common written exams of Turkey's Maarif Model, consist of a real-life context and parts a), b), c). Calculation and short-answer parts (typing a number, choosing “increases / decreases / no change”) are scored automatically. For explanation parts, after checking you see a <b>sample answer</b> and a <b>scoring rubric</b>; compare your answer and tick the criteria you met, and your points are calculated from them. Teachers can mark paper exams with the rubric at the end of the PDF. Choose “Question format → Open-ended” on the questions page to get an exam with only these questions.",
     },
     {
+      q: "Where can I see the solutions?",
+      a: "After you check your answers, a <b>Step-by-step solution</b> box appears under every question: the given values, the formula used, the substitution and the result are shown one by one, with warnings about common mistakes. The box is open for questions you got wrong or left blank; for correct ones you can click to open it. For open-ended questions the solution and scoring criteria of each part are shown. The solutions are also included in the PDF and the answer key.",
+    },
+    {
       q: "What is the virtual lab?",
       a: "The <b>Lab</b> tab contains the laboratory experiments of a Physics I (Mechanics) course: vernier caliper and micrometer, Hooke's law, force table, Young's modulus, free fall, projectile motion, pendulums, air track, rotational motion, angular momentum, centripetal force, collisions on an air table, the Cavendish experiment and the torsion modulus. You set up the apparatus and read the instruments yourself (ruler and vernier with a magnifier, stopwatch, light gates and counters). As the table fills, the graph and the least-squares line are drawn and the result is calculated with its uncertainty. Every setup has slightly different instrument values, and measurements contain errors just like in a real lab. Your measurements are saved in your browser, and you can download the lab report as a PDF.",
     },
@@ -181,6 +189,10 @@ globalThis.QB_FAQ = {
     {
       q: "Wie werden offene Aufgaben bewertet?",
       a: "Offene Aufgaben bestehen – ähnlich wie die gemeinsamen schriftlichen Prüfungen des türkischen Maarif-Modells – aus einem Alltagskontext und den Teilen a), b), c). Rechen- und Kurzantwortteile (Zahl eingeben, „nimmt zu / nimmt ab / bleibt gleich“ wählen) werden automatisch bewertet. Bei Erklärungsteilen erscheinen nach dem Prüfen eine <b>Musterlösung</b> und ein <b>Bewertungsraster</b>; vergleiche deine Antwort und hake die erfüllten Kriterien ab, daraus werden deine Punkte berechnet. Lehrkräfte können Papierprüfungen mit dem Raster am Ende des PDFs bewerten. Wähle auf der Aufgabenseite „Aufgabenformat → Offene Aufgaben“, um eine Prüfung nur mit diesen Aufgaben zu erhalten.",
+    },
+    {
+      q: "Wo sehe ich die Lösungen?",
+      a: "Nach dem Prüfen erscheint unter jeder Aufgabe eine <b>Schritt-für-Schritt-Lösung</b>: Gegebene Größen, verwendete Formel, Einsetzen und Ergebnis werden einzeln gezeigt, dazu Hinweise auf typische Fehler. Bei falsch oder nicht beantworteten Aufgaben ist sie aufgeklappt, bei richtigen kannst du sie per Klick öffnen. Bei offenen Aufgaben werden Lösung und Bewertungskriterien jedes Teils angezeigt. Die Lösungen stehen auch im PDF und im Lösungsschlüssel.",
     },
     {
       q: "Was ist das virtuelle Labor?",

@@ -293,6 +293,22 @@ Koşullarda `< <= > >= == !=` ile `and`, `or`, `not` kullanılabilir.
 
 `distractors` listesine öğrencilerin sık yaptığı hataların formüllerini yazın (işaret hatası, birim çevirmeyi unutma, yanlış formül). Liste yetmezse sistem doğru cevaba yakın, inandırıcı değerlerle şıkları tamamlar. Aynı değere sahip şıklar otomatik ayıklanır.
 
+### Adım adım çözüm (zorunlu)
+
+Her şablonun ayrıntılı çözümü `questions/cozumler.js` dosyasındadır. Öğrenci "Kontrol et"e bastıktan sonra her sorunun altında **Adım adım çözüm** kutusu açılır (yanlış veya boş bırakılan sorularda açık gelir); çözümler kontrol edilmiş PDF'te ve cevap anahtarında da yer alır. Yeni bir şablon eklediğinizde çözümünü de üç dilde yazın:
+
+```js
+QB.solve({
+  "fiz-ornek-id": {
+    tr: ["Verilenler: m = {m} kg, v = {v} m/s.", "E = ½ · m · v² = ½ · {m} · {=v*v} = {=m*v*v/2} J."],
+    en: ["Given: m = {m} kg, v = {v} m/s.", "E = ½ · m · v² = ½ · {m} · {=v*v} = {=m*v*v/2} J."],
+    de: ["Gegeben: m = {m} kg, v = {v} m/s.", "E = ½ · m · v² = ½ · {m} · {=v*v} = {=m*v*v/2} J."],
+  },
+});
+```
+
+Adımlarda soru metnindeki `{x}`, `{=ifade:ondalık}` ve `{if:koşul|…|…}` kullanılabilir; "Cevap: …" satırını site kendisi ekler. Yazılı şablonlarda sayısal/seçmeli maddelerin çözümü maddenin `solution` alanına (ya da `cozumler.js` içinde `parts: { 0: {tr, en, de} }`) yazılır. `node tools/check.js`, çözümü eksik olan şablonu hata olarak bildirir.
+
 ### Yeni soru dosyası eklerken
 
 `questions/` içine yeni bir dosya (ör. `questions/fizik-11.js`) eklediğinizde, onu `index.html`, `sorular.html`, `ogretmen.html` ve `hesap.html` içindeki soru dosyaları listesine ekleyin:
@@ -340,6 +356,6 @@ pdf.js             PDF indirme
 vendor/pdfmake/    PDF kütüphanesi (MIT)
 config.js, i18n.js Ayarlar ve çeviriler
 style.css          Görünüm
-questions/         Soru şablonları
+questions/         Soru şablonları (cozumler.js: adım adım çözümler)
 tools/check.js     Şablon denetleyici
 ```

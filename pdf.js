@@ -36,13 +36,27 @@
   }
 
   // Soru HTML'ini (<b>, <i>, <sub>, <sup>) pdfmake metin parçalarına çevirir.
+  // Roboto'da olmayan karakterler: alt simge rakamlar → küçük alt simge, diğerleri → yakın karşılık
+  const GLYPH = { "→": "->", "∝": "~", "∥": "||", "✓": "" };
+  function pushTextTo(out, txt, st) {
+    txt = txt.replace(/[→∝∥✓]/g, (c) => GLYPH[c]);
+    const re = /[\u2080-\u2089]+/g;
+    let last = 0, m;
+    while ((m = re.exec(txt))) {
+      if (m.index > last) out.push({ text: txt.slice(last, m.index), ...st });
+      out.push({ text: [...m[0]].map((c) => String(c.charCodeAt(0) - 0x2080)).join(""), ...st, sub: true });
+      last = m.index + m[0].length;
+    }
+    if (last < txt.length) out.push({ text: txt.slice(last), ...st });
+  }
   function runs(html, base = {}) {
     const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
     const out = [];
+    const pushText = (txt, st) => pushTextTo(out, txt, st);
     (function walk(node, st) {
       for (const n of node.childNodes) {
         if (n.nodeType === 3) {
-          if (n.textContent) out.push({ text: n.textContent, ...st });
+          if (n.textContent) pushText(n.textContent, st);
         } else if (n.nodeType === 1) {
           const tag = n.tagName.toLowerCase();
           if (tag === "br") { out.push({ text: "\n" }); continue; }
@@ -110,6 +124,8 @@
         part.push({ text: [{ text: t("pdfYourAnswer") + ": ", color: C.muted }, { text: mine, color: pt.kind === "text" ? C.ink : col }], margin: [16, 2, 0, 2] });
         if (pt.kind !== "text") {
           if (got < max) part.push({ text: t("correctIs", { a: QB.partAnswer(inst, i, lang) }), fontSize: 9, margin: [16, 0, 0, 2] });
+          const psol = QB_CONFIG.showCorrectAfterCheck !== false && QB.partSolution(inst, i, lang);
+          if (psol) part.push({ text: [{ text: t("mebSolution") + ": ", bold: true }, ...runs(psol)], fontSize: 8.5, margin: [16, 1, 0, 2] });
         } else {
           part.push({ text: [{ text: t("modelAnswer") + ": ", bold: true }, ...runs(QB.partModel(inst, i, lang))], fontSize: 9, margin: [16, 3, 0, 2] });
           const ticks = (r.s && r.s[String(i)]) || [];
@@ -196,6 +212,10 @@
         ],
         fontSize: 9, margin: [6, 4, 0, 0],
       });
+      if (QB_CONFIG.showCorrectAfterCheck !== false) {
+        const st = stepsBlock(inst, lang, false);
+        if (st) stack.push(st);
+      }
     }
 
     return {
@@ -256,6 +276,19 @@
     ];
   }
 
+  // Adım adım çözüm (numaralı liste); withAnswer → sonuna "Cevap: …" satırı
+  function stepsBlock(inst, lang, withAnswer) {
+    if (!inst || inst.error || inst.type === "yazili") return null;
+    let steps;
+    try { steps = QB.solutionSteps(inst, lang); } catch { return null; }
+    if (!steps.length) return null;
+    const t = UI.t;
+    const body = withAnswer ? [] : [{ text: t("solTitle"), bold: true, color: C.accent, fontSize: 8.5, margin: [0, 0, 0, 2] }];
+    body.push({ ol: steps.map((x) => ({ text: runs(x) })), fontSize: 8.5, color: C.ink, markerColor: C.muted });
+    if (withAnswer) body.push({ text: [{ text: t("solAnswer") + ": ", bold: true }, ...runs(UI.answerHtml(inst, lang))], fontSize: 8.5, margin: [0, 2, 0, 0] });
+    return { stack: body, margin: [6, 6, 0, 0] };
+  }
+
   function keySection(sheets, lang) {
     const t = UI.t;
     const out = [{ text: t("pdfKey"), bold: true, fontSize: 13, color: C.accent, pageBreak: "before", margin: [0, 0, 0, 10] }];
@@ -275,12 +308,24 @@
       const half = Math.ceil(cells.length / 2);
       out.push({ columns: [{ stack: cells.slice(0, half) }, { stack: cells.slice(half) }], columnGap: 20 });
 
+      // Test ve kısa cevaplı sorular: adım adım çözümler
+      let stepsHead = false;
+      sh.items.forEach((inst, qi) => {
+        const st = stepsBlock(inst, lang, true);
+        if (!st) return;
+        st.margin = [0, 0, 0, 0];
+        const row = { columns: [{ text: `${qi + 1}.`, width: 20, bold: true, color: C.accent, fontSize: 9.5 }, { stack: [st], width: "*" }], margin: [0, 6, 0, 0] };
+        const headRow = stepsHead ? [] : [{ text: t("pdfSteps").toUpperCase(), bold: true, alignment: "center", color: C.accent, fontSize: 11, margin: [0, 12, 0, 4] }];
+        stepsHead = true;
+        out.push({ stack: [...headRow, row], unbreakable: true });
+      });
+
       // Açık uçlu sorular: MEB "Çözümler" bölümü (çözüm + TAM / KISMİ / SIFIR PUAN)
       const sc = allOpen(sh) ? QB.scale100(sh.items) : null;
       sh.items.forEach((inst, qi) => {
         if (inst.error || inst.type !== "yazili") return;
         const block = [];
-        if (qi === sh.items.findIndex((x) => !x.error && x.type === "yazili")) out.push({ text: t("mebSolutions").toUpperCase(), bold: true, alignment: "center", color: HEAD, fontSize: 11, margin: [0, 12, 0, 6] });
+        const firstOpen = qi === sh.items.findIndex((x) => !x.error && x.type === "yazili");
         inst.tpl.parts.forEach((pt, i) => {
           const max = QB.partPoints(inst.tpl, i);
           const shown = sc ? sc[qi][i] : max;
@@ -299,7 +344,12 @@
           item.push({ text: t("mebZeroText"), fontSize: 8.5, margin: [30, 0, 0, 4] });
           block.push({ stack: item, unbreakable: true });
         });
-        out.push({ text: `${qi + 1}.`, bold: true, color: C.accent, margin: [0, 6, 0, 0] }, ...block);
+        // başlık ve soru numarası ilk maddeyle aynı sayfada kalsın
+        const head = [];
+        if (firstOpen) head.push({ text: t("mebSolutions").toUpperCase(), bold: true, alignment: "center", color: HEAD, fontSize: 11, margin: [0, 12, 0, 6] });
+        head.push({ text: `${qi + 1}.`, bold: true, color: C.accent, margin: [0, 6, 0, 0] });
+        if (block.length) block[0] = { stack: [...head, ...block[0].stack], unbreakable: true };
+        out.push(...block);
       });
     }
     return out;

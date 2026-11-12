@@ -140,7 +140,11 @@
     const ol = el("ol", { class: "key-parts" });
     inst.tpl.parts.forEach((pt, i) => {
       const li = el("li", {}, el("b", {}, QB.PART_LETTERS[i] + ") "), el("span", { class: "muted small" }, `(${t("pts", { n: QB.partPoints(inst.tpl, i) })}) `));
-      if (pt.kind !== "text") li.append(el("span", { class: "ans" }, QB.partAnswer(inst, i, lang)));
+      if (pt.kind !== "text") {
+        li.append(el("span", { class: "ans" }, QB.partAnswer(inst, i, lang)));
+        const sol = QB.partSolution(inst, i, lang);
+        if (sol) li.append(el("div", { class: "model small" }, el("b", {}, t("mebSolution") + ": "), el("span", { html: sol })));
+      }
       else {
         li.append(el("div", { class: "model small" }, el("b", {}, t("modelAnswer") + ": "), el("span", { html: QB.partModel(inst, i, lang) })));
         const ul = el("ul", { class: "rubric-list small" });
@@ -182,7 +186,11 @@
           const li = el("li", { class: "sample" }, el("div", { class: "q-text", html: QB.render(inst, lang) }));
           if (inst.choices) li.append(UI.choiceList(inst, lang));
           if (inst.type === "yazili") li.append(yaziliKey(inst, lang));
-          else li.append(el("div", { class: "ans" }, "→ " + QB.answerString(inst, lang)));
+          else {
+            li.append(el("div", { class: "ans" }, "→ " + QB.answerString(inst, lang)));
+            const sol = UI.solutionBox(inst, lang, false);
+            if (sol) li.append(sol);
+          }
           ol.append(li);
         } catch (e) {
           card.classList.add("broken");

@@ -371,10 +371,40 @@
         el("span", { class: "pill " + (ok ? "ok" : blank ? "blank" : "bad") }, t(ok ? "correct" : blank ? "blank" : "wrong")));
       if (!ok && CONFIG.showCorrectAfterCheck && !inst.choices) fb.append(el("span", {}, t("correctIs", { a: QB.answerString(inst, lang) })));
       li.append(fb);
+      if (CONFIG.showCorrectAfterCheck !== false) {
+        const sol = solutionBox(inst, lang, !ok);
+        if (sol) li.append(sol);
+      }
     }
     const ai = assistantPanel(inst, lang, st);
     if (ai) li.append(ai);
     return li;
+  }
+
+  // Doğru cevap (HTML): şıklı sorularda "C) …" biçiminde, alt simgeler korunur
+  function answerHtml(inst, lang) {
+    if (!inst.choices) return QB.esc(QB.answerString(inst, lang));
+    const i = inst.choices.findIndex((c) => c.correct);
+    const body = inst.type === "changes" ? QB.esc(QB.choiceText(inst, i, lang)) : QB.choiceHtml(inst, i, lang);
+    return `${QB.LETTERS[i]}) ${body}`;
+  }
+
+  // Adım adım çözüm (açılır kutu). open = true → açık gelir (yanlış/boş cevaplarda)
+  function solutionBox(inst, lang, open) {
+    if (!inst || inst.error || inst.type === "yazili") return null;
+    let steps;
+    try { steps = QB.solutionSteps(inst, lang); } catch { return null; }
+    if (!steps.length) return null;
+    const box = el("details", { class: "solution" });
+    box.open = !!open;
+    const ol = el("ol", { class: "sol-steps" });
+    steps.forEach((s) => ol.append(el("li", { html: s })));
+    box.append(
+      el("summary", {}, t("solTitle")),
+      ol,
+      el("p", { class: "sol-answer" }, el("b", {}, t("solAnswer") + ": "), el("span", { html: answerHtml(inst, lang) })),
+    );
+    return box;
   }
 
   // Yapay zekâ asistanı paneli (yalnızca soru sayfasında ve sunucu ayarlıysa)
@@ -393,6 +423,8 @@
   globalThis.UI = {
     choiceList,
     questionCard,
+    solutionBox,
+    answerHtml,
     formatDate,
     get lang() { return lang; },
     t,
