@@ -91,6 +91,11 @@ Soru sayfasında her sorunun altında **Yardım iste** paneli vardır. Öğrenci
 
 **Yerel test:** `cd worker && npm install && npx wrangler dev` (anahtarı `worker/.dev.vars` dosyasına `ANTHROPIC_API_KEY=...` olarak yazın; bu dosya depoya eklenmez).
 
+## Kalıp çeşitliliği ve yanlışları tekrar çözme
+
+- **Çeşitlilik:** Soru sayfasında "Daha önce çözdüğüm soru kalıplarını tekrar verme" seçiliyken (varsayılan) en az görülen kalıplar önce gelir; aynı sınav kodu tekrar kullanılsa bile hem kalıplar hem sayılar yenilenir. Görülen kalıplar hesaptaki geçmişten ve bu tarayıcıdaki kayıttan (`qb-seen`) sayılır. Öğretmen sayfası bundan etkilenmez: aynı kodla herkes aynı kalıpları alır.
+- **Yanlışlarım:** Hesabım'da düzeltilmemiş yanlış kalıplar sayılır. "Yanlışlarımı yeni sayılarla çöz" (`sorular.html?tekrar=1`, konuya göre `&konu=…`) bu kalıplardan yeni sayılarla sınav kurar; doğru çözülen kalıp listeden düşer.
+
 ## Yazılı sınav biçimi (MEB "Yazılıya Hazırlanıyorum")
 
 Açık uçlu sorular MEB'in yazılı örnek kitapçıklarındaki biçimdedir: bağlam metni, **1.1., 1.2. …** maddeler ve cevap kutuları; sonda **Soru no / Öğrenme çıktısı / Beceriler** tablosu ve toplam **100 puanlık puanlama tablosu**; cevap anahtarında her madde için çözüm ile **TAM PUAN / KISMİ PUAN / SIFIR PUAN** ölçütleri. Sınav yalnız açık uçlu sorulardan oluşuyorsa madde puanları toplam 100 olacak şekilde ölçeklenir.

@@ -227,13 +227,26 @@
     const order = Object.keys(QB_I18N.tr.topics || {});
     const keys = Object.keys(agg).sort((x, y) => (order.indexOf(x) + 1 || 99) - (order.indexOf(y) + 1 || 99));
     if (!keys.length) { box.append(el("p", { class: "muted small" }, t("accByTopicEmpty"))); return; }
+    // Düzeltilmemiş yanlışlar: aynı kalıplardan yeni sayılarla soru
+    const all = QB.mistakeIds(history);
+    const tip = el("div", { class: "retry-box" });
+    if (all.length) {
+      tip.append(el("p", {}, t("retryCount", { n: all.length })),
+        el("a", { class: "button primary", href: "sorular.html?tekrar=1&n=" + Math.min(all.length, 10) }, t("retryBtn")));
+    } else tip.append(el("p", { class: "muted small" }, t("retryAllDone")));
+    box.append(tip);
     for (const k of keys) {
       const { n, ok } = agg[k];
       const r = Math.round((ok / n) * 100);
-      box.append(el("div", { class: "bar-row" },
+      const open = QB.mistakeIds(history, [k]).length;
+      const act = open
+        ? el("a", { class: "bar-act", href: "sorular.html?tekrar=1&konu=" + encodeURIComponent(k) }, t("retryTopic", { n: open }))
+        : r < 70 ? el("a", { class: "bar-act", href: "sorular.html?konu=" + encodeURIComponent(k) }, t("practiceTopic")) : el("span", { class: "bar-act" });
+      box.append(el("div", { class: "bar-row" + (r < 50 ? " weak" : "") },
         el("span", { class: "bar-name" }, UI.topicName(k)),
         el("span", { class: "bar-track" }, el("span", { class: "bar-fill " + rateClass(r), style: `width:${Math.max(r, 2)}%` })),
-        el("span", { class: "bar-val" }, `${ok}/${n}`)));
+        el("span", { class: "bar-val" }, `${ok}/${n}`),
+        act));
     }
   }
 

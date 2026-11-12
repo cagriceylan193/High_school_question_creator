@@ -45,18 +45,64 @@
   }
   renderAccountNote();
 
+  // Hesabım → "Yanlışlarımı yeni sayılarla çöz": ?tekrar=1[&konu=…]
+  if (p.get("tekrar")) {
+    const u = QBA.current();
+    const ids = u ? QB.mistakeIds(u.history, wantedTopics) : [];
+    if (ids.length) {
+      const n = Math.min(ids.length, Number(p.get("n")) || CONFIG.defaultCount);
+      setTimeout(() => start((u && u.name) || $("student").value || "?", "TEKRAR", n, null, null, null, { ids: ids.slice(0, n) }), 0);
+    } else {
+      $("accountNote").append(el("p", { class: "notice" }, t("retryNone")));
+    }
+  }
+
   $("startForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")), UI.pickedLevels($("levels")), UI.pickedFormats($("formats")));
+    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")), UI.pickedLevels($("levels")), UI.pickedFormats($("formats")), { fresh: $("fresh").checked });
   });
 
-  function start(student, code, count, topics, levels, formats) {
+  // --- Kalıp çeşitliliği ------------------------------------------------------
+  // Bu tarayıcıda görülen kalıplar (hesapsız kullanımda da çeşitlilik için)
+  function localSeen() {
+    try { return JSON.parse(UI.storageGet("qb-seen") || "{}") || {}; } catch { return {}; }
+  }
+  function markSeen(items) {
+    const m = localSeen();
+    items.forEach((i) => { if (!i.error) m[i.tpl.id] = (m[i.tpl.id] || 0) + 1; });
+    UI.storageSet("qb-seen", JSON.stringify(m));
+  }
+  function seenMap() {
+    const m = localSeen();
+    const u = QBA.current();
+    if (u) {
+      const st = QB.practiceStats(u.history);
+      for (const [id, s] of Object.entries(st)) m[id] = Math.max(m[id] || 0, s.seen);
+    }
+    return m;
+  }
+  const freshBox = $("fresh");
+  freshBox.checked = UI.storageGet("qb-fresh") !== "0";
+  freshBox.addEventListener("change", () => UI.storageSet("qb-fresh", freshBox.checked ? "1" : "0"));
+
+  function start(student, code, count, topics, levels, formats, opt = {}) {
     student = student.trim();
     code = code.trim();
     if (!student || !code) return;
     UI.storageSet("qb-student", student);
-    const items = QB.buildExam({ student, code, count, topics, levels, formats });
-    exam = { student, code, count, topics, levels, formats, items, responses: items.map(() => null), checked: false, savedId: null };
+    // Çeşitlilik açıkken: en az görülen kalıplar önce gelir ve aynı kod tekrar
+    // kullanılsa bile hem kalıplar hem sayılar yenilenir.
+    let seedCode = code, seen = null;
+    if (opt.ids) seedCode = code + "#" + Date.now().toString(36);
+    else if (opt.fresh) {
+      seen = seenMap();
+      const n = Object.values(seen).reduce((a, b) => a + b, 0);
+      if (n) seedCode = code + "#" + n;
+    }
+    const items = QB.buildExam({ student, code: seedCode, count, topics, levels, formats, seen, ids: opt.ids });
+    markSeen(items);
+    exam = { student, code, seedCode, count, topics, levels, formats, items, responses: items.map(() => null), checked: false, savedId: null, retry: !!opt.ids };
+    $("examHint").textContent = opt.ids ? t("retryHint") : t("answerHint");
     $("start").hidden = true;
     $("exam").hidden = false;
     renderExam();
@@ -170,7 +216,7 @@
       const ok = exam.items.map((inst, qi) => !inst.error && QB.isCorrect(inst, exam.responses[qi]));
       const rec = QBA.addAttempt({
         code: exam.code, student: exam.student, lang: UI.lang, count: exam.count,
-        topics: exam.topics, levels: exam.levels, seed: QB.examSeed(exam.student, exam.code),
+        topics: exam.topics, levels: exam.levels, seed: QB.examSeed(exam.student, exam.seedCode || exam.code),
         ids: exam.items.map((i) => i.tpl.id), resp: JSON.parse(JSON.stringify(exam.responses)), ok,
         score: ok.filter(Boolean).length, total: exam.items.filter((i) => !i.error).length,
       });

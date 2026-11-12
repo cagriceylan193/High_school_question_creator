@@ -292,8 +292,8 @@ p.ok, span.ok { color: var(--ok); }
 .stat b { font-family: var(--mono); font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
 @media (max-width: 480px) { .stat b { font-size: 19px; } .stat { padding: 12px; } }
 .bars { display: grid; gap: 10px; }
-.bar-row { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) auto; align-items: center; gap: 12px; font-size: 14px; }
-@media (max-width: 520px) { .bar-row { grid-template-columns: minmax(0, 1fr) auto; } .bar-track { grid-column: 1 / -1; grid-row: 2; } }
+.bar-row { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) auto auto; align-items: center; gap: 12px; font-size: 14px; }
+@media (max-width: 520px) { .bar-row { grid-template-columns: minmax(0, 1fr) auto; } .bar-track { grid-column: 1 / -1; grid-row: 2; } .bar-act { grid-column: 1 / -1; text-align: left; } }
 .bar-name { overflow-wrap: anywhere; }
 .bar-track { height: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
 .bar-fill { display: block; height: 100%; border-radius: 999px; }
@@ -541,3 +541,9 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .meb-crit b { letter-spacing: 0.02em; }
 .meb-wrong { margin: 0; font-size: 14px; color: var(--bad); }
 .outcome-line { margin: 0; }
+
+/* Yanlışları tekrar çöz */
+.retry-box { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 8px; background: var(--accent-soft); margin-bottom: 6px; }
+.retry-box p { margin: 0; }
+.bar-act { font-size: 13px; color: var(--accent); white-space: nowrap; text-decoration: none; min-width: 9em; text-align: right; }
+.bar-act:hover { text-decoration: underline; }

@@ -851,16 +851,50 @@
     return t.topic || t.subject || "";
   }
 
-  function buildExam({ student, code, count, subjects, topics, levels, formats }) {
+  /**
+   * Geçmişten kalıp istatistiği: id → { seen, wrong, open }
+   * open: kalıbın en son çözümü yanlış (henüz düzeltilmemiş yanlış)
+   */
+  function practiceStats(history) {
+    const st = {};
+    const list = (history || []).slice().sort((a, b) => String(a.at || "").localeCompare(String(b.at || "")));
+    for (const a of list) (a.ids || []).forEach((id, i) => {
+      const s = (st[id] = st[id] || { seen: 0, wrong: 0, open: false });
+      s.seen++;
+      const ok = !!(a.ok && a.ok[i]);
+      if (!ok) s.wrong++;
+      s.open = !ok;
+    });
+    return st;
+  }
+  // Düzeltilmemiş yanlış kalıplar (en çok yanlış yapılan önce)
+  function mistakeIds(history, topics) {
+    const st = practiceStats(history);
+    return Object.keys(st)
+      .filter((id) => st[id].open && active().some((t) => t.id === id && (!topics || !topics.length || topics.includes(topicOf(t)))))
+      .sort((a, b) => st[b].wrong - st[a].wrong);
+  }
+
+  /**
+   * ids: yalnızca bu kalıplar (yanlışları tekrar çözme)
+   * seen: id → kaç kez görüldüğü; verilirse en az görülen kalıplar önce gelir
+   * (aynı kalıpların sürekli çıkmasını önler). Verilmezse seçim yalnızca sınav
+   * koduna bağlıdır: öğretmenin sınavında herkes aynı kalıpları görür.
+   */
+  function buildExam({ student, code, count, subjects, topics, levels, formats, ids, seen, salt }) {
     const seed = examSeed(student, code);
-    let pool = active().filter((t) =>
-      (!subjects || !subjects.length || subjects.includes(t.subject)) &&
-      (!topics || !topics.length || topics.includes(topicOf(t))) &&
-      (!levels || !levels.length || levels.includes(levelOf(t))) &&
-      (!formats || !formats.length || formats.includes(formatOf(t))));
-    // Şablon seçimi yalnızca sınav koduna bağlı: aynı sınavda herkes aynı
-    // soru kalıplarını aynı sırayla görür, sadece sayılar kişiye özeldir.
-    pool = shuffle(pool, makeRng("pick", normalize(code)));
+    let pool = ids
+      ? ids.map((id) => active().find((t) => t.id === id)).filter(Boolean)
+      : active().filter((t) =>
+        (!subjects || !subjects.length || subjects.includes(t.subject)) &&
+        (!topics || !topics.length || topics.includes(topicOf(t))) &&
+        (!levels || !levels.length || levels.includes(levelOf(t))) &&
+        (!formats || !formats.length || formats.includes(formatOf(t))));
+    if (!ids) pool = shuffle(pool, makeRng("pick", normalize(code), salt || ""));
+    if (seen && !ids) {
+      // en az görülen önce; eşitlikte karışık sıra korunur
+      pool = pool.map((t, i) => [t, i]).sort((a, b) => (seen[a[0].id] || 0) - (seen[b[0].id] || 0) || a[1] - b[1]).map((x) => x[0]);
+    }
     if (count) pool = pool.slice(0, count);
     // Kolaydan zora doğru sırala (aynı seviyede seçim sırası korunur).
     pool = pool.map((t, i) => [t, i]).sort((a, b) => levelOf(a[0]) - levelOf(b[0]) || a[1] - b[1]).map((x) => x[0]);
@@ -942,6 +976,8 @@
     figure,
     esc,
     examSeed,
+    practiceStats,
+    mistakeIds,
     buildExam,
     parseAnswer,
     isCorrect,
