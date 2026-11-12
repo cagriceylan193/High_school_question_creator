@@ -1,4 +1,5 @@
-// FİZİK ŞABLONLARI (örnek)
+// FİZİK · Temel şablonlar
+// level: 1 = kolay, 2 = orta, 3 = zor.
 // Yer çekimi ivmesi g = 10 m/s² alınmıştır (lise konvansiyonu).
 // Konu anahtarları (topic) i18n.js içindeki "topics" listesinde tanımlıdır.
 
@@ -9,6 +10,7 @@ QB.add({
   subject: "fizik",
   topic: "madde",
   grade: 9,
+  level: 1,
   vars: {
     V: { min: 10, max: 50, step: 5 },
     d: { values: [0.8, 1.5, 2, 2.5, 2.7, 4, 7.8, 8.9] },
@@ -32,6 +34,7 @@ QB.add({
   subject: "fizik",
   topic: "hareket",
   grade: 9,
+  level: 1,
   type: "open",
   vars: {
     ad: { type: "name" },
@@ -52,6 +55,7 @@ QB.add({
   subject: "fizik",
   topic: "hareket",
   grade: 9,
+  level: 2,
   vars: {
     x1: { min: 20, max: 120, step: 20 },
     x2: { min: 20, max: 120, step: 20 },
@@ -74,6 +78,7 @@ QB.add({
   subject: "fizik",
   topic: "hareket",
   grade: 10,
+  level: 1,
   vars: {
     a: { min: 1, max: 5 },
     t: { min: 2, max: 10 },
@@ -93,6 +98,7 @@ QB.add({
   subject: "fizik",
   topic: "hareket",
   grade: 10,
+  level: 2,
   vars: {
     a: { values: [2, 4, 6, 8] },
     t: { min: 2, max: 8 },
@@ -114,6 +120,7 @@ QB.add({
   subject: "fizik",
   topic: "kuvvet",
   grade: 9,
+  level: 1,
   vars: {
     m: { min: 10, max: 100, step: 10 },
   },
@@ -132,6 +139,7 @@ QB.add({
   subject: "fizik",
   topic: "kuvvet",
   grade: 9,
+  level: 1,
   vars: {
     m: { min: 2, max: 10 },
     a: { min: 1, max: 8 },
@@ -152,6 +160,7 @@ QB.add({
   subject: "fizik",
   topic: "kuvvet",
   grade: 9,
+  level: 1,
   vars: {
     F1: { min: 10, max: 60, step: 5 },
     F2: { min: 5, max: 40, step: 5 },
@@ -174,6 +183,7 @@ QB.add({
   subject: "fizik",
   topic: "enerji",
   grade: 9,
+  level: 1,
   vars: {
     m: { min: 1, max: 10 },
     v: { min: 2, max: 10, step: 2 },
@@ -193,6 +203,7 @@ QB.add({
   subject: "fizik",
   topic: "enerji",
   grade: 9,
+  level: 1,
   type: "open",
   vars: {
     m: { min: 1, max: 20 },
@@ -212,6 +223,7 @@ QB.add({
   subject: "fizik",
   topic: "enerji",
   grade: 9,
+  level: 1,
   vars: {
     F: { min: 10, max: 100, step: 10 },
     x: { min: 2, max: 15 },
@@ -233,6 +245,7 @@ QB.add({
   subject: "fizik",
   topic: "basinc",
   grade: 10,
+  level: 1,
   vars: {
     A: { values: [0.5, 1, 2, 4] },
     P: { min: 100, max: 2000, step: 100 },
@@ -253,6 +266,7 @@ QB.add({
   subject: "fizik",
   topic: "basinc",
   grade: 10,
+  level: 1,
   vars: {
     h: { min: 1, max: 20 },
   },
@@ -273,6 +287,7 @@ QB.add({
   subject: "fizik",
   topic: "elektrik",
   grade: 10,
+  level: 1,
   vars: {
     R: { min: 2, max: 20 },
     I: { values: [0.5, 1, 1.5, 2, 2.5, 3] },
@@ -293,6 +308,7 @@ QB.add({
   subject: "fizik",
   topic: "elektrik",
   grade: 10,
+  level: 2,
   vars: {
     R1: { min: 2, max: 10 },
     R2: { min: 2, max: 10 },

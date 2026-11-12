@@ -32,7 +32,11 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Hangi konular var?",
-      a: "Şu an 9. ve 10. sınıf fizik konuları var: madde ve özellikleri, hareket, kuvvet ve Newton yasaları, iş ve enerji, basınç ve elektrik. Yeni konular ve diğer dersler zamanla eklenecek.",
+      a: "Şu an 9. ve 10. sınıf (TYT) fizik konuları var: madde ve özellikleri, basınç, kaldırma kuvveti, ısı ve sıcaklık, hareket, kuvvet ve Newton yasaları, iş ve enerji, elektrostatik, elektrik akımı, optik ve dalgalar. Diğer dersler zamanla eklenecek.",
+    },
+    {
+      q: "Soru tipleri ve zorluk seviyeleri neler?",
+      a: "Sayısal çoktan seçmeli ve açık uçlu soruların yanında <b>“I, II, III yargılarından hangileri doğrudur?”</b>, <b>sıralama</b> (ör. P<sub>K</sub> &gt; P<sub>L</sub> = P<sub>M</sub>) ve <b>“Artar / Azalır / Değişmez”</b> soruları var. Birçok soruda grafik, devre, kap veya dalga şekli bulunur; şekildeki sayılar da sana özeldir. Her soru <b>Kolay</b>, <b>Orta</b> veya <b>Zor</b> olarak işaretlidir. Soru sayfasında zorluğu seçebilirsin; sınavda sorular kolaydan zora sıralanır.",
     },
     {
       q: "Adım ve cevaplarım bir yere kaydediliyor mu?",
@@ -78,7 +82,11 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Which topics are available?",
-      a: "Currently grade 9 and 10 physics: matter and its properties, motion, force and Newton's laws, work and energy, pressure and electricity. More topics and other subjects will be added over time.",
+      a: "Currently grade 9 and 10 physics: matter and its properties, pressure, buoyancy, heat and temperature, motion, force and Newton's laws, work and energy, electrostatics, electric current, optics and waves. Other subjects will be added over time.",
+    },
+    {
+      q: "What question types and difficulty levels are there?",
+      a: "Besides numerical multiple-choice and open questions, there are <b>“Which of statements I, II, III are true?”</b>, <b>ordering</b> (e.g. P<sub>K</sub> &gt; P<sub>L</sub> = P<sub>M</sub>) and <b>“increases / decreases / no change”</b> questions. Many questions include a graph, circuit, container or wave diagram, and the numbers in the diagram are personal to you too. Every question is marked <b>Easy</b>, <b>Medium</b> or <b>Hard</b>. You can choose the difficulty on the questions page; in an exam the questions go from easy to hard.",
     },
     {
       q: "Are my name and answers saved anywhere?",
@@ -124,7 +132,11 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Welche Themen gibt es?",
-      a: "Derzeit Physik der Klassen 9 und 10: Stoffe und ihre Eigenschaften, Bewegung, Kraft und Newtonsche Gesetze, Arbeit und Energie, Druck und Elektrizität. Weitere Themen und Fächer kommen nach und nach dazu.",
+      a: "Derzeit Physik der Klassen 9 und 10: Stoffe und ihre Eigenschaften, Druck, Auftrieb, Wärme und Temperatur, Bewegung, Kraft und Newtonsche Gesetze, Arbeit und Energie, Elektrostatik, elektrischer Strom, Optik und Wellen. Weitere Fächer kommen nach und nach dazu.",
+    },
+    {
+      q: "Welche Aufgabentypen und Schwierigkeitsstufen gibt es?",
+      a: "Neben Multiple-Choice- und offenen Rechenaufgaben gibt es <b>„Welche der Aussagen I, II, III sind richtig?“</b>, <b>Reihenfolgen</b> (z. B. P<sub>K</sub> &gt; P<sub>L</sub> = P<sub>M</sub>) und <b>„nimmt zu / nimmt ab / bleibt gleich“</b>. Viele Aufgaben enthalten ein Diagramm, eine Schaltung, ein Gefäß oder eine Welle; auch die Zahlen in der Abbildung sind persönlich. Jede Aufgabe ist als <b>Leicht</b>, <b>Mittel</b> oder <b>Schwer</b> markiert. Auf der Aufgabenseite kannst du die Schwierigkeit wählen; in einer Prüfung gehen die Aufgaben von leicht nach schwer.",
     },
     {
       q: "Werden mein Name und meine Antworten gespeichert?",

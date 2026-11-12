@@ -20,6 +20,7 @@
   function renderTopics() {
     UI.renderTopicChips($("topics"));
     $("topicsWrap").hidden = UI.topicKeys().length < 2;
+    UI.renderLevelChips($("levels"));
   }
   renderTopics();
 
@@ -31,7 +32,7 @@
 
   function readForm() {
     const students = $("students").value.split("\n").map((s) => s.trim()).filter(Boolean);
-    return { code: $("code").value.trim(), count: Number($("count").value), topics: UI.pickedTopics($("topics")), students };
+    return { code: $("code").value.trim(), count: Number($("count").value), topics: UI.pickedTopics($("topics")), levels: UI.pickedLevels($("levels")), students };
   }
 
   $("keyForm").addEventListener("submit", (e) => {
@@ -43,7 +44,7 @@
     UI.storageSet("qb-t-students", f.students.join("\n"));
     current = {
       ...f,
-      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, topics: f.topics }) })),
+      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, topics: f.topics, levels: f.levels }) })),
     };
     renderKey();
   });
@@ -53,6 +54,7 @@
     u.searchParams.set("kod", current.code);
     u.searchParams.set("n", current.count);
     if (current.topics.length) u.searchParams.set("konu", current.topics.join(","));
+    if (current.levels.length) u.searchParams.set("zorluk", current.levels.join(","));
     u.searchParams.set("dil", UI.lang);
     return u.toString();
   }
@@ -72,7 +74,7 @@
       row.items.forEach((inst) => {
         if (inst.error) { tr.append(el("td", { class: "error" }, "!")); return; }
         const full = QB.answerString(inst, lang);
-        const short = inst.type === "mc" ? full.slice(0, 1) : full;
+        const short = inst.choices ? full.slice(0, 1) : full;
         tr.append(el("td", { title: full }, short));
       });
       tbody.append(tr);
@@ -102,11 +104,8 @@
         li.append(el("div", { class: "q-top" }, el("span", { class: "q-num" }), body));
         if (inst.error) { body.append(el("p", { class: "error" }, inst.error)); ol.append(li); continue; }
         body.append(el("div", { class: "q-text", html: QB.render(inst, lang) }));
-        if (inst.type === "mc") {
-          const box = el("div", { class: "choices" });
-          inst.choices.forEach((c, ci) => box.append(el("div", { class: "choice" },
-            el("span", { class: "letter" }, QB.LETTERS[ci] + ")"), el("span", {}, QB.valueString(inst, c.v, lang)))));
-          li.append(box);
+        if (inst.choices) {
+          li.append(UI.choiceList(inst, lang));
         } else {
           const unit = QB.unitFor(inst, lang);
           li.append(el("div", { class: "open" }, el("span", {}, t("answerLabel") + ": ______________ " + (unit || ""))));
@@ -145,15 +144,15 @@
     list.innerHTML = "";
     for (const tpl of tpls) {
       const card = el("div", { class: "panel tpl" });
-      const meta = [UI.topicName(QB.topicOf(tpl)), tpl.grade && t("grade", { g: tpl.grade }), tpl.type || CONFIG.defaultType].filter(Boolean).join(" · ");
+      const meta = [UI.topicName(QB.topicOf(tpl)), tpl.grade && t("grade", { g: tpl.grade }), UI.levelName(QB.levelOf(tpl)), QB.kindOf(tpl)].filter(Boolean).join(" · ");
       card.append(el("div", { class: "tpl-head" }, el("span", { class: "tpl-id" }, tpl.id), el("span", { class: "muted small" }, meta)));
       const ol = el("ol", { class: "samples" });
-      for (let k = 1; k <= 3; k++) {
+      for (let k = 1; k <= 2; k++) {
         try {
           const inst = QB.generate(tpl, `önizleme-${roll}-${k}`);
-          const li = el("li", {}, el("span", { html: QB.render(inst, lang) }), " ");
-          li.append(el("span", { class: "ans" }, "→ " + QB.answerString(inst, lang)));
-          if (inst.type === "mc") li.append(el("div", { class: "muted small" }, inst.choices.map((c, i) => `${QB.LETTERS[i]}) ${QB.formatNum(c.v, inst.d, lang)}`).join("   ")));
+          const li = el("li", { class: "sample" }, el("div", { class: "q-text", html: QB.render(inst, lang) }));
+          if (inst.choices) li.append(UI.choiceList(inst, lang));
+          li.append(el("div", { class: "ans" }, "→ " + QB.answerString(inst, lang)));
           ol.append(li);
         } catch (e) {
           card.classList.add("broken");

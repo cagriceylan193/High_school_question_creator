@@ -22,6 +22,21 @@
     de: ["Lukas", "Anna", "Felix", "Lea", "Jonas", "Marie", "Paul", "Lena", "Finn", "Emma", "Ben", "Sophie"],
   };
 
+  // Soru tiplerinin dile göre kalıp metinleri.
+  const LOC = {
+    tr: { only: "Yalnız {a}", and: " ve ", sep: ", ", ask: "yargılarından hangileri doğrudur?", up: "Artar", down: "Azalır", same: "Değişmez" },
+    en: { only: "{a} only", and: " and ", sep: ", ", ask: "Which of these statements are true?", up: "Increases", down: "Decreases", same: "No change" },
+    de: { only: "Nur {a}", and: " und ", sep: ", ", ask: "Welche dieser Aussagen sind richtig?", up: "Nimmt zu", down: "Nimmt ab", same: "Bleibt gleich" },
+  };
+  const ROMAN = ["I", "II", "III", "IV", "V"];
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function near(x, y) {
+    return Math.abs(x - y) <= 1e-9 * Math.max(1, Math.abs(x), Math.abs(y));
+  }
+
   // ---------------------------------------------------------------------------
   // Deterministik rastgele sayı üreteci
   // ---------------------------------------------------------------------------
@@ -124,6 +139,8 @@
     // pick(i, a, b, c, ...) → i. değer (1'den başlar). Birbirine bağlı
     // değerleri (ör. 3-4-5 üçgeni) birlikte seçmek için kullanılır.
     pick: (i, ...xs) => xs[Math.round(i) - 1],
+    // if(koşul, a, b) → koşul doğruysa a, değilse b
+    if: (c, a, b) => (c ? a : b),
   };
   const CONSTS = { pi: Math.PI, e: Math.E };
 
@@ -317,7 +334,20 @@
       if (templates.some((t) => t.id === id)) throw new Error(`Aynı id iki kez kullanılmış: ${id}`);
       if (!tpl.text || typeof tpl.text !== "object") throw new Error("'text' alanı yok");
       for (const l of LANGS) if (!tpl.text[l]) throw new Error(`'${l}' dilinde metin yok`);
-      if (tpl.answer === undefined) throw new Error("'answer' alanı yok");
+      const kind = kindOf(tpl);
+      if (kind === "statements") {
+        if (!Array.isArray(tpl.statements) || tpl.statements.length < 2 || tpl.statements.length > 4) throw new Error("'statements' 2-4 yargı içermeli");
+        tpl.statements.forEach((st, i) => {
+          if (st.truth === undefined) throw new Error(`${i + 1}. yargının 'truth' alanı yok`);
+          for (const l of LANGS) if (!localized(st.text, l)) throw new Error(`${i + 1}. yargının '${l}' metni yok`);
+        });
+      } else if (kind === "order") {
+        if (!tpl.items || Object.keys(tpl.items).length < 3 || Object.keys(tpl.items).length > 4) throw new Error("'items' 3-4 öğe içermeli");
+      } else if (kind === "changes") {
+        if (!Array.isArray(tpl.changes) || tpl.changes.length < 1 || tpl.changes.length > 3) throw new Error("'changes' 1-3 öğe içermeli");
+      } else if (tpl.answer === undefined) throw new Error("'answer' alanı yok");
+      if (tpl.level !== undefined && ![1, 2, 3].includes(tpl.level)) throw new Error("'level' 1, 2 veya 3 olmalı");
+      if (tpl.figure !== undefined && typeof tpl.figure !== "function") throw new Error("'figure' bir fonksiyon olmalı");
       templates.push(tpl);
     } catch (e) {
       problems.push({ id: id || "(adsız)", message: e.message });
@@ -366,17 +396,106 @@
       }
       if (!where.every((w) => evaluate(w, scope))) continue;
 
+      const type = kindOf(tpl);
+      const base = { tpl, seed, scope, dec, type, d: 0 };
+
+      if (type === "statements") {
+        const truth = tpl.statements.map((st) => !!evaluate(st.truth, scope));
+        if (!truth.some(Boolean)) continue;
+        const answer = truth.map((b, i) => (b ? String(i + 1) : "")).join("");
+        const all = subsetKeys(tpl.statements.length);
+        const choices = keyChoices(answer, all, rng, (a, b) => a.length - b.length || a.localeCompare(b));
+        return { ...base, answer, choices };
+      }
+
+      if (type === "order") {
+        const labels = Object.keys(tpl.items);
+        const vals = labels.map((l) => evaluate(tpl.items[l], scope));
+        if (vals.some((v) => !Number.isFinite(v))) continue;
+        const idx = labels.map((_, i) => i).sort((a, b) => vals[b] - vals[a] || a - b);
+        const groups = [];
+        for (const i of idx) {
+          const g = groups[groups.length - 1];
+          if (g && near(vals[g[0]], vals[i])) g.push(i);
+          else groups.push([i]);
+        }
+        const answer = groups.map((g) => g.sort((a, b) => a - b).map((i) => labels[i]).join(" = ")).join(" > ");
+        return { ...base, answer, choices: keyChoices(answer, weakOrders(labels), rng) };
+      }
+
+      if (type === "changes") {
+        const outs = tpl.changes.map((c) => {
+          const b = evaluate(c.before, scope), a = evaluate(c.after, scope);
+          return near(a, b) ? "same" : a > b ? "up" : "down";
+        });
+        const answer = outs.join(",");
+        return { ...base, answer, choices: keyChoices(answer, changeKeys(tpl.changes.length), rng) };
+      }
+
       const answer = evaluate(tpl.answer, scope);
       if (!Number.isFinite(answer)) continue;
       const d = tpl.decimals ?? (Number.isInteger(round(answer, 6)) ? 0 : 2);
-
-      const type = tpl.type || CONFIG.defaultType || "mc";
       let choices = null;
       if (type === "mc") choices = buildChoices(tpl, scope, answer, d, rng);
-
-      return { tpl, seed, scope, dec, answer, d, type, choices };
+      return { ...base, answer, d, choices };
     }
     throw new Error(`${maxTries} denemede 'where' koşullarını sağlayan sayı bulunamadı`);
+  }
+
+  function kindOf(tpl) {
+    if (tpl.type) return tpl.type;
+    if (tpl.statements) return "statements";
+    if (tpl.items) return "order";
+    if (tpl.changes) return "changes";
+    return CONFIG.defaultType || "mc";
+  }
+
+  function levelOf(tpl) {
+    return tpl.level || 1;
+  }
+
+  // "1", "2", "12", "123" ... → I, II, I ve II, I, II ve III ...
+  function subsetKeys(n) {
+    const out = [];
+    for (let mask = 1; mask < 1 << n; mask++) {
+      let k = "";
+      for (let i = 0; i < n; i++) if (mask & (1 << i)) k += String(i + 1);
+      out.push(k);
+    }
+    return out;
+  }
+
+  // Eşitliklere izin veren tüm sıralamalar: "K > L = M" gibi
+  function weakOrders(labels) {
+    const res = [];
+    const pos = (x) => labels.indexOf(x);
+    (function rec(rest, acc) {
+      if (!rest.length) {
+        res.push(acc.map((g) => g.slice().sort((a, b) => pos(a) - pos(b)).join(" = ")).join(" > "));
+        return;
+      }
+      for (let mask = 1; mask < 1 << rest.length; mask++) {
+        const g = rest.filter((_, i) => mask & (1 << i));
+        const r = rest.filter((_, i) => !(mask & (1 << i)));
+        rec(r, acc.concat([g]));
+      }
+    })(labels.slice(), []);
+    return res;
+  }
+
+  function changeKeys(n) {
+    let keys = [[]];
+    for (let i = 0; i < n; i++) keys = keys.flatMap((k) => ["up", "down", "same"].map((o) => k.concat(o)));
+    return keys.map((k) => k.join(","));
+  }
+
+  // Doğru anahtar + rastgele seçilmiş yanlış anahtarlar
+  function keyChoices(correct, all, rng, sortFn) {
+    const n = CONFIG.choiceCount ?? 5;
+    const others = shuffle(all.filter((k) => k !== correct), rng).slice(0, n - 1);
+    let list = [correct, ...others];
+    list = sortFn ? list.sort(sortFn) : shuffle(list, rng);
+    return list.map((k) => ({ k, correct: k === correct }));
   }
 
   function buildChoices(tpl, scope, answer, d, rng) {
@@ -431,9 +550,80 @@
     return field[lang] ?? field.tr ?? "";
   }
 
+  // Şekil: şablondaki figure(v, f) fonksiyonu SVG döndürür (bkz. figures.js).
+  function figure(inst, lang) {
+    if (typeof inst.tpl.figure !== "function" || !root.QB_FIG) return "";
+    const f = Object.create(root.QB_FIG);
+    f.lang = lang;
+    f.n = (x, d) => formatNum(x, d, lang);
+    f.$ = (key, d) => {
+      const v = inst.scope[key];
+      if (v instanceof NameRef) return (NAMES[lang] || NAMES.tr)[v.i];
+      return formatNum(v, d ?? inst.dec[key], lang);
+    };
+    f.t = (field) => localized(field, lang);
+    return String(inst.tpl.figure(inst.scope, f));
+  }
+
+  // Sorunun tam HTML'i: metin, şekil, yargılar (I, II, III) ve soru cümlesi.
   // mark = true → değişken değerleri <span class="v"> ile işaretlenir (ana sayfa örneği).
   function render(inst, lang, mark) {
-    return fill(localized(inst.tpl.text, lang), inst, lang, mark);
+    const tpl = inst.tpl;
+    let html = `<div class="q-stem">${fill(localized(tpl.text, lang), inst, lang, mark)}</div>`;
+    const fig = figure(inst, lang);
+    if (fig) {
+      const box = `<div class="q-fig">${fig}</div>`;
+      html = tpl.figureFirst ? box + html : html + box;
+    }
+    if (tpl.statements) {
+      html += `<ol class="q-stmts">${tpl.statements.map((st, i) =>
+        `<li><span class="roman">${ROMAN[i]}.</span><span>${fill(localized(st.text, lang), inst, lang, mark)}</span></li>`).join("")}</ol>`;
+    }
+    const ask = tpl.ask ? localized(tpl.ask, lang) : tpl.statements ? (LOC[lang] || LOC.tr).ask : "";
+    if (ask) html += `<p class="q-ask">${fill(ask, inst, lang, mark)}</p>`;
+    return html;
+  }
+
+  function stmtLabel(k, lang) {
+    const L = LOC[lang] || LOC.tr;
+    const r = [...k].map((d) => ROMAN[Number(d) - 1]);
+    if (r.length === 1) return L.only.replace("{a}", r[0]);
+    return r.slice(0, -1).join(L.sep) + L.and + r[r.length - 1];
+  }
+
+  function orderLabel(inst, k, html) {
+    const sym = inst.tpl.symbol;
+    const labels = Object.keys(inst.tpl.items);
+    return k.split(" ").map((tok) => {
+      if (labels.includes(tok)) return sym ? (html ? `${sym}<sub>${tok}</sub>` : `${sym}_${tok}`) : tok;
+      return html ? esc(tok) : tok;
+    }).join(" ");
+  }
+
+  // Şık metni (düz yazı) ve HTML hâli
+  function choiceText(inst, i, lang) {
+    const c = inst.choices[i];
+    const L = LOC[lang] || LOC.tr;
+    switch (inst.type) {
+      case "statements": return stmtLabel(c.k, lang);
+      case "order": return orderLabel(inst, c.k, false);
+      case "changes": return c.k.split(",").map((o) => L[o]).join(" / ");
+      default: return valueString(inst, c.v, lang);
+    }
+  }
+  function choiceHtml(inst, i, lang) {
+    const c = inst.choices[i];
+    const L = LOC[lang] || LOC.tr;
+    switch (inst.type) {
+      case "order": return orderLabel(inst, c.k, true);
+      case "changes": return `<span class="chg">${c.k.split(",").map((o) => `<span>${L[o]}</span>`).join("")}</span>`;
+      default: return esc(choiceText(inst, i, lang));
+    }
+  }
+  // "Artar / Azalır" sorularında şıkların üstündeki sütun başlıkları
+  function choiceHeader(inst, lang) {
+    if (inst.type !== "changes") return "";
+    return `<span class="chg">${inst.tpl.changes.map((c) => `<span>${localized(c.label, lang)}</span>`).join("")}</span>`;
   }
 
   function unitFor(inst, lang) {
@@ -448,9 +638,9 @@
   const LETTERS = "ABCDEFGHIJ";
 
   function answerString(inst, lang) {
-    if (inst.type === "mc") {
+    if (inst.choices) {
       const i = inst.choices.findIndex((c) => c.correct);
-      return `${LETTERS[i]}) ${valueString(inst, inst.choices[i].v, lang)}`;
+      return `${LETTERS[i]}) ${choiceText(inst, i, lang)}`;
     }
     return valueString(inst, inst.answer, lang);
   }
@@ -472,15 +662,18 @@
     return t.topic || t.subject || "";
   }
 
-  function buildExam({ student, code, count, subjects, topics }) {
+  function buildExam({ student, code, count, subjects, topics, levels }) {
     const seed = examSeed(student, code);
     let pool = active().filter((t) =>
       (!subjects || !subjects.length || subjects.includes(t.subject)) &&
-      (!topics || !topics.length || topics.includes(topicOf(t))));
+      (!topics || !topics.length || topics.includes(topicOf(t))) &&
+      (!levels || !levels.length || levels.includes(levelOf(t))));
     // Şablon seçimi yalnızca sınav koduna bağlı: aynı sınavda herkes aynı
     // soru kalıplarını aynı sırayla görür, sadece sayılar kişiye özeldir.
     pool = shuffle(pool, makeRng("pick", normalize(code)));
     if (count) pool = pool.slice(0, count);
+    // Kolaydan zora doğru sırala (aynı seviyede seçim sırası korunur).
+    pool = pool.map((t, i) => [t, i]).sort((a, b) => levelOf(a[0]) - levelOf(b[0]) || a[1] - b[1]).map((x) => x[0]);
     return pool.map((tpl) => {
       try { return generate(tpl, seed); }
       catch (e) { return { tpl, seed, error: e.message }; }
@@ -502,7 +695,7 @@
   }
 
   function isCorrect(inst, response) {
-    if (inst.type === "mc") {
+    if (inst.choices) {
       return response !== null && response !== undefined && inst.choices[response] && inst.choices[response].correct;
     }
     const x = parseAnswer(response);
@@ -519,6 +712,8 @@
     problems,
     active,
     topicOf,
+    levelOf,
+    kindOf,
     add,
     compile,
     evaluate,
@@ -531,6 +726,11 @@
     unitFor,
     valueString,
     answerString,
+    choiceText,
+    choiceHtml,
+    choiceHeader,
+    figure,
+    esc,
     examSeed,
     buildExam,
     parseAnswer,

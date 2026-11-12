@@ -16,6 +16,7 @@ load("config.js");
 load("i18n.js");
 load("faq.js");
 load("engine.js");
+load("figures.js");
 
 const qFiles = fs.readdirSync(path.join(ROOT, "questions")).filter((f) => f.endsWith(".js")).sort();
 for (const f of qFiles) load("questions/" + f);
@@ -30,6 +31,7 @@ for (const page of ["index.html", "sorular.html", "ogretmen.html"]) {
   for (const f of qFiles) {
     if (!html.includes(`src="questions/${f}"`)) errors.push(`${page}: <script src="questions/${f}"></script> satırı eksik`);
   }
+  if (!html.includes('src="figures.js"')) errors.push(`${page}: <script src="figures.js"></script> satırı eksik`);
 }
 
 // 2) Yükleme sırasında reddedilen şablonlar.
@@ -64,12 +66,17 @@ for (const tpl of QB.templates) {
       try {
         const txt = QB.render(inst, l);
         if (/[{}]/.test(txt)) errors.push(`${tpl.id} (${l}): metinde çözülmemiş süslü parantez var: ${txt}`);
-        if (/NaN|Infinity|∞/.test(txt)) errors.push(`${tpl.id} (${l}): metinde geçersiz sayı: ${txt}`);
+        if (/NaN|Infinity|∞|undefined/.test(txt)) errors.push(`${tpl.id} (${l}): metinde geçersiz değer: ${txt.slice(0, 200)}`);
+        if (tpl.figure && !txt.includes("<svg")) errors.push(`${tpl.id} (${l}): şekil çizilemedi`);
+        if (inst.choices) inst.choices.forEach((c, ci) => {
+          const ct = QB.choiceText(inst, ci, l);
+          if (!ct || /NaN|undefined/.test(ct)) errors.push(`${tpl.id} (${l}): ${ci + 1}. şık geçersiz: ${ct}`);
+        });
       } catch (e) {
         errors.push(`${tpl.id} (${l}): ${e.message}`);
       }
     }
-    if (inst.type === "mc") {
+    if (inst.choices) {
       const want = tpl.choices ?? ctx.QB_CONFIG.choiceCount ?? 5;
       if (inst.choices.length < want) shortChoices++;
       if (inst.choices.filter((c) => c.correct).length !== 1) errors.push(`${tpl.id}: doğru şık sayısı 1 değil`);
@@ -77,7 +84,7 @@ for (const tpl of QB.templates) {
     if (errors.length > 200) break;
   }
   if (shortChoices) warnings.push(`${tpl.id}: ${SAMPLES} sorunun ${shortChoices} tanesinde şık sayısı eksik kaldı`);
-  if (answers.size < 5) warnings.push(`${tpl.id}: yalnızca ${answers.size} farklı cevap üretiliyor; öğrenciler arasında çeşitlilik az`);
+  if (answers.size < 5 && ["mc", "open"].includes(QB.kindOf(tpl))) warnings.push(`${tpl.id}: yalnızca ${answers.size} farklı cevap üretiliyor; öğrenciler arasında çeşitlilik az`);
 }
 
 // 4b) SSS her dilde aynı sayıda soru içermeli.
@@ -102,6 +109,11 @@ if (QB.templates.length) {
 }
 
 console.log(`${QB.templates.length} şablon (${QB.active().length} tanesi sitede açık), ${qFiles.length} soru dosyası, diller: ${QB.LANGS.join(", ")}`);
+const act = QB.active();
+const byLevel = [1, 2, 3].map((lv) => act.filter((t) => QB.levelOf(t) === lv).length);
+const byKind = {};
+for (const t of act) byKind[QB.kindOf(t)] = (byKind[QB.kindOf(t)] || 0) + 1;
+console.log(`Zorluk: ${byLevel[0]} kolay, ${byLevel[1]} orta, ${byLevel[2]} zor · Şekilli: ${act.filter((t) => t.figure).length} · Tipler: ${JSON.stringify(byKind)}`);
 for (const w of warnings) console.log("UYARI: " + w);
 for (const e of errors) console.log("HATA:  " + e);
 if (errors.length) {

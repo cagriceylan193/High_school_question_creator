@@ -13,6 +13,15 @@
   --bad: #b3312a;
   --bad-soft: #fbe9e7;
   --grid: #e3e8ef;
+  --warn: #a8640a;
+  --fig-grid: #dfe5ec;
+  --fig-obj: #ffffff;
+  --fig-liq: #cfe3f7;
+  --fig-liq2: #f6dfb3;
+  --fig-liq3: #dcd3f2;
+  --fig-liq-edge: #6d9ccc;
+  --fig-wire: #c9a26a;
+  --fig-lamp: #ffe48a;
   --font: "Lexend", "Segoe UI", system-ui, -apple-system, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   color-scheme: light;
@@ -22,6 +31,8 @@
     --bg: #0f151c; --surface: #18212b; --ink: #e4eaf1; --muted: #98a6b5; --line: #2b3744;
     --accent: #6f9bff; --accent-ink: #0c1424; --accent-soft: #1d2b47;
     --ok: #5fcf8f; --ok-soft: #173326; --bad: #ff8a7e; --bad-soft: #3a1d1b; --grid: #18202a;
+    --warn: #f0b45c; --fig-grid: #26313d; --fig-obj: #1f2a36; --fig-liq: #1d3a57; --fig-liq2: #4a3a1c; --fig-liq3: #352d4f;
+    --fig-liq-edge: #5d8fc2; --fig-wire: #8c6d3f; --fig-lamp: #b8962a;
     color-scheme: dark;
   }
 }
@@ -29,6 +40,8 @@
   --bg: #0f151c; --surface: #18212b; --ink: #e4eaf1; --muted: #98a6b5; --line: #2b3744;
   --accent: #6f9bff; --accent-ink: #0c1424; --accent-soft: #1d2b47;
   --ok: #5fcf8f; --ok-soft: #173326; --bad: #ff8a7e; --bad-soft: #3a1d1b; --grid: #18202a;
+    --warn: #f0b45c; --fig-grid: #26313d; --fig-obj: #1f2a36; --fig-liq: #1d3a57; --fig-liq2: #4a3a1c; --fig-liq3: #352d4f;
+    --fig-liq-edge: #5d8fc2; --fig-wire: #8c6d3f; --fig-lamp: #b8962a;
   color-scheme: dark;
 }
 
@@ -179,6 +192,62 @@ ol.questions { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px
 .error { color: var(--bad); }
 .notice { background: var(--accent-soft); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
 
+/* Zorluk etiketi */
+.q-subject { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lvl { font-size: 11px; letter-spacing: 0.04em; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.lvl-2 { border-color: var(--warn); color: var(--warn); }
+.lvl-3 { border-color: var(--bad); color: var(--bad); }
+
+/* Soru gövdesi: metin, şekil, yargılar */
+.q-text { display: grid; gap: 10px; }
+.q-fig svg { display: block; max-width: 100%; height: auto; }
+.q-stmts { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.q-stmts li { display: grid; grid-template-columns: 2.4em 1fr; gap: 4px; }
+.q-stmts .roman { font-family: var(--mono); color: var(--muted); }
+.q-ask { font-weight: 500; margin: 0; }
+.choice-body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.chg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; max-width: 20em; }
+.choice .letter, .choice-head .letter { min-width: 1.7em; }
+.choice-head { display: flex; align-items: end; gap: 10px; padding: 0 11px 0 34px; font-size: 13px; color: var(--muted); }
+.choice-head > span:last-child { flex: 1; min-width: 0; }
+@media (max-width: 480px) {
+  .panel { padding: 18px 16px; }
+  .q { padding: 14px; }
+  .choices, .open, .feedback { padding-left: 0; }
+}
+
+/* Şekiller (SVG) */
+.fig { color: var(--ink); font-family: var(--font); }
+.fig text { fill: currentColor; font-size: 13px; }
+.fig text.mut { fill: var(--muted); font-size: 12px; }
+.fig .ln { stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.fig .ln.thick { stroke-width: 3; }
+.fig .thin { stroke: var(--muted); stroke-width: 1; fill: none; }
+.fig .dash { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; fill: none; }
+.fig .grid { stroke: var(--fig-grid); stroke-width: 1; fill: none; }
+.fig .obj { fill: var(--fig-obj); stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+.fig .ghost { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.fig .dot, .fig .head { fill: currentColor; stroke: none; }
+.fig .acc { stroke: var(--accent); stroke-width: 2; fill: none; }
+.fig .acc-head { fill: var(--accent); stroke: none; }
+.fig .plot { stroke: var(--accent); stroke-width: 2.4; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.fig .track { stroke: currentColor; stroke-width: 2.4; fill: none; }
+.fig .liq { fill: var(--fig-liq); stroke: none; }
+.fig .liq2 { fill: var(--fig-liq2); stroke: none; }
+.fig .liq3 { fill: var(--fig-liq3); stroke: none; }
+.fig .liq-edge { stroke: var(--fig-liq-edge); stroke-width: 1.5; fill: none; }
+.fig .liq-stroke { stroke: var(--fig-liq); stroke-width: 26; fill: none; }
+.fig .liq2-stroke { stroke: var(--fig-liq2); stroke-width: 26; fill: none; }
+.fig .wire { fill: var(--fig-wire); stroke: currentColor; stroke-width: 1; }
+.fig .screen { stroke: currentColor; stroke-width: 3; }
+.fig .shadow { stroke: var(--ink); stroke-width: 7; opacity: 0.55; }
+.fig .opaque { stroke: currentColor; stroke-width: 5; stroke-linecap: round; }
+.fig .lamp { fill: var(--fig-lamp); stroke: currentColor; stroke-width: 1.5; }
+.fig .mirror { stroke: currentColor; stroke-width: 3; }
+
+.samples .sample { display: grid; gap: 8px; padding-block: 6px; }
+.samples .ans { color: var(--ok); font-weight: 500; }
+
 /* Öğretmen */
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .tabs button { border: none; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted); padding: 10px 14px; }
@@ -300,6 +369,8 @@ code { font-family: var(--mono); font-size: 0.92em; }
   .sheet-head { display: flex; justify-content: space-between; gap: 20px; border-bottom: 1px solid #000; padding-bottom: 8px; }
   .choices, .open, .feedback { padding-left: 2.5em; }
   .choice { border: none; padding: 1px 0; }
+  .choice-head { padding-left: 2.5em; }
+  .q-fig svg { max-width: 360px; }
   .choice input { display: none; }
   .open input { border: none; border-bottom: 1px solid #000; border-radius: 0; background: none; }
 }

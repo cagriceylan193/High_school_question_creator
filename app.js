@@ -10,9 +10,11 @@
   // --- Başlangıç formu --------------------------------------------------------
   const p = UI.params;
   const wantedTopics = p.get("konu") ? p.get("konu").split(",") : null;
+  const wantedLevels = p.get("zorluk") ? p.get("zorluk").split(",").map(Number) : null;
   function renderTopics() {
     UI.renderTopicChips($("topics"), wantedTopics);
     $("topicsWrap").hidden = UI.topicKeys().length < 2;
+    UI.renderLevelChips($("levels"), wantedLevels);
   }
 
   $("student").value = p.get("ad") || UI.storageGet("qb-student") || "";
@@ -26,15 +28,15 @@
 
   $("startForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")));
+    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")), UI.pickedLevels($("levels")));
   });
 
-  function start(student, code, count, topics) {
+  function start(student, code, count, topics, levels) {
     student = student.trim();
     code = code.trim();
     if (!student || !code) return;
     UI.storageSet("qb-student", student);
-    const items = QB.buildExam({ student, code, count, topics });
+    const items = QB.buildExam({ student, code, count, topics, levels });
     exam = { student, code, items, responses: items.map(() => null), checked: false };
     $("start").hidden = true;
     $("exam").hidden = false;
@@ -60,8 +62,7 @@
     exam.items.forEach((inst, qi) => {
       const li = el("li", { class: "q" });
       const body = el("div", { class: "q-body" });
-      const topic = QB.topicOf(inst.tpl);
-      if (topic) body.append(el("span", { class: "q-subject" }, UI.topicName(topic)));
+      body.append(UI.questionTag(inst.tpl));
       li.append(el("div", { class: "q-top" }, el("span", { class: "q-num", "aria-hidden": "true" }), body));
 
       if (inst.error) {
@@ -78,22 +79,12 @@
       const blank = resp === null || resp === "";
       if (ok) nOk++;
 
-      if (inst.type === "mc") {
-        const box = el("div", { class: "choices", role: "radiogroup" });
-        inst.choices.forEach((c, ci) => {
-          const id = `q${qi}c${ci}`;
-          const input = el("input", { type: "radio", name: "q" + qi, id, value: ci });
-          input.checked = resp === ci;
-          input.disabled = exam.checked;
-          input.addEventListener("change", () => { exam.responses[qi] = ci; });
-          let cls = "choice";
-          if (exam.checked && c.correct && (ok || CONFIG.showCorrectAfterCheck)) cls += " is-right";
-          if (exam.checked && resp === ci && !c.correct) cls += " is-picked-wrong";
-          box.append(el("label", { class: cls, for: id }, input,
-            el("span", { class: "letter" }, QB.LETTERS[ci] + ")"),
-            el("span", {}, QB.valueString(inst, c.v, lang))));
-        });
-        li.append(box);
+      if (inst.choices) {
+        li.append(UI.choiceList(inst, lang, {
+          name: "q" + qi, picked: resp, locked: exam.checked, checked: exam.checked,
+          showRight: ok || CONFIG.showCorrectAfterCheck,
+          onPick: (ci) => { exam.responses[qi] = ci; },
+        }));
       } else {
         const id = "q" + qi;
         const input = el("input", { type: "text", id, inputmode: "decimal", autocomplete: "off", "aria-label": t("answerLabel") });
@@ -108,7 +99,7 @@
         li.classList.add(ok ? "is-ok" : "is-bad");
         const fb = el("div", { class: "feedback" },
           el("span", { class: "pill " + (ok ? "ok" : blank ? "blank" : "bad") }, t(ok ? "correct" : blank ? "blank" : "wrong")));
-        if (!ok && CONFIG.showCorrectAfterCheck && inst.type !== "mc") fb.append(el("span", {}, t("correctIs", { a: QB.answerString(inst, lang) })));
+        if (!ok && CONFIG.showCorrectAfterCheck && !inst.choices) fb.append(el("span", {}, t("correctIs", { a: QB.answerString(inst, lang) })));
         li.append(fb);
       }
       list.append(li);

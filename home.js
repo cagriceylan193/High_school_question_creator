@@ -5,7 +5,7 @@
   const $ = (id) => document.getElementById(id);
 
   // Örnekte gösterilecek şablonlar sırayla döner ("Başka örnek" butonu).
-  const pool = QB.active();
+  const pool = QB.active().filter((x) => !x.figure && ["mc", "open"].includes(QB.kindOf(x)));
   let turn = 0;
   const STUDENTS = [0, 3, 6]; // QB.NAMES listesindeki sıra numaraları
 
@@ -21,7 +21,7 @@
       try { inst = QB.generate(tpl, `ornek-${turn}-${k}`); } catch { return; }
       box.append(el("article", { class: "demo-card" },
         el("p", { class: "demo-student" }, t("demoStudent", { name })),
-        el("p", { class: "demo-text", html: QB.render(inst, lang, true) }),
+        el("div", { class: "demo-text", html: QB.render(inst, lang, true) }),
         el("p", { class: "demo-answer" }, "→ " + QB.valueString(inst, inst.answer, lang))));
     });
   }
@@ -37,6 +37,7 @@
         el("span", { class: "muted small" }, [
           t("topicTemplates", { n: tpls.length }),
           grades.length ? t("grade", { g: grades.join(", ") }) : null,
+          tpls.some((x) => QB.levelOf(x) === 3) ? t("levelCount", { n: tpls.filter((x) => QB.levelOf(x) === 3).length }) : null,
         ].filter(Boolean).join(" · ")),
         el("span", { class: "topic-arrow", "aria-hidden": "true" }, "→")));
     }

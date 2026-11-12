@@ -122,13 +122,66 @@
     }
   }
 
+  function renderLevelChips(box, wanted) {
+    const prev = new Set([...box.querySelectorAll("input:checked")].map((i) => i.value));
+    const first = !box.children.length;
+    const have = new Set(QB.active().map(QB.levelOf));
+    box.innerHTML = "";
+    for (const lv of [1, 2, 3]) {
+      if (!have.has(lv)) continue;
+      const id = "zorluk-" + lv;
+      const input = el("input", { type: "checkbox", id, value: lv });
+      input.checked = first ? (!wanted || wanted.includes(lv)) : prev.has(String(lv));
+      box.append(el("label", { class: "chip", for: id }, input, levelName(lv)));
+    }
+  }
+
+  function pickedLevels(box) {
+    const all = box.querySelectorAll("input");
+    const picked = [...box.querySelectorAll("input:checked")].map((i) => Number(i.value));
+    return picked.length === all.length ? [] : picked;
+  }
+
+  function levelName(lv) {
+    return (I18N[lang].levels && I18N[lang].levels[lv]) || String(lv);
+  }
+
+  // Soru başlığındaki etiket: "Hareket · Zor"
+  function questionTag(tpl) {
+    const lv = QB.levelOf(tpl);
+    return el("span", { class: "q-subject" }, topicName(QB.topicOf(tpl)),
+      el("span", { class: "lvl lvl-" + lv }, levelName(lv)));
+  }
+
   function pickedTopics(box) {
     const all = box.querySelectorAll("input");
     const picked = [...box.querySelectorAll("input:checked")].map((i) => i.value);
     return picked.length === all.length ? [] : picked;
   }
 
+  // Şıkları çizer. opts: { name, picked, locked, checked, onPick, showRight }
+  function choiceList(inst, lang, opts = {}) {
+    const box = el("div", { class: "choices", role: opts.name ? "radiogroup" : null });
+    const head = QB.choiceHeader(inst, lang);
+    if (head) box.append(el("div", { class: "choice-head", "aria-hidden": "true" }, el("span", { class: "letter" }, ""), el("span", { html: head })));
+    inst.choices.forEach((c, ci) => {
+      const content = [el("span", { class: "letter" }, QB.LETTERS[ci] + ")"), el("span", { class: "choice-body", html: QB.choiceHtml(inst, ci, lang) })];
+      if (!opts.name) { box.append(el("div", { class: "choice" }, ...content)); return; }
+      const id = `${opts.name}c${ci}`;
+      const input = el("input", { type: "radio", name: opts.name, id, value: ci });
+      input.checked = opts.picked === ci;
+      input.disabled = !!opts.locked;
+      input.addEventListener("change", () => opts.onPick && opts.onPick(ci));
+      let cls = "choice";
+      if (opts.checked && c.correct && opts.showRight) cls += " is-right";
+      if (opts.checked && opts.picked === ci && !c.correct) cls += " is-picked-wrong";
+      box.append(el("label", { class: cls, for: id }, input, ...content));
+    });
+    return box;
+  }
+
   globalThis.UI = {
+    choiceList,
     get lang() { return lang; },
     t,
     subjectName,
@@ -136,6 +189,10 @@
     topicKeys,
     renderTopicChips,
     pickedTopics,
+    renderLevelChips,
+    pickedLevels,
+    levelName,
+    questionTag,
     applyStatic,
     setLang,
     onLang: (fn) => listeners.push(fn),

@@ -36,7 +36,7 @@ Bilgisayarda denemek için `index.html` dosyasını tarayıcıda açmanız yeter
 
 ## Yeni soru ekleme
 
-Sorular `questions/` klasöründeki `.js` dosyalarındadır. Fizik soruları `questions/fizik.js` içindedir. Yeni bir konu eklerseniz adını `i18n.js` içindeki `topics` listesine 3 dilde yazın. Her soru bir `QB.add({...})` bloğudur:
+Sorular `questions/` klasöründeki `.js` dosyalarındadır. Fizik soruları: `fizik.js` (temel), `fizik-madde.js` (madde, basınç, kaldırma kuvveti, ısı), `fizik-hareket.js` (hareket, kuvvet, enerji), `fizik-elektrik-optik.js` (elektrostatik, elektrik, optik, dalgalar). Tüm sorular ve şekiller bu proje için özgün olarak yazılmıştır; yayınevi kitaplarından soru, metin veya şekil kopyalanmamalıdır. Yeni bir konu eklerseniz adını `i18n.js` içindeki `topics` listesine 3 dilde yazın. Her soru bir `QB.add({...})` bloğudur:
 
 ```js
 QB.add({
@@ -83,9 +83,63 @@ Birbirine bağlı değerler için `pick(s, ...)` kullanılır. Örneğin `s` 1�
 - `{=a*b}` → metin içinde hesaplama.
 - `<i>x</i>`, `H<sub>2</sub>O`, `m/s<sup>2</sup>` gibi basit HTML kullanılabilir.
 
+### Zorluk seviyesi
+
+`level: 1` (kolay), `level: 2` (orta) veya `level: 3` (zor). Yazılmazsa 1 sayılır. Öğrenci ve öğretmen sayfasında zorluğa göre seçim yapılabilir; sınavda sorular kolaydan zora sıralanır.
+
+### Soru tipleri
+
+**1) Sayısal çoktan seçmeli** (varsayılan): `answer` + `distractors`, yukarıdaki örnek gibi. `type: "open"` yazılırsa öğrenci cevabı kendisi yazar.
+
+**2) “I, II, III yargılarından hangileri doğrudur?”** — `statements` listesi. Her yargının doğru olup olmadığı `truth` formülüyle hesaplanır; şıklar (Yalnız I, I ve II, ...) otomatik oluşur. Bir yargıda bazen doğru bazen yanlış bir sayı göstermek için `if()` kullanılır:
+
+```js
+vars: { ..., s2: { values: [0, 1] } },
+statements: [
+  { text: { tr: "K cismi sıvıda yüzer.", en: "...", de: "..." }, truth: "dK < dS" },
+  { text: { tr: "İvme {=if(s2, a, a + 1)} m/s²'dir.", en: "...", de: "..." }, truth: "s2" },
+  { text: { tr: "...", en: "...", de: "..." }, truth: "R1 > R2" },
+],
+```
+
+**3) Sıralama** — `items` içindeki değerler büyükten küçüğe sıralanır, eşitler “=” ile gösterilir. `symbol: "P"` yazılırsa şıklar P<sub>K</sub> > P<sub>L</sub> = P<sub>M</sub> biçiminde görünür.
+
+```js
+items: { K: "hK * dK", L: "hL * dL", M: "hM * dM" },
+symbol: "P",
+```
+
+**4) Artar / Azalır / Değişmez** — `changes` listesinde her büyüklüğün önceki (`before`) ve sonraki (`after`) değeri formülle hesaplanır:
+
+```js
+changes: [
+  { label: { tr: "Kaldırma kuvveti", en: "Buoyant force", de: "Auftriebskraft" }, before: "min(dC, d1)", after: "min(dC, d2)" },
+  { label: { tr: "Batan hacim", ... }, before: "...", after: "..." },
+],
+```
+
+### Şekilli sorular
+
+Şablona `figure: (v, f) => { ... }` fonksiyonu eklenir. `v` değişkenlerin değerleri, `f` ise çizim araçlarıdır (`figures.js`). Şekil soru sayılarıyla birlikte çizildiği için her öğrencinin şekli de kendine özeldir; açık/koyu temaya ve çıktıya uyum sağlar.
+
+```js
+figure: (v, f) => {
+  const s = f.svg(320, 175);                       // genişlik, yükseklik
+  s.add(
+    f.resistor(40, 40, 160, 40, "R_1 = " + f.$("R1") + " Ω"),
+    f.resistor(160, 40, 280, 40, "R_2 = " + f.$("R2") + " Ω"),
+    f.line(40, 40, 40, 140), f.line(280, 40, 280, 140),
+    f.battery(40, 140, 280, 140, f.$("V") + " V"),
+  );
+  return s;
+},
+```
+
+Hazır araçlar: `line, dashed, rect, circle, dot, poly, polyline, path, curve, text, arrow, dimH, dimV, ground, grid, vessel, resistor, battery, switchOpen, switchClosed, graph, wave, car, box`. `f.$("x")` değişkeni dile uygun biçimde yazar, `f.t({tr, en, de})` dile göre metin seçer, etiketlerde `R_1` alt simge olur. Örnekler için `questions/fizik-*.js` dosyalarına bakın.
+
 ### Formüllerde kullanılabilenler
 
-`+ - * / % ^`, parantez, `sqrt abs round floor ceil min max pow log ln exp gcd lcm fact comb perm pick`, `pi`, `e`.
+`+ - * / % ^`, parantez, `sqrt abs round floor ceil min max pow log ln exp gcd lcm fact comb perm pick if`, `pi`, `e`.
 `sin cos tan asin acos atan` **derece** ile çalışır.
 Koşullarda `< <= > >= == !=` ile `and`, `or`, `not` kullanılabilir.
 
@@ -98,7 +152,7 @@ Koşullarda `< <= > >= == !=` ile `and`, `or`, `not` kullanılabilir.
 `questions/` içine yeni bir dosya (ör. `questions/fizik-11.js`) eklediğinizde, onu `index.html`, `sorular.html` ve `ogretmen.html` içindeki soru dosyaları listesine ekleyin:
 
 ```html
-<script src="questions/fizik-9.js"></script>
+<script src="questions/fizik-11.js"></script>
 ```
 
 ## Kontrol aracı
@@ -123,7 +177,8 @@ index.html         Ana sayfa (home.js)
 sorular.html       Soru sayfası (app.js)
 sss.html           Sık sorulan sorular (faq.js)
 ogretmen.html      Öğretmen sayfası (teacher.js)
-engine.js          Soru motoru (rastgelelik, formül çözümleyici, biçimlendirme)
+engine.js          Soru motoru (rastgelelik, formül çözümleyici, soru tipleri, biçimlendirme)
+figures.js         Şekil çizim araçları (SVG)
 ui.js              Ortak menü, dil seçimi ve alt bilgi
 config.js, i18n.js Ayarlar ve çeviriler
 style.css          Görünüm
