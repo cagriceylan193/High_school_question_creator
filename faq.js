@@ -40,11 +40,11 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Adım ve cevaplarım bir yere kaydediliyor mu?",
-      a: "Hiçbir sunucuya bilgi gönderilmez. Hesap oluşturursan adın ve çözdüğün sınavlar yalnızca kendi tarayıcında saklanır; başka kimse göremez. Hesap oluşturmazsan sadece son yazdığın ad ve seçtiğin dil hatırlanır. Puanını öğretmenin görmez; sınavı kâğıtta yapıyorsanız cevaplarını kâğıda yaz.",
+      a: "Hesap açmazsan ya da e-postasız hesap kullanırsan hiçbir bilgi sunucuya gönderilmez; her şey kendi tarayıcında kalır. E-posta ile hesap açarsan adın, e-postan ve çözdüğün sınavlar Google Firebase'de yalnızca senin erişebileceğin şekilde saklanır; ayrıntılar <a href=\"gizlilik.html\">aydınlatma metninde</a>. Puanını öğretmenin görmez; sınavı kâğıtta yapıyorsanız cevaplarını kâğıda yaz.",
     },
     {
       q: "Hesap nasıl çalışır?",
-      a: "<a href=\"hesap.html\">Hesabım</a> sayfasında adınla bir hesap oluşturursun. Giriş yaptıktan sonra “Cevapları kontrol et”e bastığın her sınav kaydedilir: tarihi, puanı ve hangi konulardan olduğu listelenir, istediğin sınavı şekilleriyle birlikte tekrar inceleyebilirsin. Hesap bu cihazdaki tarayıcıda durur; başka bir cihaza geçerken “Yedek indir” ile dosya al, diğer cihazda “Yedek yükle” ile aç. Bilgisayarı başkalarıyla paylaşıyorsan 4 haneli bir PIN koyabilirsin.",
+      a: "<a href=\"hesap.html\">Hesabım</a> sayfasında iki seçenek var. <b>E-posta ile hesap:</b> her cihazdan aynı e-posta ve şifreyle girersin, sınavların bulutta saklanır; şifreni unutursan sıfırlama bağlantısı istenebilir. <b>E-postasız hesap:</b> e-posta vermeden açılır, geçmişin yalnızca o cihazdaki tarayıcıda durur (başka cihaza “Yedek indir / Yedek yükle” ile taşınır). İki durumda da “Cevapları kontrol et”e bastığın her sınav kaydedilir; tarihi, puanı ve konuları listelenir ve şekilleriyle tekrar incelenebilir. E-postasız hesaptaki sınavlarını sonradan e-posta hesabına aktarabilirsin.",
     },
     {
       q: "Soruları PDF olarak nasıl indiririm?",
@@ -98,11 +98,11 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Are my name and answers saved anywhere?",
-      a: "Nothing is ever sent to a server. If you create an account, your name and the exams you solve are stored only in your own browser, where no one else can see them. Without an account, only the last name you typed and your language choice are remembered. Your teacher doesn't see your score; if the exam is on paper, write your answers on the paper.",
+      a: "Without an account, or with an account without email, nothing is sent to a server; everything stays in your own browser. With an email account, your name, email and solved exams are stored in Google Firebase where only you can access them; see the <a href=\"gizlilik.html\">privacy notice</a> for details. Your teacher doesn't see your score; if the exam is on paper, write your answers on the paper.",
     },
     {
       q: "How does the account work?",
-      a: "On the <a href=\"hesap.html\">My account</a> page you create an account with your name. Once you're signed in, every exam you check with “Check answers” is saved: its date, score and topics are listed, and you can review any exam again with its diagrams. The account lives in the browser on this device; to switch devices, use “Download backup” and open the file on the other device with “Load backup”. If you share the computer, you can set a 4-digit PIN.",
+      a: "The <a href=\"hesap.html\">My account</a> page has two options. <b>Email account:</b> sign in from any device with the same email and password; your exams are stored in the cloud, and you can request a reset link if you forget your password. <b>Account without email:</b> no email needed; your history stays only in the browser on that device (move it with “Download backup / Load backup”). Either way, every exam you check with “Check answers” is saved with its date, score and topics, and you can review it again with its diagrams. You can later copy exams from an account without email into an email account.",
     },
     {
       q: "How do I download the questions as a PDF?",
@@ -156,11 +156,11 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Werden mein Name und meine Antworten gespeichert?",
-      a: "Es wird nichts an einen Server geschickt. Wenn du ein Konto anlegst, werden dein Name und deine gelösten Prüfungen nur in deinem eigenen Browser gespeichert, wo niemand sonst sie sieht. Ohne Konto werden nur der zuletzt eingegebene Name und deine Sprachwahl gemerkt. Deine Lehrkraft sieht dein Ergebnis nicht; bei einer Prüfung auf Papier schreibst du die Antworten aufs Blatt.",
+      a: "Ohne Konto oder mit einem Konto ohne E-Mail wird nichts an einen Server geschickt; alles bleibt in deinem eigenen Browser. Mit einem E-Mail-Konto werden Name, E-Mail und gelöste Prüfungen bei Google Firebase gespeichert, nur du hast Zugriff; Einzelheiten in den <a href=\"gizlilik.html\">Datenschutzhinweisen</a>. Deine Lehrkraft sieht dein Ergebnis nicht; bei einer Prüfung auf Papier schreibst du die Antworten aufs Blatt.",
     },
     {
       q: "Wie funktioniert das Konto?",
-      a: "Auf der Seite <a href=\"hesap.html\">Mein Konto</a> legst du mit deinem Namen ein Konto an. Wenn du angemeldet bist, wird jede Prüfung gespeichert, die du mit „Antworten prüfen“ abschließt: Datum, Ergebnis und Themen werden aufgelistet, und du kannst jede Prüfung samt Abbildungen erneut ansehen. Das Konto liegt im Browser auf diesem Gerät; für einen Gerätewechsel lädst du mit „Sicherung herunterladen“ eine Datei herunter und öffnest sie auf dem anderen Gerät mit „Sicherung laden“. Wenn du den Computer teilst, kannst du eine 4-stellige PIN setzen.",
+      a: "Auf der Seite <a href=\"hesap.html\">Mein Konto</a> gibt es zwei Möglichkeiten. <b>E-Mail-Konto:</b> Du meldest dich auf jedem Gerät mit derselben E-Mail und demselben Passwort an; deine Prüfungen werden in der Cloud gespeichert, und bei vergessenem Passwort kannst du einen Link anfordern. <b>Konto ohne E-Mail:</b> ohne E-Mail-Adresse; dein Verlauf bleibt nur im Browser dieses Geräts (mit „Sicherung herunterladen / laden“ übertragbar). In beiden Fällen wird jede mit „Antworten prüfen“ abgeschlossene Prüfung mit Datum, Ergebnis und Themen gespeichert und kann samt Abbildungen erneut angesehen werden. Prüfungen aus einem Konto ohne E-Mail kannst du später in ein E-Mail-Konto übernehmen.",
     },
     {
       q: "Wie lade ich die Aufgaben als PDF herunter?",

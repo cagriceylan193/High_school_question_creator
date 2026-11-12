@@ -17,4 +17,21 @@ globalThis.QB_CONFIG = {
   choiceCount: 5,
   // Öğrenci "Kontrol et" dediğinde yanlış sorularda doğru cevap gösterilsin mi?
   showCorrectAfterCheck: true,
+
+  // E-posta ile giriş ve bulutta sınav geçmişi (Firebase).
+  // Bu bilgiler gizli değildir; verileri Firestore kuralları korur (firebase/firestore.rules).
+  // Analytics bilerek eklenmemiştir: site öğrencileri izlemez.
+  firebase: {
+    apiKey: "AIzaSyBPlAm-zlrecOO-N_nK_yWJ8E84K9k97u0",
+    authDomain: "soru-ureteci.firebaseapp.com",
+    projectId: "soru-ureteci",
+    storageBucket: "soru-ureteci.firebasestorage.app",
+    messagingSenderId: "103963102137",
+    appId: "1:103963102137:web:a0e92c7f04a4c9edbb4468",
+  },
+
+  // Aydınlatma metninde (gizlilik.html) görünen veri sorumlusu ve iletişim.
+  // Okulda kullanmadan önce kendi adınızı/okulunuzu ve bir iletişim adresi yazın.
+  privacyOwner: "",
+  privacyContact: "",
 };

@@ -35,7 +35,8 @@
     const u = QBA.current();
     if (u) {
       box.append(el("span", { class: "avatar", "aria-hidden": "true" }, u.name.charAt(0).toLocaleUpperCase("tr-TR")),
-        el("span", {}, t("accSignedInAs", { name: u.name }) + " "), el("a", { href: "hesap.html" }, t("navAccount")));
+        el("span", {}, t(u.cloud ? "accSignedInCloud" : "accSignedInAs", { name: u.name, email: u.email || "" }) + " "),
+        el("a", { href: "hesap.html" }, t("navAccount")));
     } else {
       box.append(el("span", {}, t("accSaveHint") + " "), el("a", { href: "hesap.html" }, t("accSignInLink")));
     }
@@ -131,6 +132,12 @@
   }), $("pdfStatus"));
 
   UI.onLang(() => { renderTopics(); renderAccountNote(); renderExam(); });
+
+  // Bulut hesabıyla giriş yapılmışsa oturumu doğrula ve bekleyen sınavları gönder
+  if (QBA.isCloud() && QBC.state.available) {
+    QBC.onChange(() => { renderAccountNote(); if (exam && exam.checked) renderExam(); });
+    QBC.init().catch((e) => console.warn(e));
+  }
 
   // Bağlantıda ad ve kod varsa sınavı doğrudan aç.
   if (p.get("ad") && p.get("kod") && QB.active().length) $("startForm").requestSubmit();

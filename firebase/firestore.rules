@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// Soru Üreteci · Firestore güvenlik kuralları
+// Her öğrenci yalnızca kendi verisini okuyup yazabilir; başka hiçbir şeye erişilemez.
+// Firebase konsolunda: Firestore Database → Kurallar (Rules) sekmesine yapıştırıp "Yayınla".
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function validProfile(d) {
+      return d.keys().hasOnly(['name', 'cls', 'created', 'updated'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+        && (!('cls' in d) || (d.cls is string && d.cls.size() <= 30))
+        && (!('created' in d) || (d.created is string && d.created.size() <= 40))
+        && (!('updated' in d) || (d.updated is string && d.updated.size() <= 40));
+    }
+
+    function validAttempt(d, id) {
+      return d.keys().hasOnly(['id', 'at', 'code', 'student', 'lang', 'count', 'topics', 'levels',
+                               'seed', 'ids', 'resp', 'ok', 'score', 'total'])
+        && d.id == id
+        && d.at is string && d.at.size() <= 40
+        && d.code is string && d.code.size() <= 100
+        && d.student is string && d.student.size() <= 100
+        && d.seed is string && d.seed.size() <= 300
+        && d.ids is list && d.ids.size() <= 100
+        && d.resp is list && d.resp.size() <= 100
+        && d.ok is list && d.ok.size() <= 100
+        && d.score is number && d.total is number;
+    }
+
+    match /users/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validProfile(request.resource.data);
+
+      match /attempts/{aid} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validAttempt(request.resource.data, aid);
+      }
+    }
+
+    // Diğer her şey kapalı.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

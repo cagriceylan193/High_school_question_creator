@@ -58,8 +58,14 @@
       try { localStorage.setItem("qb-test", "1"); localStorage.removeItem("qb-test"); return true; } catch { return false; }
     },
 
+    // Bu cihazdaki e-postasız hesaplar
     list() {
-      return Object.values(read().users).sort((a, b) => a.name.localeCompare(b.name, "tr"));
+      return Object.values(read().users).filter((u) => !u.cloud).sort((a, b) => a.name.localeCompare(b.name, "tr"));
+    },
+
+    isCloud() {
+      const u = this.current();
+      return !!(u && u.cloud);
     },
 
     current() {
@@ -79,6 +85,12 @@
       if (!write(d)) return null;
       setCurrent(id, !pin);
       return d.users[id];
+    },
+
+    // PIN'i hesap değiştirmeden doğrular
+    checkPin(id, pin) {
+      const u = read().users[id];
+      return !!u && (!u.pin || pinHash(id, String(pin || "")) === u.pin);
     },
 
     hasPin(id) {
@@ -104,8 +116,11 @@
       const u = d.users[currentId()];
       if (!u) return null;
       const rec = { ...att, id: uid(), at: new Date().toISOString() };
+      if (u.cloud) rec.pending = true;
       u.history.unshift(rec);
-      return write(d) ? rec : null;
+      if (!write(d)) return null;
+      if (u.cloud && root.QBC) root.QBC.init().then(() => root.QBC.push()).catch(() => {});
+      return rec;
     },
 
     deleteAttempt(aid) {
@@ -114,6 +129,7 @@
       if (!u) return;
       u.history = u.history.filter((a) => a.id !== aid);
       write(d);
+      if (u.cloud && root.QBC) root.QBC.remove(aid);
     },
 
     deleteAccount() {
@@ -128,7 +144,7 @@
       const u = this.current();
       if (!u) return null;
       return JSON.stringify({ app: APP, v: 1, exported: new Date().toISOString(),
-        user: { name: u.name, cls: u.cls, created: u.created, history: u.history } }, null, 1);
+        user: { name: u.name, cls: u.cls, created: u.created, history: u.history.map(({ pending, ...a }) => a) } }, null, 1);
     },
 
     // Yedeği yükler: giriş yapılmışsa geçmişi birleştirir, değilse yeni hesap açar.
@@ -147,11 +163,76 @@
       let added = 0;
       for (const a of incoming) {
         if (have.has(a.id)) continue;
-        target.history.push(a);
+        target.history.push(target.cloud ? { ...a, pending: true } : a);
         added++;
       }
       target.history.sort((a, b) => String(b.at).localeCompare(String(a.at)));
       write(d);
+      if (target.cloud && added && root.QBC) root.QBC.push();
+      return added;
+    },
+
+    // --- Bulut hesabı önbelleği (cloud.js kullanır) -------------------------------
+    setCloudUser({ uid: fbUid, email, name, cls, created }, remember) {
+      const d = read();
+      const id = "cloud:" + fbUid;
+      const old = d.users[id] || { history: [] };
+      d.users[id] = { ...old, id, cloud: true, uid: fbUid, email, name, cls: cls || "", created, pin: "" };
+      write(d);
+      setCurrent(id, remember !== false);
+    },
+
+    // Oturum kapanınca bu cihazdaki bulut önbelleğini temizle
+    clearCloudUser() {
+      const d = read();
+      let changed = false;
+      for (const id of Object.keys(d.users)) if (d.users[id].cloud) { delete d.users[id]; changed = true; }
+      if (changed) write(d);
+      const cur = currentId();
+      if (cur && cur.startsWith("cloud:")) clearCurrent();
+    },
+
+    // Buluttan gelen geçmiş + henüz gönderilmemiş yerel kayıtlar
+    replaceCloudHistory(remote) {
+      const d = read();
+      const u = d.users[currentId()];
+      if (!u || !u.cloud) return;
+      const ids = new Set(remote.map((a) => a.id));
+      const pending = u.history.filter((a) => a.pending && !ids.has(a.id));
+      u.history = [...pending, ...remote.filter(validAttempt)].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+      write(d);
+    },
+
+    pendingAttempts() {
+      const u = this.current();
+      return u && u.cloud ? u.history.filter((a) => a.pending) : [];
+    },
+
+    markSynced(ids) {
+      const d = read();
+      const u = d.users[currentId()];
+      if (!u) return;
+      const set = new Set(ids);
+      for (const a of u.history) if (set.has(a.id)) delete a.pending;
+      write(d);
+    },
+
+    // E-postasız bir hesabın sınavlarını giriş yapılmış bulut hesabına kopyalar
+    copyFromLocal(localId) {
+      const d = read();
+      const src = d.users[localId];
+      const dst = d.users[currentId()];
+      if (!src || !dst || !dst.cloud) return 0;
+      const have = new Set(dst.history.map((a) => a.id));
+      let added = 0;
+      for (const a of src.history) {
+        if (have.has(a.id)) continue;
+        dst.history.push({ ...a, pending: true });
+        added++;
+      }
+      dst.history.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+      write(d);
+      if (added && root.QBC) root.QBC.push();
       return added;
     },
   };

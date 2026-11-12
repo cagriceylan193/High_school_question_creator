@@ -1,0 +1,4 @@
+# Firebase emülatör günlükleri
+*-debug.log
+.firebase/
+node_modules/

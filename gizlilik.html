@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Gizlilik · Soru Üreteci</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header id="siteHeader" data-page="privacy"></header>
+
+  <main class="wrap">
+    <article class="prose">
+      <h1 id="pTitle"></h1>
+      <p class="muted small" id="pUpdated"></p>
+      <div id="pBody"></div>
+    </article>
+  </main>
+  <footer id="siteFooter"></footer>
+
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="privacy.js"></script>
+  <script src="engine.js"></script>
+  <script src="account.js"></script>
+  <script src="ui.js"></script>
+  <script>
+    (function () {
+      const C = QB_CONFIG;
+      const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      function render() {
+        const P = QB_PRIVACY[UI.lang] || QB_PRIVACY.tr;
+        document.getElementById("pTitle").textContent = P.title;
+        document.title = P.title + " · " + UI.t("appName");
+        document.getElementById("pUpdated").textContent = P.updatedLabel + ": " + UI.formatDate(QB_PRIVACY.updated);
+        const owner = C.privacyOwner ? esc(C.privacyOwner) : P.ownerFallback;
+        const contact = C.privacyContact ? esc(C.privacyContact) : P.contactFallback;
+        document.getElementById("pBody").innerHTML = P.body.replace(/\{owner\}/g, owner).replace(/\{contact\}/g, contact);
+      }
+      UI.onLang(render);
+      render();
+    })();
+  </script>
+</body>
+</html>

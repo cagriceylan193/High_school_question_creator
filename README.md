@@ -28,21 +28,43 @@ Lise öğrencileri için **kişiye özel soru** üreten, tarayıcıda çalışan
 
 ## Hesap (üyelik) ve geçmiş
 
-`hesap.html` sayfasında öğrenci adıyla bir hesap oluşturur. Giriş yaptıktan sonra soru sayfasında **“Cevapları kontrol et”**e basılan her sınav hesaba kaydedilir; hesap sayfasında:
+`hesap.html` sayfasında iki tür hesap vardır:
 
-- çözülen sınav, cevaplanan soru ve başarı oranı,
-- konulara göre başarı çubukları,
-- tarih, sınav kodu ve puanla sınav listesi; her sınav şekilleriyle **yeniden incelenebilir**, **PDF olarak indirilebilir** veya silinebilir.
+| | E-posta ile hesap | E-postasız hesap |
+|---|---|---|
+| Giriş | E-posta + şifre, **her cihazdan** | Yalnızca o cihazdaki tarayıcı |
+| Sınav geçmişi | Google Firebase'de (Firestore) | Tarayıcıda (localStorage) |
+| Şifre unutulursa | Sıfırlama e-postası | İsteğe bağlı 4 haneli PIN |
+| Cihaz değiştirme | Otomatik | “Yedek indir / Yedek yükle” |
 
-**Sunucu yoktur:** hesaplar ve geçmiş öğrencinin kendi tarayıcısında (localStorage) tutulur, hiçbir yere gönderilmez. Bu yüzden:
-
-- Aynı bilgisayarı birden fazla öğrenci kullanabilir; isteğe bağlı **4 haneli PIN** arkadaşların birbirinin geçmişini açmasını engeller (gerçek bir güvenlik önlemi değildir).
-- Başka cihaza geçmek için **“Yedek indir”** ile bir dosya alınır, diğer cihazda **“Yedek yükle”** ile açılır.
-- Tarayıcı verileri silinirse hesap da silinir. Gizli pencerede hesap kaydedilmez.
+Giriş yapan öğrencinin “Cevapları kontrol et”e bastığı her sınav kaydedilir. Hesap sayfasında çözülen sınav, cevaplanan soru ve başarı oranı, konulara göre başarı çubukları ve sınav listesi görünür; her sınav şekilleriyle **yeniden incelenebilir**, **PDF olarak indirilebilir** veya silinebilir. E-postasız hesaptaki sınavlar sonradan e-posta hesabına aktarılabilir. Hesap silindiğinde tüm veriler kalıcı olarak silinir.
 
 Bir sınav kaydı soruların kendisini değil, onları yeniden üretmek için gerekenleri tutar (tohum, şablon kimlikleri, cevaplar); kayıtlar çok küçüktür. Not: Bir şablonun değişkenleri sonradan değiştirilirse eski kayıtlarda o sorunun sayıları da değişir.
 
-Gerçek, cihazlar arası üyelik (e-posta/şifre ile her yerden giriş) için Firebase veya Supabase gibi bir hizmet gerekir; öğrenci verileri bir sunucuya gideceği için KVKK açısından ayrıca değerlendirilmelidir.
+### Firebase kurulumu (e-posta ile hesap için)
+
+Proje bilgileri `config.js` içindeki `firebase` alanındadır (bunlar gizli değildir; verileri Firestore kuralları korur). Firebase konsolunda yapılması gerekenler:
+
+1. **Authentication → Başlayın → Oturum açma yöntemi → E-posta/Şifre**: açın.
+2. **Authentication → Ayarlar → Yetkili alan adları**: `cagriceylan193.github.io` ekleyin.
+3. **Firestore Database → Veritabanı oluştur**: konum `europe-west3 (Frankfurt)`, üretim modu.
+4. **Firestore Database → Kurallar**: `firebase/firestore.rules` dosyasının içeriğini yapıştırıp **Yayınla**.
+5. `config.js` içindeki `privacyOwner` ve `privacyContact` alanlarına veri sorumlusunun adını ve iletişim adresini yazın (aydınlatma metninde görünür).
+
+Kurallar her öğrencinin yalnızca kendi verisini okuyup yazmasına izin verir ve kayıtların biçimini/boyutunu denetler. Site Google Analytics kullanmaz.
+
+**KVKK:** E-posta ile hesap açan öğrencinin verileri Google Firebase'de saklanır ve giriş bilgileri yurt dışında işlenebilir. Kayıt sırasında aydınlatma metni (`gizlilik.html`) onayı istenir. Okulda kullanmadan önce metni okul yönetimiyle gözden geçirin; 18 yaş altı öğrenciler için veli bilgilendirmesi önerilir. E-posta vermek istemeyenler e-postasız hesabı kullanabilir.
+
+### Yerel test (Firebase emülatörleri)
+
+```bash
+npm install -g firebase-tools
+firebase emulators:start --only auth,firestore --project soru-ureteci
+python3 -m http.server 8000
+# tarayıcıda: http://127.0.0.1:8000/hesap.html?emulator
+```
+
+`?emulator` parametresi yalnızca `localhost` / `127.0.0.1` adreslerinde çalışır ve gerçek projeye dokunmadan emülatörleri kullanır.
 
 ## PDF indirme
 
@@ -208,7 +230,11 @@ engine.js          Soru motoru (rastgelelik, formül çözümleyici, soru tipler
 figures.js         Şekil çizim araçları (SVG)
 hesap.html         Hesabım: giriş/kayıt, istatistikler, geçmiş (hesap.js)
 ui.js              Ortak menü, dil seçimi, soru kartı ve alt bilgi
-account.js         Hesaplar ve sınav geçmişi (tarayıcıda saklanır)
+account.js         Hesaplar ve sınav geçmişi (tarayıcı önbelleği)
+cloud.js           E-posta ile hesap: Firebase giriş ve Firestore eşitleme
+gizlilik.html      Gizlilik ve aydınlatma metni (privacy.js)
+firebase/          Firestore güvenlik kuralları
+vendor/firebase/   Firebase JS SDK (Apache 2.0)
 pdf.js             PDF indirme
 vendor/pdfmake/    PDF kütüphanesi (MIT)
 config.js, i18n.js Ayarlar ve çeviriler

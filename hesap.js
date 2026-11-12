@@ -1,11 +1,13 @@
-// Hesap sayfası: giriş/kayıt, istatistikler, sınav geçmişi, inceleme, PDF, yedek
+// Hesap sayfası: e-posta ile (bulut) ve e-postasız (bu cihaz) hesaplar,
+// istatistikler, sınav geçmişi, inceleme, PDF, yedek, aktarım
 (function () {
   "use strict";
   const { t, el } = UI;
   const $ = (id) => document.getElementById(id);
 
-  let pendingId = null;          // PIN bekleyen hesap
+  let pendingId = null;          // PIN bekleyen yerel hesap
   const open = new Set();        // açık incelemeler
+  let cloudMode = "login";       // login | register | reset
 
   if (!QBA.available()) $("noStorage").hidden = false;
 
@@ -14,15 +16,87 @@
     $("guest").hidden = !!u;
     $("member").hidden = !u;
     if (u) renderMember(u); else renderGuest();
-    UI.applyStatic(); // menüdeki baş harfi güncelle
+    UI.applyStatic(); // menüdeki baş harf
   }
 
-  // --- Giriş / kayıt --------------------------------------------------------------
+  function msg(elm, text, kind) {
+    elm.textContent = text || "";
+    elm.className = "small" + (kind ? " " + kind : "");
+  }
+  function errText(e) {
+    const key = QBC.errorKey(e);
+    return t(key, { code: (e && (e.code || e.message)) || "?" });
+  }
+  async function busy(form, fn) {
+    const btns = form.querySelectorAll("button");
+    btns.forEach((b) => { b.disabled = true; });
+    try { await fn(); } finally { btns.forEach((b) => { b.disabled = false; }); }
+  }
+
+  // --- E-posta ile giriş / kayıt / şifre sıfırlama -------------------------------------
+  function setCloudMode(m) {
+    cloudMode = m;
+    $("tabLogin").setAttribute("aria-selected", m === "login");
+    $("tabRegister").setAttribute("aria-selected", m === "register");
+    $("loginForm").hidden = m !== "login";
+    $("registerForm").hidden = m !== "register";
+    $("resetForm").hidden = m !== "reset";
+    msg($("cloudMsg"), "");
+  }
+  $("tabLogin").addEventListener("click", () => setCloudMode("login"));
+  $("tabRegister").addEventListener("click", () => setCloudMode("register"));
+  $("forgotBtn").addEventListener("click", () => { $("rsEmail").value = $("liEmail").value; setCloudMode("reset"); });
+  $("resetBack").addEventListener("click", () => setCloudMode("login"));
+
+  $("loginForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    busy(e.target, async () => {
+      msg($("cloudMsg"), t("cloudLoading"), "muted");
+      try {
+        await QBC.signIn({ email: $("liEmail").value, password: $("liPass").value, remember: $("liRemember").checked });
+        $("liPass").value = "";
+        msg($("cloudMsg"), "");
+      } catch (err) { msg($("cloudMsg"), errText(err), "error"); }
+    });
+  });
+
+  $("registerForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!$("reConsent").checked) { msg($("cloudMsg"), t("consentRequired"), "error"); return; }
+    if ($("rePass").value.length < 6) { msg($("cloudMsg"), t("errWeak"), "error"); return; }
+    busy(e.target, async () => {
+      msg($("cloudMsg"), t("cloudLoading"), "muted");
+      try {
+        await QBC.signUp({ name: $("reName").value, cls: $("reClass").value, email: $("reEmail").value,
+          password: $("rePass").value, remember: $("reRemember").checked });
+        e.target.reset();
+        msg($("cloudMsg"), "");
+        render();
+      } catch (err) { msg($("cloudMsg"), errText(err), "error"); }
+    });
+  });
+
+  $("resetForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    busy(e.target, async () => {
+      try {
+        await QBC.resetPassword($("rsEmail").value);
+        msg($("cloudMsg"), t("resetSent", { email: $("rsEmail").value.trim() }), "ok");
+      } catch (err) { msg($("cloudMsg"), errText(err), "error"); }
+    });
+  });
+
+  // --- E-postasız (bu cihaz) hesaplar ------------------------------------------------
   function renderGuest() {
+    if (!QBC.state.available) {
+      $("cloudPanel").hidden = true;
+      $("localPanel").open = true;
+    }
     const box = $("profiles");
     box.innerHTML = "";
     const list = QBA.list();
     $("noProfiles").hidden = list.length > 0;
+    if (list.length) $("localPanel").open = true;
     for (const u of list) {
       box.append(el("button", { type: "button", class: "profile", onclick: () => pick(u) },
         el("span", { class: "avatar", "aria-hidden": "true" }, initial(u.name)),
@@ -67,23 +141,69 @@
     $("avatar").textContent = initial(u.name);
     $("pName").textContent = u.name;
     $("pMeta").textContent = [u.cls, t("accMemberSince", { date: UI.formatDate(u.created) })].filter(Boolean).join(" · ");
+    $("pType").textContent = u.cloud ? t("accTypeCloud", { email: u.email }) : t("accTypeLocal");
+    $("pType").className = "small acc-type " + (u.cloud ? "cloud" : "local");
+    $("storageNote").textContent = u.cloud ? t("cloudNote") : t("accLocalNote");
+    renderSync();
+
+    // E-postasız hesaptan e-posta hesabına geçiş önerisi
+    $("upgradePanel").hidden = u.cloud || !QBC.state.available;
+
+    // Bulut hesabındayken bu cihazdaki e-postasız hesapların sınavlarını aktar
+    const have = new Set(u.history.map((a) => a.id));
+    const locals = u.cloud ? QBA.list().filter((x) => x.history.some((a) => !have.has(a.id))) : [];
+    $("migratePanel").hidden = !locals.length;
+    const ml = $("migrateList");
+    ml.innerHTML = "";
+    for (const lu of locals) {
+      const b = el("button", { type: "button" }, t("migrateBtn"));
+      b.addEventListener("click", () => {
+        if (QBA.hasPin(lu.id) && !QBA.checkPin(lu.id, prompt(t("accPinFor", { name: lu.name })) || "")) { msg($("migrateMsg"), t("accWrongPin"), "error"); return; }
+        const n = QBA.copyFromLocal(lu.id);
+        msg($("migrateMsg"), t("migrated", { n }), "ok");
+        render();
+      });
+      ml.append(el("div", { class: "profile static" },
+        el("span", { class: "avatar", "aria-hidden": "true" }, initial(lu.name)),
+        el("span", { class: "profile-name" }, t("migrateItem", { name: lu.name, n: lu.history.length })), b));
+    }
 
     // Özet
     const h = u.history;
     const asked = h.reduce((s, a) => s + (a.total || 0), 0);
     const right = h.reduce((s, a) => s + (a.score || 0), 0);
     const rate = asked ? Math.round((right / asked) * 100) : null;
-    $("stats").innerHTML = "";
     const pctFmt = (r) => new Intl.NumberFormat({ tr: "tr-TR", en: "en-GB", de: "de-DE" }[UI.lang] || "tr-TR", { style: "percent" }).format(r / 100);
+    $("stats").innerHTML = "";
     [[t("accStatExams"), String(h.length)], [t("accStatQuestions"), String(asked)], [t("accStatRate"), rate === null ? "–" : pctFmt(rate)]]
       .forEach(([k, v]) => $("stats").append(el("div", { class: "stat" }, el("span", { class: "stat-label" }, k), el("b", {}, v))));
 
     renderTopicBars(h);
     renderHistory(h);
 
-    const delAcc = confirmButton(t("accDeleteAccount"), () => { QBA.deleteAccount(); open.clear(); render(); }, "danger");
+    const delAcc = confirmButton(t("accDeleteAccount"), () => {
+      if (u.cloud) { $("deleteCloudForm").hidden = false; $("dcPass").focus(); return; }
+      QBA.deleteAccount(); open.clear(); render();
+    }, "danger");
     delAcc.id = "deleteAcc";
     $("deleteAcc").replaceWith(delAcc);
+  }
+
+  function renderSync() {
+    const u = QBA.current();
+    const box = $("syncStatus");
+    if (!u || !u.cloud) { box.hidden = true; return; }
+    const s = QBC.state;
+    const pending = QBA.pendingAttempts().length;
+    let text = "", cls = "muted";
+    if (!s.ready || s.sync === "syncing") text = t("syncing");
+    else if (s.sync === "offline") { text = t("syncOffline"); cls = "warn"; }
+    else if (s.sync === "error") { text = t("syncError", { msg: errText({ code: s.error }) }); cls = "error"; }
+    else if (pending) text = t("syncing");
+    else { text = t("synced"); cls = "ok"; }
+    box.hidden = false;
+    box.textContent = text;
+    box.className = "sync small " + cls;
   }
 
   function rateClass(r) {
@@ -130,7 +250,7 @@
     const b = el("button", { type: "button", class: cls || "" }, label);
     let armed = null;
     b.addEventListener("click", () => {
-      if (armed) { clearTimeout(armed); onConfirm(); return; }
+      if (armed) { clearTimeout(armed); armed = null; b.textContent = label; b.classList.remove("armed"); onConfirm(); return; }
       b.textContent = t("accConfirm");
       b.classList.add("armed");
       armed = setTimeout(() => { armed = null; b.textContent = label; b.classList.remove("armed"); }, 4000);
@@ -174,7 +294,8 @@
           el("div", { class: "hist-info" },
             el("span", { class: "hist-date" }, UI.formatDate(att.at, true)),
             el("span", { class: "hist-code" }, att.code),
-            el("span", { class: "muted small" }, topics + levels)),
+            el("span", { class: "muted small" }, topics + levels),
+            att.pending ? el("span", { class: "pending small" }, t("pendingTag")) : null),
           el("span", { class: "hist-score " + rateClass(pct) }, `${att.score}/${att.total}`)),
         el("div", { class: "actions" }, reviewBtn, pdfBtn, del),
         review);
@@ -190,7 +311,35 @@
     }
   }
 
-  $("logout").addEventListener("click", () => { QBA.logout(); open.clear(); render(); });
+  $("logout").addEventListener("click", async () => {
+    open.clear();
+    if (QBA.isCloud()) { try { await QBC.signOut(); } catch (e) { console.warn(e); } }
+    QBA.logout();
+    render();
+  });
+
+  $("upgradeBtn").addEventListener("click", () => {
+    QBA.logout();
+    render();
+    setCloudMode("register");
+    $("reName").focus();
+  });
+
+  // Bulut hesabını sil (şifre ister)
+  $("dcCancel").addEventListener("click", () => { $("deleteCloudForm").hidden = true; });
+  $("deleteCloudForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    busy(e.target, async () => {
+      try {
+        await QBC.deleteAccount($("dcPass").value);
+        $("dcPass").value = "";
+        $("deleteCloudForm").hidden = true;
+        QBA.clearCloudUser();
+        render();
+        msg($("cloudMsg"), t("deleted"), "ok");
+      } catch (err) { msg($("dataMsg"), errText(err), "error"); }
+    });
+  });
 
   // --- Yedek -----------------------------------------------------------------------------
   $("backupBtn").addEventListener("click", () => {
@@ -214,11 +363,9 @@
       reader.onload = () => {
         const n = QBA.importBackup(String(reader.result));
         input.value = "";
-        if (n < 0) { msgEl.textContent = t("accRestoreError"); msgEl.className = "small error"; return; }
+        if (n < 0) { msg(msgEl, t("accRestoreError"), "error"); return; }
         render();
-        const target = QBA.current() ? $("dataMsg") : msgEl;
-        target.textContent = t("accRestored", { n });
-        target.className = "small ok";
+        msg(QBA.current() ? $("dataMsg") : msgEl, t("accRestored", { n }), "ok");
       };
       reader.readAsText(file);
     });
@@ -226,6 +373,15 @@
   restoreFrom($("restoreGuest"), $("restoreGuestMsg"));
   restoreFrom($("restoreMember"), $("dataMsg"));
 
+  // --- Başlat ---------------------------------------------------------------------------
+  QBC.onChange(() => render());
   UI.onLang(render);
   render();
+  if (QBC.state.available) {
+    QBC.init().catch((e) => {
+      console.warn(e);
+      msg($("cloudMsg"), t("cloudUnavailable"), "error");
+      if (QBA.isCloud()) renderSync();
+    });
+  }
 })();

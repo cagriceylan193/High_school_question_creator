@@ -21,26 +21,90 @@
 
     <!-- Giriş yapılmamış -->
     <section id="guest" class="stack" hidden>
-      <div class="acc-grid">
-        <div class="panel">
-          <h2 data-i18n="accLoginTitle"></h2>
-          <div id="profiles" class="profiles"></div>
-          <p class="muted small" id="noProfiles" data-i18n="accNoProfiles"></p>
-          <form id="pinForm" class="grid" hidden>
-            <label class="field"><span id="pinLabel"></span>
-              <input type="password" id="pinInput" inputmode="numeric" maxlength="4" autocomplete="off">
-            </label>
-            <div class="actions">
-              <button type="submit" class="primary" data-i18n="accLoginBtn"></button>
-              <button type="button" id="pinCancel" data-i18n="accCancel"></button>
-            </div>
-            <p class="error small" id="pinError" aria-live="polite"></p>
-          </form>
+      <!-- E-posta ile (her cihazdan) -->
+      <div class="panel" id="cloudPanel">
+        <div>
+          <h2 data-i18n="cloudTitle"></h2>
+          <p class="muted small" data-i18n="cloudLead"></p>
+        </div>
+        <div class="seg" role="tablist">
+          <button type="button" role="tab" id="tabLogin" aria-selected="true" data-i18n="tabLogin"></button>
+          <button type="button" role="tab" id="tabRegister" aria-selected="false" data-i18n="tabRegister"></button>
         </div>
 
-        <div class="panel">
-          <h2 data-i18n="accSignupTitle"></h2>
+        <form id="loginForm" class="grid">
+          <label class="field"><span data-i18n="email"></span>
+            <input type="email" id="liEmail" autocomplete="email" required>
+          </label>
+          <label class="field"><span data-i18n="password"></span>
+            <input type="password" id="liPass" autocomplete="current-password" required>
+          </label>
+          <label class="check-inline"><input type="checkbox" id="liRemember" checked> <span data-i18n="remember"></span></label>
+          <div class="actions">
+            <button type="submit" class="primary" data-i18n="tabLogin"></button>
+            <button type="button" class="ghost" id="forgotBtn" data-i18n="forgot"></button>
+          </div>
+        </form>
+
+        <form id="registerForm" class="grid" hidden>
+          <div class="fields">
+            <label class="field"><span data-i18n="accName"></span>
+              <input type="text" id="reName" autocomplete="name" maxlength="60" required>
+            </label>
+            <label class="field"><span data-i18n="accClass"></span>
+              <input type="text" id="reClass" maxlength="20" placeholder="10-A">
+            </label>
+          </div>
+          <div class="fields">
+            <label class="field"><span data-i18n="email"></span>
+              <input type="email" id="reEmail" autocomplete="email" required>
+            </label>
+            <label class="field"><span data-i18n="passwordNew"></span>
+              <input type="password" id="rePass" autocomplete="new-password" minlength="6" required>
+            </label>
+          </div>
+          <label class="check-inline consent"><input type="checkbox" id="reConsent"> <span data-i18n-html="consent"></span></label>
+          <p class="muted small" data-i18n="under18"></p>
+          <label class="check-inline"><input type="checkbox" id="reRemember" checked> <span data-i18n="remember"></span></label>
+          <div class="actions"><button type="submit" class="primary" data-i18n="tabRegister"></button></div>
+        </form>
+
+        <form id="resetForm" class="grid" hidden>
+          <p class="small" data-i18n="resetLead"></p>
+          <label class="field"><span data-i18n="email"></span>
+            <input type="email" id="rsEmail" autocomplete="email" required>
+          </label>
+          <div class="actions">
+            <button type="submit" class="primary" data-i18n="resetSend"></button>
+            <button type="button" id="resetBack" data-i18n="back"></button>
+          </div>
+        </form>
+
+        <p class="small" id="cloudMsg" aria-live="polite"></p>
+      </div>
+
+      <!-- E-postasız, yalnızca bu cihaz -->
+      <details class="panel local-panel" id="localPanel">
+        <summary><span data-i18n="localTitle"></span></summary>
+        <p class="muted small" data-i18n="localLead"></p>
+        <div class="acc-grid">
+          <div class="stack-sm">
+            <h3 data-i18n="accLoginTitle"></h3>
+            <div id="profiles" class="profiles"></div>
+            <p class="muted small" id="noProfiles" data-i18n="accNoProfiles"></p>
+            <form id="pinForm" class="grid" hidden>
+              <label class="field"><span id="pinLabel"></span>
+                <input type="password" id="pinInput" inputmode="numeric" maxlength="4" autocomplete="off">
+              </label>
+              <div class="actions">
+                <button type="submit" class="primary" data-i18n="accLoginBtn"></button>
+                <button type="button" id="pinCancel" data-i18n="accCancel"></button>
+              </div>
+              <p class="error small" id="pinError" aria-live="polite"></p>
+            </form>
+          </div>
           <form id="signupForm" class="grid">
+            <h3 data-i18n="accSignupTitle"></h3>
             <label class="field"><span data-i18n="accName"></span>
               <input type="text" id="suName" autocomplete="name" maxlength="60" required>
             </label>
@@ -57,16 +121,13 @@
             <p class="error small" id="suError" aria-live="polite"></p>
           </form>
         </div>
-      </div>
-
-      <div class="panel slim">
         <div class="actions">
           <label class="button file"><input type="file" id="restoreGuest" accept=".json,application/json" class="sr-only"><span data-i18n="accRestore"></span></label>
           <span class="muted small" data-i18n="accRestoreGuestHint"></span>
         </div>
         <p class="small" id="restoreGuestMsg" aria-live="polite"></p>
-      </div>
-      <p class="muted small" data-i18n="accLocalNote"></p>
+      </details>
+      <p class="muted small"><a href="gizlilik.html" data-i18n="privacyLink"></a></p>
     </section>
 
     <!-- Giriş yapılmış -->
@@ -74,12 +135,30 @@
       <div class="panel profile-card">
         <div class="profile-id">
           <span class="avatar lg" id="avatar" aria-hidden="true"></span>
-          <div><h2 id="pName"></h2><p class="muted small" id="pMeta"></p></div>
+          <div>
+            <h2 id="pName"></h2>
+            <p class="muted small" id="pMeta"></p>
+            <p class="small acc-type" id="pType"></p>
+          </div>
         </div>
         <div class="actions">
           <a class="button primary" href="sorular.html" data-i18n="homeStart"></a>
           <button type="button" id="logout" data-i18n="accLogout"></button>
         </div>
+        <p class="sync small" id="syncStatus" aria-live="polite" hidden></p>
+      </div>
+
+      <div class="panel" id="migratePanel" hidden>
+        <h2 data-i18n="migrateTitle"></h2>
+        <p class="muted small" data-i18n="migrateLead"></p>
+        <div id="migrateList" class="profiles"></div>
+        <p class="small ok" id="migrateMsg" aria-live="polite"></p>
+      </div>
+
+      <div class="panel" id="upgradePanel" hidden>
+        <h2 data-i18n="upgradeTitle"></h2>
+        <p class="muted small" data-i18n="upgradeLead"></p>
+        <div class="actions"><button type="button" id="upgradeBtn" class="primary" data-i18n="upgradeBtn"></button></div>
       </div>
 
       <div class="stats" id="stats"></div>
@@ -104,8 +183,18 @@
           <label class="button file"><input type="file" id="restoreMember" accept=".json,application/json" class="sr-only"><span data-i18n="accRestore"></span></label>
           <button type="button" id="deleteAcc" class="danger"></button>
         </div>
+        <form id="deleteCloudForm" class="grid" hidden>
+          <label class="field"><span data-i18n="deletePwd"></span>
+            <input type="password" id="dcPass" autocomplete="current-password" required>
+          </label>
+          <div class="actions">
+            <button type="submit" class="danger" data-i18n="deleteCloudBtn"></button>
+            <button type="button" id="dcCancel" data-i18n="accCancel"></button>
+          </div>
+        </form>
         <p class="small" id="dataMsg" aria-live="polite"></p>
-        <p class="muted small" data-i18n="accLocalNote"></p>
+        <p class="muted small" id="storageNote"></p>
+        <p class="muted small"><a href="gizlilik.html" data-i18n="privacyLink"></a></p>
       </section>
     </section>
   </main>
@@ -123,6 +212,7 @@
   <script src="questions/ornekler.js"></script>
   <script src="account.js"></script>
   <script src="ui.js"></script>
+  <script src="cloud.js"></script>
   <script src="pdf.js"></script>
   <script src="hesap.js"></script>
 </body>

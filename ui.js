@@ -66,7 +66,7 @@
     const nav = el("nav", { class: "nav", "aria-label": t("menu") });
     const me = globalThis.QBA && globalThis.QBA.current();
     for (const [key, href, label] of NAV) {
-      const a = el("a", { href, "aria-current": key === page ? "page" : false }, t(label));
+      const a = el("a", { href, "aria-current": key === page ? "page" : false, "aria-label": t(label) }, el("span", { class: "nav-label" }, t(label)));
       if (key === "account") {
         a.classList.add("nav-account");
         if (me) a.prepend(el("span", { class: "avatar", "aria-hidden": "true" }, me.name.trim().charAt(0).toLocaleUpperCase("tr-TR")));
@@ -89,6 +89,7 @@
     host.innerHTML = "";
     const links = el("nav", { class: "footer-links", "aria-label": t("menu") });
     for (const [, href, label] of NAV) links.append(el("a", { href }, t(label)));
+    links.append(el("a", { href: "gizlilik.html" }, t("privacyLink")));
     links.append(el("a", { href: REPO_URL, target: "_blank", rel: "noopener" }, t("footerSource")));
     host.append(el("div", { class: "site-footer-inner" },
       el("span", { class: "muted" }, t("appName")),
@@ -99,6 +100,7 @@
     document.documentElement.lang = lang;
     document.querySelectorAll("[data-i18n]").forEach((e) => { e.textContent = t(e.dataset.i18n); });
     document.querySelectorAll("[data-i18n-placeholder]").forEach((e) => { e.placeholder = t(e.dataset.i18nPlaceholder); });
+    document.querySelectorAll("[data-i18n-html]").forEach((e) => { e.innerHTML = t(e.dataset.i18nHtml); });
     renderHeader();
     renderFooter();
   }
