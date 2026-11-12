@@ -91,6 +91,12 @@ Soru sayfasında her sorunun altında **Yardım iste** paneli vardır. Öğrenci
 
 **Yerel test:** `cd worker && npm install && npx wrangler dev` (anahtarı `worker/.dev.vars` dosyasına `ANTHROPIC_API_KEY=...` olarak yazın; bu dosya depoya eklenmez).
 
+## Yazılı sınav biçimi (MEB "Yazılıya Hazırlanıyorum")
+
+Açık uçlu sorular MEB'in yazılı örnek kitapçıklarındaki biçimdedir: bağlam metni, **1.1., 1.2. …** maddeler ve cevap kutuları; sonda **Soru no / Öğrenme çıktısı / Beceriler** tablosu ve toplam **100 puanlık puanlama tablosu**; cevap anahtarında her madde için çözüm ile **TAM PUAN / KISMİ PUAN / SIFIR PUAN** ölçütleri. Sınav yalnız açık uçlu sorulardan oluşuyorsa madde puanları toplam 100 olacak şekilde ölçeklenir.
+
+Şablon alanları: `outcome: "FİZ.10.1.2"` (kodlar `questions/_maarif.js`), isteğe bağlı `beceri: ["FBAB10"]`; sayısal maddelerde `solution` (çözüm adımları) ve `partial: [{ points, text }]` (sonuç yanlışsa kısmi puan ölçütleri, ör. "Formülü doğru yazar"). Sorular özgündür; MEB kitapçıklarından yalnızca biçim alınmıştır.
+
 ## Sanal laboratuvar
 
 `laboratuvar.html` (menüde **Laboratuvar**) Fizik I (Mekanik) laboratuvar deneylerinin simülasyonlarını içerir. Deney konuları standart üniversite laboratuvar föylerine göre seçildi; metinler, çizimler ve sayılar özgündür, hiçbir föyden kopyalanmadı.

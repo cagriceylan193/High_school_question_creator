@@ -70,35 +70,37 @@
   }
 
   // Açık uçlu (bölümlü) sorunun a), b), c) bölümleri
-  function yaziliBlocks(inst, lang, resp, checked) {
+  // MEB biçimi cevap kutusu
+  function answerBox(h) {
+    return { canvas: [{ type: "rect", x: 0, y: 0, w: 455, h, r: 4, lineWidth: 0.9, lineColor: "#c9a13b" }], margin: [0, 2, 0, 6] };
+  }
+  function yaziliBlocks(inst, lang, resp, checked, qNo, scaled) {
     const t = UI.t;
     const r = resp && typeof resp === "object" ? resp : { p: [], s: {} };
     const given = r.p || [];
     const scores = checked ? QB.partScores(inst, r) : null;
     const out = [];
-    if (inst.tpl.skills && inst.tpl.skills.length) {
+    const oc = QB.outcomeOf(inst.tpl, lang);
+    if (!oc && inst.tpl.skills && inst.tpl.skills.length) {
       const names = inst.tpl.skills.map((k) => (QB_I18N[lang].skills || {})[k] || k).join(" · ");
       out.push({ text: `${t("skillsLabel")}: ${names}`, fontSize: 8, color: C.muted, margin: [0, 0, 0, 4] });
     }
     inst.tpl.parts.forEach((pt, i) => {
       const max = QB.partPoints(inst.tpl, i);
+      const shown = scaled ? scaled[i] : max;
       const part = [{
         columns: [
-          { text: QB.PART_LETTERS[i] + ")", width: 16, bold: true, color: C.accent },
+          { text: QB.partLabel(qNo, i), width: 26, bold: true },
           { text: runs(QB.partText(inst, i, lang)), width: "*" },
-          { text: t("pts", { n: max }), width: 44, alignment: "right", noWrap: true, fontSize: 8, color: C.muted },
+          { text: t("pts", { n: shown }), width: 44, alignment: "right", noWrap: true, fontSize: 8, color: C.muted },
         ],
+        bold: true,
         margin: [0, 6, 0, 3],
       }];
       if (!checked) {
-        if (pt.kind === "number") {
-          const u = QB.partUnit(inst, i, lang);
-          part.push({ text: `${t("answerLabel")}: ______________ ${u || ""}`, margin: [16, 4, 0, 2] });
-        } else if (pt.kind === "select") {
-          part.push({ text: QB.partOptions(inst, i, lang).map((o) => "(   ) " + plain(o)).join("      "), margin: [16, 4, 0, 2] });
-        } else {
-          part.push(lines(4));
-        }
+        if (pt.kind === "select") {
+          part.push({ text: QB.partOptions(inst, i, lang).map((o) => "(   ) " + plain(o)).join("      "), margin: [26, 4, 0, 4] });
+        } else part.push(answerBox(pt.kind === "number" ? 56 : 78));
       } else {
         const got = scores[i];
         const col = got >= max ? C.ok : got > 0 ? "#a8640a" : C.bad;
@@ -116,18 +118,19 @@
             fontSize: 8.5, margin: [16, 1, 0, 1],
           }));
         }
-        part.push({ text: `${got} / ${max}`, bold: true, color: col, fontSize: 9, margin: [16, 2, 0, 0] });
+        const g2 = scaled ? Math.round((got / max) * shown * 10) / 10 : got;
+        part.push({ text: `${QB.formatNum(g2, 1, lang)} / ${shown}`, bold: true, color: col, fontSize: 9, margin: [16, 2, 0, 0] });
       }
       out.push({ stack: part, unbreakable: true });
     });
     if (checked) {
       const got = QB.pointsOf(inst, r), max = QB.maxPoints(inst);
-      out.push({ text: t("qPoints", { p: got, m: max }), bold: true, color: got >= max ? C.ok : got > 0 ? "#a8640a" : C.bad, margin: [0, 6, 0, 0] });
+      out.push({ text: scaled ? "" : t("qPoints", { p: got, m: max }), bold: true, color: got >= max ? C.ok : got > 0 ? "#a8640a" : C.bad, margin: [0, 6, 0, 0] });
     }
     return out;
   }
 
-  function questionBlock(inst, n, lang, resp, checked) {
+  function questionBlock(inst, n, lang, resp, checked, scaled) {
     const t = UI.t;
     const stack = [];
     stack.push({ text: `${UI.topicName(QB.topicOf(inst.tpl))} · ${UI.levelName(QB.levelOf(inst.tpl))}`.toUpperCase(),
@@ -149,7 +152,7 @@
     if (p.ask) stack.push({ text: runs(p.ask, { bold: true }), margin: [0, 3, 0, 2] });
 
     if (inst.type === "yazili") {
-      stack.push(...yaziliBlocks(inst, lang, resp, checked));
+      stack.push(...yaziliBlocks(inst, lang, resp, checked, n, scaled));
       return {
         stack: [{ columns: [{ text: `${n}.`, width: 20, bold: true, color: C.accent }, { stack, width: "*" }] }],
         margin: [0, 0, 0, 16],
@@ -214,12 +217,21 @@
     if (sheet.checked) {
       const rs = (inst) => sheet.responses[sheet.items.indexOf(inst)];
       score = t("score", { c: valid.filter((inst) => QB.isCorrect(inst, rs(inst))).length, n: valid.length });
-      if (valid.some((i) => i.type === "yazili")) {
+      if (allOpen(sheet)) {
+        const sc = QB.scale100(sheet.items);
+        let p = 0;
+        sheet.items.forEach((inst, qi) => { if (sc[qi]) QB.partScores(inst, sheet.responses[qi]).forEach((v, i) => { p += (v / QB.partPoints(inst.tpl, i)) * sc[qi][i]; }); });
+        score = t("mebScore100", { p: Math.round(p) });
+      } else if (valid.some((i) => i.type === "yazili")) {
         const pts = valid.reduce((a, inst) => a + QB.pointsOf(inst, rs(inst)), 0);
         const max = valid.reduce((a, inst) => a + QB.maxPoints(inst), 0);
         score += " · " + t("pointsTotal", { p: pts, m: max });
       }
     }
+    const band = allOpen(sheet) ? [{
+      table: { widths: ["*"], body: [[{ text: [{ text: (QB_I18N[lang].subjects.fizik || "Fizik").toUpperCase() + "\n", fontSize: 13 }, { text: t("mebHeader").toUpperCase(), fontSize: 9.5 }], bold: true, alignment: "center", color: "#ffffff", fillColor: HEAD, margin: [0, 4, 0, 4] }]] },
+      layout: "noBorders", margin: [0, 6, 0, 0],
+    }] : [];
     return [
       {
         columns: [
@@ -228,6 +240,7 @@
         ],
         pageBreak: first ? undefined : "before",
       },
+      ...band,
       {
         table: {
           widths: ["*", "auto", "auto"],
@@ -262,22 +275,69 @@
       const half = Math.ceil(cells.length / 2);
       out.push({ columns: [{ stack: cells.slice(0, half) }, { stack: cells.slice(half) }], columnGap: 20 });
 
-      // Açık uçlu sorular: bölüm cevapları, örnek cevaplar ve dereceli puanlama anahtarı
+      // Açık uçlu sorular: MEB "Çözümler" bölümü (çözüm + TAM / KISMİ / SIFIR PUAN)
+      const sc = allOpen(sh) ? QB.scale100(sh.items) : null;
       sh.items.forEach((inst, qi) => {
         if (inst.error || inst.type !== "yazili") return;
-        const block = [{ text: `${qi + 1}. ${t("rubricTitle")} (${t("pts", { n: QB.maxPoints(inst) })})`, bold: true, fontSize: 10, margin: [0, 10, 0, 3] }];
+        const block = [];
+        if (qi === sh.items.findIndex((x) => !x.error && x.type === "yazili")) out.push({ text: t("mebSolutions").toUpperCase(), bold: true, alignment: "center", color: HEAD, fontSize: 11, margin: [0, 12, 0, 6] });
         inst.tpl.parts.forEach((pt, i) => {
-          const head = { text: [{ text: QB.PART_LETTERS[i] + ") ", bold: true, color: C.accent }, { text: `(${t("pts", { n: QB.partPoints(inst.tpl, i) })}) `, color: C.muted }], fontSize: 9, margin: [6, 2, 0, 1] };
-          if (pt.kind !== "text") { head.text.push({ text: QB.partAnswer(inst, i, lang) }); block.push(head); return; }
-          head.text.push({ text: t("modelAnswer") + ": ", bold: true }, ...runs(QB.partModel(inst, i, lang)));
-          block.push(head);
-          QB.partRubric(inst, i, lang).forEach((rb) => block.push({
-            columns: [{ text: "•", width: 10 }, { text: runs(rb.text), width: "*" }, { text: t("pts", { n: rb.points }), width: 44, alignment: "right", noWrap: true, color: C.muted }],
-            fontSize: 8.5, margin: [18, 0, 0, 1],
-          }));
+          const max = QB.partPoints(inst.tpl, i);
+          const shown = sc ? sc[qi][i] : max;
+          const k = shown / max;
+          const item = [];
+          const sol = pt.kind === "text" ? QB.partModel(inst, i, lang) : [QB.partAnswer(inst, i, lang), QB.partSolution(inst, i, lang)].filter(Boolean).join(" — ");
+          item.push({ columns: [{ text: QB.partLabel(qi + 1, i), width: 30, bold: true }, { text: runs(sol), width: "*" }], fontSize: 9.5, margin: [0, 4, 0, 3] });
+          const fullTxt = pt.kind === "number" ? t("mebFullNum") : pt.kind === "select" ? t("mebFullSel") : t("mebFullText");
+          item.push({ text: t("mebFull", { n: shown }), bold: true, fontSize: 8.5, margin: [30, 1, 0, 0] });
+          item.push({ text: fullTxt, fontSize: 8.5, margin: [30, 0, 0, 2] });
+          const crit = QB.partRubric(inst, i, lang);
+          item.push({ text: t("mebPartial"), bold: true, fontSize: 8.5, margin: [30, 1, 0, 0] });
+          if (!crit.length) item.push({ text: t("mebNoPartial"), fontSize: 8.5, margin: [30, 0, 0, 2] });
+          crit.forEach((rb) => item.push({ text: [...runs(rb.text), { text: `  (${t("pts", { n: QB.formatNum(Math.round(rb.points * k * 10) / 10, 1, lang) })})`, color: C.muted }], fontSize: 8.5, margin: [30, 0, 0, 1] }));
+          item.push({ text: t("mebZero"), bold: true, fontSize: 8.5, margin: [30, 2, 0, 0] });
+          item.push({ text: t("mebZeroText"), fontSize: 8.5, margin: [30, 0, 0, 4] });
+          block.push({ stack: item, unbreakable: true });
         });
-        out.push({ stack: block, unbreakable: true });
+        out.push({ text: `${qi + 1}.`, bold: true, color: C.accent, margin: [0, 6, 0, 0] }, ...block);
       });
+    }
+    return out;
+  }
+
+  const allOpen = (sh) => { const v = sh.items.filter((i) => !i.error); return v.length > 0 && v.every((i) => i.type === "yazili"); };
+  const HEAD = "#5a5a2a", HEADBG = "#e9e6c8";
+
+  // MEB kitapçığındaki gibi: "Soru no / Öğrenme çıktısı / Beceriler" ve "Puanlama tablosu"
+  function mebTables(sh, lang, sc) {
+    const t = UI.t;
+    const out = [];
+    const rows = [[{ text: t("mebQNo"), bold: true, fillColor: HEADBG }, { text: t("mebOutcome"), bold: true, fillColor: HEADBG }, { text: t("mebSkills"), bold: true, fillColor: HEADBG }]];
+    sh.items.forEach((inst, qi) => {
+      if (inst.error || inst.type !== "yazili") return;
+      const o = QB.outcomeOf(inst.tpl, lang);
+      rows.push([{ text: String(qi + 1), alignment: "center" }, o ? o.text : UI.topicName(QB.topicOf(inst.tpl)), o ? o.skills.join("\n") : "—"]);
+    });
+    out.push({ table: { headerRows: 1, widths: [34, "*", 150], body: rows }, layout: { hLineColor: () => "#b9b48a", vLineColor: () => "#b9b48a" }, fontSize: 8.5, margin: [0, 14, 0, 10], unbreakable: true });
+    // puanlama tablosu: her soru için madde puanları
+    const cells = [];
+    sh.items.forEach((inst, qi) => {
+      if (inst.error || inst.type !== "yazili") return;
+      inst.tpl.parts.forEach((_, i) => cells.push({ label: QB.partLabel(qi + 1, i), pts: sc ? sc[qi][i] : QB.partPoints(inst.tpl, i) }));
+    });
+    const total = cells.reduce((a, c) => a + c.pts, 0);
+    for (let k = 0; k < cells.length; k += 12) {
+      const chunk = cells.slice(k, k + 12);
+      const last = k + 12 >= cells.length;
+      const head = chunk.map((c) => ({ text: c.label, bold: true, alignment: "center", fillColor: HEADBG }));
+      const vals = chunk.map((c) => ({ text: String(c.pts), alignment: "center" }));
+      if (last) { head.push({ text: t("mebTotal").toUpperCase(), bold: true, alignment: "center", fillColor: HEADBG }); vals.push({ text: String(total), bold: true, alignment: "center" }); }
+      out.push({
+        table: { widths: head.map(() => "*"), body: [head, vals] },
+        layout: { hLineColor: () => "#b9b48a", vLineColor: () => "#b9b48a" }, fontSize: 8.5,
+        margin: [0, k ? 4 : 0, 0, 0],
+      });
+      if (k === 0) out.splice(out.length - 1, 0, { text: t("mebScoreTable").toUpperCase(), bold: true, alignment: "center", color: HEAD, fontSize: 10, margin: [0, 6, 0, 4] });
     }
     return out;
   }
@@ -288,7 +348,9 @@
     const content = [];
     sheets.forEach((sh, si) => {
       content.push(...sheetHeader(sh, lang, si === 0));
-      sh.items.forEach((inst, qi) => content.push(questionBlock(inst, qi + 1, lang, sh.responses ? sh.responses[qi] : null, !!sh.checked)));
+      const sc = allOpen(sh) ? QB.scale100(sh.items) : null;
+      sh.items.forEach((inst, qi) => content.push(questionBlock(inst, qi + 1, lang, sh.responses ? sh.responses[qi] : null, !!sh.checked, sc ? sc[qi] : null)));
+      if (sh.items.some((i) => !i.error && i.type === "yazili")) content.push(...mebTables(sh, lang, sc));
     });
     if (includeKey) content.push(...keySection(sheets, lang));
     const doc = {

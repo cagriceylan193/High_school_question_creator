@@ -358,7 +358,20 @@
             if (!Array.isArray(pt.rubric) || !pt.rubric.length) throw new Error(`${tag}: 'rubric' yok`);
             pt.rubric.forEach((r, j) => { for (const l of LANGS) if (!localized(r.text, l)) throw new Error(`${tag}: rubrik ${j + 1} '${l}' metni yok`); });
           }
+          // Sayısal bölümde kısmi puan ölçütleri (ör. "Formül doğru yazıldığında 2 puan")
+          if (pt.partial) {
+            if (pt.kind !== "number") throw new Error(`${tag}: 'partial' yalnızca sayısal bölümde kullanılır`);
+            const sum = pt.partial.reduce((s, r) => s + (r.points ?? 1), 0);
+            if (sum >= partPoints(tpl, i)) throw new Error(`${tag}: kısmi puanların toplamı bölüm puanından küçük olmalı`);
+            pt.partial.forEach((r, j) => { for (const l of LANGS) if (!localized(r.text, l)) throw new Error(`${tag}: kısmi ölçüt ${j + 1} '${l}' metni yok`); });
+          }
+          if (pt.solution) for (const l of LANGS) if (!localized(pt.solution, l)) throw new Error(`${tag}: çözümün '${l}' metni yok`);
         });
+        if (tpl.outcome) {
+          const M = globalThis.QB && QB.MAARIF;
+          if (!M || !M.outcomes[tpl.outcome]) throw new Error(`'${tpl.outcome}' öğrenme çıktısı questions/_maarif.js içinde yok`);
+          for (const b of tpl.beceri || []) if (!M.skills[b]) throw new Error(`'${b}' becerisi questions/_maarif.js içinde yok`);
+        }
       } else if (tpl.answer === undefined) throw new Error("'answer' alanı yok");
       if (tpl.level !== undefined && ![1, 2, 3].includes(tpl.level)) throw new Error("'level' 1, 2 veya 3 olmalı");
       if (tpl.figure !== undefined && typeof tpl.figure !== "function") throw new Error("'figure' bir fonksiyon olmalı");
@@ -699,7 +712,57 @@
     return fill(localized(inst.tpl.parts[i].model, lang), inst, lang);
   }
   function partRubric(inst, i, lang) {
-    return inst.tpl.parts[i].rubric.map((r) => ({ text: fill(localized(r.text, lang), inst, lang), points: r.points ?? 1 }));
+    const pt = inst.tpl.parts[i];
+    const list = pt.kind === "text" ? pt.rubric : pt.partial || [];
+    return list.map((r) => ({ text: fill(localized(r.text, lang), inst, lang), points: r.points ?? 1 }));
+  }
+  // Çözüm metni (sayısal/seçmeli bölümler için isteğe bağlı 'solution'; açıklamada örnek cevap)
+  function partSolution(inst, i, lang) {
+    const pt = inst.tpl.parts[i];
+    if (pt.kind === "text") return partModel(inst, i, lang);
+    return pt.solution ? fill(localized(pt.solution, lang), inst, lang) : "";
+  }
+  // MEB biçiminde alt madde numarası: 2. sorunun 3. maddesi → "2.3."
+  function partLabel(qNo, i) {
+    return `${qNo}.${i + 1}.`;
+  }
+  // Öğrenme çıktısı ve beceriler (yoksa null)
+  function outcomeOf(tpl, lang) {
+    const M = QB.MAARIF;
+    if (!M || !tpl.outcome || !M.outcomes[tpl.outcome]) return null;
+    const o = M.outcomes[tpl.outcome];
+    const codes = tpl.beceri || o.beceri || [];
+    return {
+      code: tpl.outcome,
+      text: `${tpl.outcome}. ${o[lang] || o.tr}`,
+      skills: codes.map((c) => `${c}. ${(M.skills[c] && (M.skills[c][lang] || M.skills[c].tr)) || ""}`),
+    };
+  }
+  /**
+   * Sınavdaki açık uçlu bölümlerin puanlarını toplam 100 olacak biçimde tam sayılara dağıtır
+   * (en büyük kalan yöntemi). Döndürür: her soru için bölüm puanları dizisi (yazılı değilse null).
+   */
+  function scale100(items) {
+    const raw = [];
+    items.forEach((inst, qi) => {
+      if (!inst || inst.error || inst.type !== "yazili") return;
+      inst.tpl.parts.forEach((_, i) => raw.push({ qi, i, p: partPoints(inst.tpl, i) }));
+    });
+    const out = items.map((inst) => (inst && !inst.error && inst.type === "yazili" ? inst.tpl.parts.map(() => 0) : null));
+    const total = raw.reduce((s, r) => s + r.p, 0);
+    if (!total) return out;
+    let used = 0;
+    const rest = raw.map((r) => {
+      const exact = (100 * r.p) / total;
+      const base = Math.max(1, Math.floor(exact));
+      used += base;
+      out[r.qi][r.i] = base;
+      return { r, frac: exact - Math.floor(exact) };
+    });
+    rest.sort((a, b) => b.frac - a.frac);
+    for (let k = 0; used < 100 && k < rest.length * 3; k++) { const x = rest[k % rest.length].r; out[x.qi][x.i]++; used++; }
+    for (let k = 0; used > 100 && k < rest.length * 3; k++) { const x = rest[rest.length - 1 - (k % rest.length)].r; if (out[x.qi][x.i] > 1) { out[x.qi][x.i]--; used--; } }
+    return out;
   }
   // Bir bölümün doğru cevabı (düz yazı)
   function partAnswer(inst, i, lang) {
@@ -720,7 +783,10 @@
       if (p.kind === "number") {
         const x = parseAnswer(given[i]);
         const tol = pt.tolerance ?? 0.5 * Math.pow(10, -p.d);
-        return Number.isFinite(x) && Math.abs(x - p.answer) <= tol + 1e-9 * Math.max(1, Math.abs(p.answer)) ? partPoints(inst.tpl, i) : 0;
+        if (Number.isFinite(x) && Math.abs(x - p.answer) <= tol + 1e-9 * Math.max(1, Math.abs(p.answer))) return partPoints(inst.tpl, i);
+        // sonuç yanlışsa işaretlenen kısmi puan ölçütleri (ör. formül doğru yazılmış)
+        const ticks = (r.s && r.s[String(i)]) || [];
+        return (pt.partial || []).reduce((s, rb, j) => s + (ticks[j] ? (rb.points ?? 1) : 0), 0);
       }
       if (p.kind === "select") return given[i] !== null && given[i] !== undefined && Number(given[i]) === p.answer ? partPoints(inst.tpl, i) : 0;
       const ticks = (r.s && r.s[String(i)]) || [];
@@ -759,7 +825,7 @@
 
   function answerString(inst, lang) {
     if (inst.type === "yazili") {
-      return inst.parts.map((p, i) => `${PART_LETTERS[i]}) ${p.kind === "text" ? "…" : partAnswer(inst, i, lang)}`).join("  ");
+      return inst.parts.map((p, i) => `(${i + 1}) ${p.kind === "text" ? "…" : partAnswer(inst, i, lang)}`).join("  ");
     }
     if (inst.choices) {
       const i = inst.choices.findIndex((c) => c.correct);
@@ -842,6 +908,10 @@
     formatOf,
     PART_LETTERS,
     partPoints,
+    partSolution,
+    partLabel,
+    outcomeOf,
+    scale100,
     maxPoints,
     partText,
     partOptions,

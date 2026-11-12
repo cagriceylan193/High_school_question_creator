@@ -76,8 +76,11 @@
     $("examTitle").textContent = t("examFor", { name: exam.student, code: exam.code });
     const list = $("questions");
     list.innerHTML = "";
+    // Yalnız açık uçlu sorulardan oluşan sınav: MEB yazılısı gibi toplam 100 puan
+    const scaled = allOpen() ? QB.scale100(exam.items) : null;
     exam.items.forEach((inst, qi) => {
       list.append(UI.questionCard(inst, qi, lang, {
+        scaled: scaled ? scaled[qi] : null,
         resp: exam.responses[qi],
         checked: exam.checked,
         selfEdit: exam.checked,
@@ -127,9 +130,24 @@
     return { ok, n: valid.length, c: ok.filter(Boolean).length, pts, max, open: valid.some((i) => i.type === "yazili") };
   }
 
+  function allOpen() {
+    const valid = exam.items.filter((i) => !i.error);
+    return valid.length > 0 && valid.every((i) => i.type === "yazili");
+  }
+  // 100 üzerinden puan (yalnız açık uçlu sınavda)
+  function score100() {
+    const sc = QB.scale100(exam.items);
+    let p = 0;
+    exam.items.forEach((inst, qi) => {
+      if (!sc[qi]) return;
+      QB.partScores(inst, exam.responses[qi]).forEach((v, i) => { p += (v / QB.partPoints(inst.tpl, i)) * sc[qi][i]; });
+    });
+    return Math.round(p);
+  }
   function renderScore() {
     if (!exam.checked) { $("score").textContent = ""; return; }
     const r = results();
+    if (allOpen()) { $("score").textContent = t("mebScore100", { p: score100() }); return; }
     $("score").textContent = t("score", { c: r.c, n: r.n }) + (r.open ? " · " + t("pointsTotal", { p: r.pts, m: r.max }) : "");
   }
 

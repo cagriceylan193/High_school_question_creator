@@ -173,20 +173,27 @@
 
   // Açık uçlu (bölümlü) soru: a), b), c) bölümleri, cevap alanları ve rubrik
   // st = { resp: { p: [...], s: { "2": [true, false] } }, checked, locked, selfEdit, name, onPart, onRubric }
+  // Açık uçlu soru: MEB "Yazılıya Hazırlanıyorum" biçimi (1.1., 1.2. … maddeler, cevap kutuları,
+  // kontrolden sonra çözüm ve TAM / KISMİ / SIFIR PUAN ölçütleri)
   function yaziliParts(inst, qi, lang, st) {
     const resp = st.resp && typeof st.resp === "object" ? st.resp : { p: [], s: {} };
     const given = resp.p || [];
     const scores = st.checked ? QB.partScores(inst, resp) : null;
-    const list = el("ol", { class: "parts" });
+    const qNo = st.qNo || qi + 1;
+    const scale = st.scaled && st.scaled.length === inst.tpl.parts.length ? st.scaled : null;
+    const fmt = (v) => QB.formatNum(Math.round(v * 10) / 10, 1, lang);
+    const list = el("ol", { class: "parts meb" });
     inst.tpl.parts.forEach((pt, i) => {
       const name = `${st.name || "q" + qi}p${i}`;
       const max = QB.partPoints(inst.tpl, i);
+      const shown = scale ? scale[i] : max;
+      const k = shown / max; // ham puan → gösterilen puan
       const locked = !!(st.locked || st.checked);
       const li = el("li", { class: "part" });
       li.append(el("div", { class: "part-head" },
-        el("span", { class: "part-letter" }, QB.PART_LETTERS[i] + ")"),
+        el("span", { class: "part-letter" }, QB.partLabel(qNo, i)),
         el("label", { class: "part-text", for: name, html: QB.partText(inst, i, lang) }),
-        el("span", { class: "part-pts" }, t("pts", { n: max }))));
+        el("span", { class: "part-pts" }, t("pts", { n: shown }))));
       const val = given[i];
       if (pt.kind === "number") {
         const input = el("input", { type: "text", id: name, inputmode: "decimal", autocomplete: "off" });
@@ -194,53 +201,69 @@
         input.disabled = locked;
         input.addEventListener("input", () => st.onPart && st.onPart(i, input.value));
         const unit = QB.partUnit(inst, i, lang);
-        li.append(el("div", { class: "open part-answer" }, input, unit ? el("span", { class: "unit" }, unit) : null));
+        li.append(el("div", { class: "open part-answer answer-box" }, input, unit ? el("span", { class: "unit" }, unit) : null));
       } else if (pt.kind === "select") {
         const sel = el("select", { id: name });
         sel.append(el("option", { value: "" }, t("selectPick")));
-        QB.partOptions(inst, i, lang).forEach((o, k) => sel.append(el("option", { value: k }, o.replace(/<[^>]+>/g, ""))));
+        QB.partOptions(inst, i, lang).forEach((o, k2) => sel.append(el("option", { value: k2 }, o.replace(/<[^>]+>/g, ""))));
         sel.value = val === null || val === undefined ? "" : String(val);
         sel.disabled = locked;
         sel.addEventListener("change", () => st.onPart && st.onPart(i, sel.value === "" ? null : Number(sel.value)));
-        li.append(el("div", { class: "open part-answer" }, sel));
+        li.append(el("div", { class: "open part-answer answer-box" }, sel));
       } else {
         const ta = el("textarea", { id: name, rows: 4, maxlength: 1500, placeholder: t("writeHere") });
         ta.value = val ?? "";
         ta.disabled = locked;
         ta.addEventListener("input", () => st.onPart && st.onPart(i, ta.value));
-        li.append(el("div", { class: "part-answer" }, ta));
+        li.append(el("div", { class: "part-answer answer-box" }, ta));
       }
 
       if (st.checked) {
         const got = scores[i];
         const cls = got >= max ? "ok" : got > 0 ? "mid" : "bad";
-        if (pt.kind !== "text") {
-          li.append(el("div", { class: "feedback" },
-            el("span", { class: "pill " + cls }, `${got} / ${max}`),
-            got >= max ? null : el("span", {}, t("correctIs", { a: QB.partAnswer(inst, i, lang) }))));
-        } else {
-          const ticks = (resp.s && resp.s[String(i)]) || [];
-          const rub = el("div", { class: "rubric" });
-          rub.append(el("div", { class: "model" }, el("b", {}, t("modelAnswer") + ": "), el("span", { html: QB.partModel(inst, i, lang) })));
-          rub.append(el("p", { class: "small muted" }, st.selfEdit ? t("rubricSelf") : t("rubricTitle")));
+        const box = el("div", { class: "rubric meb-key" });
+        if (pt.kind !== "text" && got < max) box.append(el("p", { class: "meb-wrong" }, t("correctIs", { a: QB.partAnswer(inst, i, lang) })));
+        const sol = QB.partSolution(inst, i, lang);
+        if (sol) box.append(el("div", { class: "model" }, el("b", {}, (pt.kind === "text" ? t("modelAnswer") : t("mebSolution")) + ": "), el("span", { html: sol })));
+        // TAM PUAN
+        const fullTxt = pt.kind === "number" ? t("mebFullNum") : pt.kind === "select" ? t("mebFullSel") : t("mebFullText");
+        box.append(el("p", { class: "meb-crit" }, el("b", {}, t("mebFull", { n: shown })), " ", fullTxt));
+        // KISMİ PUAN (açıklamada her zaman, sayısalda sonuç yanlışsa işaretlenebilir)
+        const crit = QB.partRubric(inst, i, lang);
+        const ticks = (resp.s && resp.s[String(i)]) || [];
+        box.append(el("p", { class: "meb-crit" }, el("b", {}, t("mebPartial")), crit.length ? "" : " " + t("mebNoPartial")));
+        if (crit.length) {
+          const canTick = st.selfEdit && (pt.kind === "text" || got < max);
+          if (pt.kind === "number" && got < max && st.selfEdit) box.append(el("p", { class: "small muted" }, t("mebPartialSelf")));
+          else if (pt.kind === "text") box.append(el("p", { class: "small muted" }, st.selfEdit ? t("rubricSelf") : t("rubricTitle")));
           const ul = el("ul", { class: "rubric-list" });
-          QB.partRubric(inst, i, lang).forEach((r, j) => {
+          crit.forEach((r, j) => {
             const cid = `${name}r${j}`;
             const cb = el("input", { type: "checkbox", id: cid });
-            cb.checked = !!ticks[j];
-            cb.disabled = !st.selfEdit;
+            cb.checked = pt.kind === "number" && got >= max ? true : !!ticks[j];
+            cb.disabled = !canTick;
             cb.addEventListener("change", () => st.onRubric && st.onRubric(i, j, cb.checked));
             ul.append(el("li", {},
               el("label", { for: cid, class: "check-inline" }, cb, el("span", { html: r.text })),
-              el("span", { class: "part-pts" }, t("pts", { n: r.points }))));
+              el("span", { class: "part-pts" }, t("pts", { n: scale ? fmt(r.points * k) : r.points }))));
           });
-          rub.append(ul, el("div", { class: "feedback" }, el("span", { class: "pill " + cls }, `${got} / ${max}`)));
-          li.append(rub);
+          box.append(ul);
         }
+        // SIFIR PUAN
+        box.append(el("p", { class: "meb-crit" }, el("b", {}, t("mebZero")), " ", t("mebZeroText")));
+        box.append(el("div", { class: "feedback" }, el("span", { class: "pill " + cls }, `${scale ? fmt(got * k) : got} / ${shown}`)));
+        li.append(box);
       }
       list.append(li);
     });
     return list;
+  }
+
+  // Öğrenme çıktısı ve beceriler satırı (MEB tablosu için)
+  function outcomeLine(tpl, lang) {
+    const o = QB.outcomeOf(tpl, lang);
+    if (!o) return null;
+    return el("p", { class: "outcome-line small muted" }, el("b", {}, t("mebOutcome") + ": "), o.text, " · ", el("b", {}, t("mebSkills") + ": "), o.skills.join(", "));
   }
 
   function renderFormatChips(box, wanted) {
@@ -307,15 +330,21 @@
     const CONFIG = globalThis.QB_CONFIG;
     const resp = st.resp;
     if (inst.type === "yazili") {
-      const sk = skillLine(inst.tpl);
+      const sk = outcomeLine(inst.tpl, lang) || skillLine(inst.tpl);
       if (sk) body.append(sk);
       li.append(yaziliParts(inst, qi, lang, st));
       const ai = assistantPanel(inst, lang, st);
       if (st.checked) {
         const got = QB.pointsOf(inst, resp), max = QB.maxPoints(inst);
         li.classList.add(got >= max ? "is-ok" : got > 0 ? "is-mid" : "is-bad");
+        let p = got, m = max;
+        if (st.scaled) {
+          const sc = QB.partScores(inst, resp);
+          p = Math.round(sc.reduce((a, v, i) => a + (v / QB.partPoints(inst.tpl, i)) * st.scaled[i], 0) * 10) / 10;
+          m = st.scaled.reduce((a, v) => a + v, 0);
+        }
         li.append(el("div", { class: "feedback total" },
-          el("span", { class: "pill " + (got >= max ? "ok" : got > 0 ? "mid" : "bad") }, t("qPoints", { p: got, m: max }))));
+          el("span", { class: "pill " + (got >= max ? "ok" : got > 0 ? "mid" : "bad") }, t("qPoints", { p: QB.formatNum(p, 1, lang), m }))));
       }
       if (ai) li.append(ai);
       return li;
@@ -377,6 +406,7 @@
     renderFormatChips,
     pickedFormats,
     yaziliParts,
+    outcomeLine,
     levelName,
     questionTag,
     applyStatic,

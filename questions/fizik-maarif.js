@@ -12,7 +12,8 @@
     id: "maarif-hareket-bisiklet",
     subject: "fizik",
     topic: "hareket",
-    grade: 9,
+    grade: 10,
+    outcome: "FİZ.10.1.1",
     level: 2,
     skills: ["veri", "hesap", "gerekce"],
     vars: {
@@ -88,7 +89,8 @@
     id: "maarif-kuvvet-asansor",
     subject: "fizik",
     topic: "kuvvet",
-    grade: 9,
+    grade: 11,
+    outcome: "FİZ.11.1.4",
     level: 3,
     skills: ["hesap", "model", "gerekce"],
     vars: {
@@ -150,7 +152,8 @@
     id: "maarif-kuvvet-surtunme-deneyi",
     subject: "fizik",
     topic: "kuvvet",
-    grade: 9,
+    grade: 11,
+    outcome: "FİZ.11.1.4",
     level: 3,
     skills: ["deney", "veri", "hesap"],
     vars: {
