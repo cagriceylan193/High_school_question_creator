@@ -336,5 +336,5 @@
     });
   }
 
-  window.QBPDF = { download, slug, bindButton };
+  window.QBPDF = { download, slug, bindButton, ensureLib };
 })();

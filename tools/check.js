@@ -125,7 +125,69 @@ if (QB.templates.length) {
   if (a !== b) errors.push("Aynı öğrenci için sınav tekrarlanabilir değil");
 }
 
+// 7) Sanal laboratuvar: deney metinleri her dilde, sayfada yüklü, fizik doğrulama testleri geçiyor.
+let labSummary = "";
+{
+  const I18N = ctx.QB_I18N;
+  const labCtx = vm.createContext({ console, Intl, UI: { lang: "tr", t: (k) => (I18N.tr[k] ?? k) } });
+  const loadLab = (rel) => vm.runInContext(fs.readFileSync(path.join(ROOT, rel), "utf8"), labCtx, { filename: rel });
+  ["lab/core.js", "lab/draw.js", "lab/gauge.js"].forEach(loadLab);
+  const QBL = labCtx.QBL;
+  const expFiles = fs.readdirSync(path.join(ROOT, "lab")).filter((f) => /^exp-.*\.js$/.test(f)).sort();
+  const labHtml = fs.readFileSync(path.join(ROOT, "laboratuvar.html"), "utf8");
+  const keysOf = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
+  let tests = 0;
+  for (const f of expFiles) {
+    if (!labHtml.includes(`src="lab/${f}"`)) errors.push(`laboratuvar.html: <script src="lab/${f}"></script> satırı eksik`);
+    const before = new Set(QBL.experiments.map((d) => d.id));
+    loadLab("lab/" + f);
+    const def = QBL.experiments.find((d) => !before.has(d.id));
+    if (!def) { errors.push(`lab/${f}: deney kaydedilmedi ya da kimliği tekrar ediyor`); continue; }
+    const tr = def.text && def.text.tr;
+    if (!tr) { errors.push(`lab/${f}: Türkçe metin yok`); continue; }
+    for (const k of ["kicker", "title", "short", "tools", "aim", "theory", "steps"]) if (!(k in tr)) errors.push(`lab/${f}: '${k}' metni yok`);
+    for (const l of QB.LANGS) {
+      const T = def.text[l];
+      if (!T) { errors.push(`lab/${f}: '${l}' dili yok`); continue; }
+      for (const k of Object.keys(tr)) {
+        if (!(k in T)) { errors.push(`lab/${f}: '${l}' dilinde '${k}' metni yok`); continue; }
+        const a = tr[k], b = T[k];
+        if (typeof a === "string") { if (keysOf(a) !== keysOf(b)) errors.push(`lab/${f}: '${l}' dilinde '${k}' yer tutucuları farklı`); }
+        else if (Array.isArray(a)) { if (!Array.isArray(b) || a.length !== b.length) errors.push(`lab/${f}: '${l}' dilinde '${k}' listesinin uzunluğu farklı`); }
+        else if (a && typeof a === "object") {
+          for (const sk of Object.keys(a)) if (!b[sk] || b[sk].length !== a[sk].length) errors.push(`lab/${f}: '${l}' dilinde '${k}.${sk}' farklı`);
+        }
+      }
+    }
+    if (tr.steps && !Array.isArray(tr.steps)) for (const p of def.parts) if (!tr.steps[p.id] && !tr.steps._) errors.push(`lab/${f}: '${p.id}' bölümünün adımları yok`);
+    for (const p of def.parts) if (!(p.title in tr)) errors.push(`lab/${f}: '${p.title}' bölüm başlığı metni yok`);
+    // kodda kullanılan metin anahtarları tanımlı olmalı
+    const src = fs.readFileSync(path.join(ROOT, "lab", f), "utf8");
+    for (const m of src.matchAll(/\b(?:t|c\.t)\("([A-Za-z0-9_]+)"/g)) if (!(m[1] in tr) && !(m[1] in I18N.tr)) errors.push(`lab/${f}: '${m[1]}' metni tanımlı değil`);
+    for (const m of src.matchAll(/\btg\("([A-Za-z0-9_]+)"/g)) if (!(m[1] in I18N.tr)) errors.push(`lab/${f}: ortak '${m[1]}' metni i18n.js'de yok`);
+    // fizik doğrulama
+    if (typeof def.selfTest === "function") {
+      try {
+        for (const r of def.selfTest()) {
+          tests++;
+          const ok = r.expected === 0 ? Math.abs(r.value) <= r.tol : Math.abs(r.value - r.expected) <= r.tol * Math.abs(r.expected);
+          if (!(ok && Number.isFinite(r.value))) errors.push(`lab/${f}: doğrulama '${r.name}' başarısız: ${r.value} (beklenen ${r.expected} ± ${r.tol})`);
+        }
+      } catch (e) { errors.push(`lab/${f}: doğrulama hatası: ${e.message}`); }
+    } else warnings.push(`lab/${f}: doğrulama testi (selfTest) yok`);
+  }
+  // çekirdek: belirsizlik yuvarlama ve uydurma
+  const uc = [[9.8234, 0.02385, "9,82 ± 0,02"], [92.81, 0.3, "92,8 ± 0,3"], [92.81, 3, "93 ± 3"], [3042.37, 20, "3040 ± 20"], [1.234, 0.14, "1,23 ± 0,14"]];
+  for (const [v, e, want] of uc) { const got = QBL.unc(v, e); if (got !== want) errors.push(`QBL.unc(${v}, ${e}) = "${got}", beklenen "${want}"`); }
+  const q = QBL.fitQuad([0, 1, 2, 3, 4], [1, 3, 9, 19, 33], 0);
+  if (!q || Math.abs(q.c[0] - 1) > 1e-9 || Math.abs(q.c[1] - 0) > 1e-9 || Math.abs(q.c[2] - 2) > 1e-9) errors.push("QBL.fitQuad yanlış sonuç veriyor");
+  const ln = QBL.fitLine([1, 2, 3, 4], [3, 5, 7, 9]);
+  if (!ln || Math.abs(ln.a - 2) > 1e-12 || Math.abs(ln.b - 1) > 1e-12) errors.push("QBL.fitLine yanlış sonuç veriyor");
+  labSummary = `Laboratuvar: ${QBL.experiments.length} deney, ${tests} fizik doğrulama testi`;
+}
+
 console.log(`${QB.templates.length} şablon (${QB.active().length} tanesi sitede açık), ${qFiles.length} soru dosyası, diller: ${QB.LANGS.join(", ")}`);
+console.log(labSummary);
 const act = QB.active();
 const byLevel = [1, 2, 3].map((lv) => act.filter((t) => QB.levelOf(t) === lv).length);
 const byKind = {};

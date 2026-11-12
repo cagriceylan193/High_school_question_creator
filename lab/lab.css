@@ -1,0 +1,150 @@
+/* Sanal laboratuvar */
+.lab-main { max-width: 1180px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Deney listesi */
+.lab-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.lab-card {
+  display: grid; gap: 6px; align-content: start; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); color: var(--ink); text-decoration: none; min-width: 0;
+}
+.lab-card:hover { border-color: var(--accent); }
+.lab-card-kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.lab-card-title { font-weight: 600; font-size: 17px; line-height: 1.3; }
+.lab-card-meta { color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; margin-top: 2px; }
+.lab-credit { max-width: 80ch; }
+
+/* Deney sayfası */
+.lab-exp { display: grid; gap: 18px; min-width: 0; }
+.lab-top { display: grid; gap: 6px; }
+.lab-back { color: var(--accent); text-decoration: none; font-size: 14px; justify-self: start; }
+.lab-back:hover { text-decoration: underline; }
+.lab-info summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 8px; }
+.lab-info summary::-webkit-details-marker { display: none; }
+.lab-info summary::before { content: "+"; font-family: var(--mono); color: var(--accent); width: 1ch; }
+.lab-info[open] summary::before { content: "−"; }
+.lab-info:not([open]) { gap: 0; }
+.lab-info-body { display: grid; gap: 10px; max-width: 80ch; }
+.lab-info-body p { margin: 0; }
+.lab-info-body .eq { font-family: var(--mono); font-size: 15px; background: var(--bg); border-radius: 6px; padding: 6px 10px; justify-self: start; overflow-wrap: anywhere; }
+.lab-steps-list { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 80ch; }
+.lab-parts { margin-bottom: -6px; }
+
+.lab-bench { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
+.lab-stage-col { display: grid; gap: 6px; min-width: 0; position: sticky; top: 70px; }
+@media (max-width: 900px) {
+  .lab-bench { grid-template-columns: minmax(0, 1fr); }
+  .lab-stage-col { position: static; }
+}
+.lab-stage { position: relative; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.lab-stage + .lab-stage { margin-top: 10px; }
+.lab-canvas { display: block; width: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
+.lab-canvas.lens-on { cursor: none; }
+.lab-stage-tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.lab-tool {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; font-size: 13px; border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(4px);
+}
+.lab-tool[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.lab-ico { display: inline-flex; }
+.lab-status { min-height: 1.5em; font-size: 14px; color: var(--muted); margin: 0; }
+.lab-status.ok { color: var(--ok); }
+.lab-status.bad { color: var(--bad); }
+
+.lab-side { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.lab-group { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 14px; display: grid; gap: 10px; background: var(--surface); min-width: 0; margin: 0; }
+.lab-group legend { font-weight: 600; font-size: 14px; padding: 0 6px; }
+.lab-ctl { display: grid; gap: 4px; font-size: 14px; min-width: 0; }
+.lab-ctl-head { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); }
+.lab-val { font-family: var(--mono); color: var(--ink); white-space: nowrap; }
+.lab-slider { display: flex; align-items: center; gap: 6px; }
+.lab-slider input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.lab-nudge { padding: 4px 9px; font-size: 13px; font-family: var(--mono); min-width: 34px; }
+.lab-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.lab-btns button { padding: 8px 12px; font-size: 14px; }
+.lab-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.lab-row > * { flex: 1 1 120px; }
+.lab-note { margin: 0; font-size: 14px; color: var(--muted); }
+.lab-note.small { font-size: 13px; }
+.lab-note.warn { color: var(--warn); }
+.lab-check { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
+.lab-check input { accent-color: var(--accent); margin: 0; }
+.lab-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.lab-seg-item { position: relative; cursor: pointer; }
+.lab-seg-item input { position: absolute; opacity: 0; pointer-events: none; }
+.lab-seg-item span { display: inline-block; padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; background: var(--surface); }
+.lab-seg-item input:checked + span { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+.lab-seg-item input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lab-seg-item input:disabled + span { opacity: 0.5; cursor: not-allowed; }
+
+/* Dijital göstergeler */
+.lab-lcd { display: grid; gap: 4px; }
+.lab-lcd-label { font-size: 13px; color: var(--muted); }
+.lab-lcd-face { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #140c0c; border-radius: 8px; padding: 4px 12px 4px 6px; border: 1px solid #000; }
+.lab-lcd.light .lab-lcd-face { background: linear-gradient(#cdd8bd, #b9c6a6); border-color: #7d8a6b; }
+.lab-lcd-unit { font-family: var(--mono); color: #ffb3a8; font-size: 14px; }
+.lab-lcd.light .lab-lcd-unit { color: #2a3320; }
+.lab-lcd-canvas { display: block; }
+.lab-stopwatch .lab-btns button { flex: 1 1 auto; }
+
+/* Tablo */
+.lab-sec-head { display: grid; gap: 4px; }
+.lab-data-body { display: grid; gap: 18px; }
+.lab-tablebox { display: grid; gap: 8px; min-width: 0; }
+.lab-table-title { font-size: 15px; }
+.lab-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 14px; }
+.lab-table th, .lab-table td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: center; white-space: nowrap; }
+.lab-table th { font-weight: 500; color: var(--muted); background: var(--bg); position: sticky; top: 0; }
+.lab-table th.calc, .lab-table td.calc { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+.lab-table td.fixed { color: var(--ink); font-weight: 500; }
+.lab-table tr.is-active td { background: color-mix(in srgb, var(--accent-soft) 85%, transparent); }
+.lab-table tr.is-active td.lab-rowno { box-shadow: inset 3px 0 0 var(--accent); color: var(--accent); font-weight: 600; }
+.lab-table .lab-rowno { color: var(--muted); width: 2.5em; }
+.lab-in { width: 6.8em !important; padding: 4px 6px !important; font-size: 14px !important; text-align: center; font-family: var(--mono); background: var(--surface) !important; }
+.lab-in.bad { border-color: var(--bad) !important; }
+.lab-del { padding: 0 8px; border: none; background: transparent; color: var(--muted); font-size: 18px; line-height: 1.4; }
+.lab-del:hover { color: var(--bad); }
+.lab-delcell { width: 2em; }
+.lab-table-actions { display: flex; gap: 8px; }
+.lab-table-actions button { padding: 6px 12px; font-size: 14px; }
+
+/* Grafik ve sonuçlar */
+.lab-graphs { display: grid; gap: 22px; }
+.lab-graph { display: grid; gap: 8px; min-width: 0; }
+.lab-graph-head { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: end; }
+.lab-graph-head h3 { font-size: 15px; }
+.lab-fit-select { display: flex !important; gap: 8px; align-items: center; }
+.lab-fit-select select { width: auto; padding: 5px 8px; font-size: 14px; }
+.lab-graph-wrap { position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.lab-graph-canvas { display: block; width: 100%; }
+.lab-fit-summary { margin: 0; padding-left: 18px; font-size: 14px; font-variant-numeric: tabular-nums; display: grid; gap: 2px; }
+.lab-log-read { position: absolute; top: 6px; right: 10px; font-family: var(--mono); font-size: 12px; background: color-mix(in srgb, var(--surface) 85%, transparent); padding: 2px 6px; border-radius: 4px; pointer-events: none; }
+.lab-log-read:empty { display: none; }
+.lab-log-fit { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.lab-res { display: grid; gap: 8px; }
+.lab-results { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 14.5px; }
+.lab-results th, .lab-results td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.lab-results thead th { color: var(--muted); font-weight: 500; font-size: 13px; }
+.lab-results tbody th { font-weight: 500; }
+.lab-res-val { font-family: var(--mono); font-size: 14px; white-space: nowrap; }
+.lab-res-head th { background: var(--bg); font-weight: 600 !important; }
+.lab-res-text { color: var(--muted); }
+.lab-extra:empty { display: none; }
+.lab-extra { display: grid; gap: 14px; }
+.lab-report .actions { gap: 10px; }
+
+/* Okuma kontrolü (kumpas, mikrometre vb.) */
+.lab-readbox { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.lab-readbox label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); flex: 1 1 140px; }
+.lab-readbox input { font-family: var(--mono); }
+
+@media (max-width: 520px) {
+  .lab-group { padding: 10px 12px 12px; }
+  .lab-slider { flex-wrap: wrap; }
+  .lab-slider input[type="range"] { flex: 1 1 100%; order: -1; }
+  .lab-slider .lab-nudge { flex: 1 1 0; }
+  .lab-results th, .lab-results td { padding: 5px 6px; }
+}
+@media print {
+  .lab-bench, .lab-report, .lab-parts { display: none !important; }
+}

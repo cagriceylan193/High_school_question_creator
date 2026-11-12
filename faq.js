@@ -43,6 +43,10 @@ globalThis.QB_FAQ = {
       a: "Açık uçlu sorular, Maarif Modeli'ndeki ortak yazılılara benzer biçimde gerçek yaşamdan bir bağlam ve a), b), c) bölümlerinden oluşur. Hesap ve kısa cevap bölümleri (sayı yazma, “Artar / Azalır / Değişmez” seçme) otomatik puanlanır. Açıklama bölümlerinde ise kontrol ettikten sonra <b>örnek cevap</b> ve <b>dereceli puanlama anahtarı</b> (rubrik) açılır; cevabını karşılaştırıp karşıladığın ölçütleri işaretlersin, puanın buna göre hesaplanır. Öğretmenler PDF'in sonundaki dereceli puanlama anahtarıyla kâğıt sınavı değerlendirebilir. Soru sayfasında “Soru biçimi → Açık uçlu” seçerek yalnızca bu sorulardan oluşan bir sınav oluşturabilirsin.",
     },
     {
+      q: "Sanal laboratuvar nedir?",
+      a: "<b>Laboratuvar</b> sekmesinde Fizik I (Mekanik) dersinin laboratuvar deneyleri var: kumpas ve mikrometre, Hooke yasası, kuvvet masası, Young modülü, serbest düşme, eğik atış, sarkaçlar, hava rayı, dönme hareketi, açısal momentum, merkezcil kuvvet, hava masasında çarpışmalar, Cavendish deneyi ve burulma modülü. Düzeneği kendin kurar, ölçümleri aletlerden kendin okursun (büyüteçle cetvel, verniye, kronometre, fotosel ve sayaç). Tablo doldukça grafik ve en küçük kareler doğrusu çizilir, sonuç hata payıyla hesaplanır. Her düzenekte aletlerin değerleri biraz farklıdır ve ölçümler gerçek bir laboratuvardaki gibi hata içerir. Ölçümlerin tarayıcında saklanır; deney raporunu PDF olarak indirebilirsin.",
+    },
+    {
       q: "Yapay zekâ asistanı nedir?",
       a: "Soru sayfasında her sorunun altında <b>Yardım iste</b> düğmesi vardır. Soruyu anlamadığında, ipucu istediğinde ya da bir kavramı merak ettiğinde asistana yazabilirsin; asistan sorunun metnini ve şeklini görerek cevap verir. Test sırasında cevabı söylemez, anlamana yardım eder ve ipucu verir. Cevaplarını kontrol ettikten sonra çözümü adım adım açıklar ve nerede hata yaptığını gösterir. Asistanı kullanmak için e-posta ile giriş yapman gerekir; her soru için sınırlı sayıda soru sorabilirsin. Yazdıkların cevap üretilmesi için yapay zekâ hizmetine gönderilir, bu yüzden kişisel bilgi yazma.",
     },
@@ -109,6 +113,10 @@ globalThis.QB_FAQ = {
       a: "Open-ended questions, like the common written exams of Turkey's Maarif Model, consist of a real-life context and parts a), b), c). Calculation and short-answer parts (typing a number, choosing “increases / decreases / no change”) are scored automatically. For explanation parts, after checking you see a <b>sample answer</b> and a <b>scoring rubric</b>; compare your answer and tick the criteria you met, and your points are calculated from them. Teachers can mark paper exams with the rubric at the end of the PDF. Choose “Question format → Open-ended” on the questions page to get an exam with only these questions.",
     },
     {
+      q: "What is the virtual lab?",
+      a: "The <b>Lab</b> tab contains the laboratory experiments of a Physics I (Mechanics) course: vernier caliper and micrometer, Hooke's law, force table, Young's modulus, free fall, projectile motion, pendulums, air track, rotational motion, angular momentum, centripetal force, collisions on an air table, the Cavendish experiment and the torsion modulus. You set up the apparatus and read the instruments yourself (ruler and vernier with a magnifier, stopwatch, light gates and counters). As the table fills, the graph and the least-squares line are drawn and the result is calculated with its uncertainty. Every setup has slightly different instrument values, and measurements contain errors just like in a real lab. Your measurements are saved in your browser, and you can download the lab report as a PDF.",
+    },
+    {
       q: "What is the AI assistant?",
       a: "On the questions page there is an <b>Ask for help</b> button under every question. When you don't understand a question, want a hint or are curious about a concept, you can write to the assistant; it sees the question's text and diagram. During the test it won't give you the answer; it helps you understand and gives hints. After you check your answers it explains the solution step by step and shows where you went wrong. You need to sign in with email to use it, and you can ask a limited number of questions per item. What you write is sent to an AI service to generate a reply, so don't write personal information.",
     },
@@ -173,6 +181,10 @@ globalThis.QB_FAQ = {
     {
       q: "Wie werden offene Aufgaben bewertet?",
       a: "Offene Aufgaben bestehen – ähnlich wie die gemeinsamen schriftlichen Prüfungen des türkischen Maarif-Modells – aus einem Alltagskontext und den Teilen a), b), c). Rechen- und Kurzantwortteile (Zahl eingeben, „nimmt zu / nimmt ab / bleibt gleich“ wählen) werden automatisch bewertet. Bei Erklärungsteilen erscheinen nach dem Prüfen eine <b>Musterlösung</b> und ein <b>Bewertungsraster</b>; vergleiche deine Antwort und hake die erfüllten Kriterien ab, daraus werden deine Punkte berechnet. Lehrkräfte können Papierprüfungen mit dem Raster am Ende des PDFs bewerten. Wähle auf der Aufgabenseite „Aufgabenformat → Offene Aufgaben“, um eine Prüfung nur mit diesen Aufgaben zu erhalten.",
+    },
+    {
+      q: "Was ist das virtuelle Labor?",
+      a: "Unter <b>Labor</b> findest du die Laborversuche zur Physik I (Mechanik): Messschieber und Messschraube, hookesches Gesetz, Kräftetisch, Elastizitätsmodul, freier Fall, schiefer Wurf, Pendel, Luftkissenbahn, Drehbewegung, Drehimpuls, Zentripetalkraft, Stöße auf dem Lufttisch, Cavendish-Versuch und Torsionsmodul. Du baust selbst auf und liest die Geräte selbst ab (Lineal und Nonius mit der Lupe, Stoppuhr, Lichtschranken und Zähler). Während sich die Tabelle füllt, werden Diagramm und Ausgleichsgerade gezeichnet und das Ergebnis mit Messunsicherheit berechnet. Jeder Aufbau hat leicht andere Gerätewerte, und die Messungen sind wie in einem echten Labor fehlerbehaftet. Deine Messwerte werden im Browser gespeichert; den Versuchsbericht kannst du als PDF herunterladen.",
     },
     {
       q: "Was ist der KI-Assistent?",

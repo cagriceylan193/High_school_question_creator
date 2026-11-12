@@ -45,7 +45,7 @@ globalThis.QB_PRIVACY = {
 <p>Asistanı yalnızca e-posta ile giriş yapan öğrenciler kullanabilir. “Yardım iste”ye yazdığın mesajlar, ilgili sorunun metni ve şekli, cevap üretilmesi için ara sunucumuz (Cloudflare) üzerinden Anthropic'in Claude yapay zekâ hizmetine (ABD) gönderilir. Kötüye kullanımı önlemek için hesabına ait anonim bir kimlik kodu da gönderilir; adın ve e-postan gönderilmez. Bu sohbetler sitede saklanmaz. Anthropic, ticari kullanım koşulları gereği API üzerinden gelen verileri modellerini eğitmek için kullanmaz. Asistana adını veya kişisel bilgilerini yazma.</p>
 
 <h2>Bu cihazda saklananlar</h2>
-<p>Seçtiğin dil, son yazdığın ad, e-postasız hesaplar ve oturum bilgisi tarayıcının yerel depolamasında tutulur. Tarayıcı verilerini silerek bunları kaldırabilirsin.</p>
+<p>Seçtiğin dil, son yazdığın ad, e-postasız hesaplar, sanal laboratuvardaki ölçümlerin ve oturum bilgisi tarayıcının yerel depolamasında tutulur; laboratuvar verileri hiçbir sunucuya gönderilmez. Tarayıcı verilerini silerek bunları kaldırabilirsin.</p>
 `,
   },
   en: {
@@ -91,7 +91,7 @@ globalThis.QB_PRIVACY = {
 <p>Only students signed in with email can use the assistant. The messages you write under “Ask for help”, together with the text and diagram of the question, are sent through our relay server (Cloudflare) to Anthropic's Claude AI service (USA) to generate a reply. An anonymous ID code of your account is also sent to prevent misuse; your name and email are not sent. These chats are not stored by the site. Under its commercial terms, Anthropic does not use data received through its API to train its models. Don't write your name or other personal information to the assistant.</p>
 
 <h2>Stored on this device</h2>
-<p>Your chosen language, the last name you typed, accounts without email and sign-in state are kept in your browser's local storage. Clearing your browser data removes them.</p>
+<p>Your chosen language, the last name you typed, accounts without email, your virtual-lab measurements and sign-in state are kept in your browser's local storage; lab data is never sent to a server. Clearing your browser data removes them.</p>
 `,
   },
   de: {
@@ -137,7 +137,7 @@ globalThis.QB_PRIVACY = {
 <p>Den Assistenten können nur mit E-Mail angemeldete Schüler nutzen. Was du unter „Hilfe holen“ schreibst, wird zusammen mit Text und Abbildung der Aufgabe über unseren Vermittlungsserver (Cloudflare) an den KI-Dienst Claude von Anthropic (USA) geschickt, um eine Antwort zu erzeugen. Zur Missbrauchsvermeidung wird außerdem eine anonyme Kennung deines Kontos übermittelt; Name und E-Mail werden nicht übermittelt. Die Unterhaltungen werden von der Seite nicht gespeichert. Nach seinen gewerblichen Nutzungsbedingungen verwendet Anthropic über die API erhaltene Daten nicht zum Training seiner Modelle. Schreib dem Assistenten nicht deinen Namen oder andere persönliche Daten.</p>
 
 <h2>Auf diesem Gerät gespeichert</h2>
-<p>Deine Sprachwahl, der zuletzt eingegebene Name, Konten ohne E-Mail und der Anmeldestatus liegen im lokalen Speicher deines Browsers. Wenn du die Browserdaten löschst, werden sie entfernt.</p>
+<p>Deine Sprachwahl, der zuletzt eingegebene Name, Konten ohne E-Mail, deine Messwerte im virtuellen Labor und der Anmeldestatus liegen im lokalen Speicher deines Browsers; Labordaten werden an keinen Server geschickt. Wenn du die Browserdaten löschst, werden sie entfernt.</p>
 `,
   },
 };

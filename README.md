@@ -91,6 +91,35 @@ Soru sayfasında her sorunun altında **Yardım iste** paneli vardır. Öğrenci
 
 **Yerel test:** `cd worker && npm install && npx wrangler dev` (anahtarı `worker/.dev.vars` dosyasına `ANTHROPIC_API_KEY=...` olarak yazın; bu dosya depoya eklenmez).
 
+## Sanal laboratuvar
+
+`laboratuvar.html` (menüde **Laboratuvar**) Fizik I (Mekanik) laboratuvar deneylerinin simülasyonlarını içerir. Deney konuları standart üniversite laboratuvar föylerine göre seçildi; metinler, çizimler ve sayılar özgündür, hiçbir föyden kopyalanmadı.
+
+| Deney | Düzenek | Bulunan |
+|---|---|---|
+| Hazırlık · Ölçü aletleri | Verniyeli kumpas (1/20 mm), mikrometre (0,01 mm, sıfır hatası), terazi | Hacim ve yoğunluk ± hata |
+| 1 · Basit harmonik hareket | Üç yay, kütle takımı, cetvel, kronometre, kâğıt işaretçi | k (F–Δx ve T²–m), yayın etkin kütlesi, enerji oranı |
+| 2-A · Kuvvet masası | Makaralar, ip, halka, makara sürtünmesi | ΣF, sinüs (Lami) teoremi, kuvvet çokgeni |
+| 2-B · Young modülü | Bıçak destekler, aynalı cetvel, mikrometre | E (F–D eğimi) |
+| 3 · Serbest düşme | Elektromıknatıs (bırakma gecikmesi), ışık kapısı, sayaç | g (h–t²), gecikme t₀ |
+| 4 · Eğik atış | Yaylı fırlatıcı, karbon kâğıtlı ekran, namlu fotoseli | α, υ₀, menzil, tepe yüksekliği (parabol uydurma) |
+| 5 · Basit ve tersinir sarkaç | İp boyu, kumpas, kronometre ya da fotosel; delikli çubuk | g (l–τ²), g (τ–h eğrisi, yatay çizgi) |
+| 6 · Newton'un II. yasası | Hava rayı, ayar vidası, iki ışık kapısı (GATE/PULSE) | a–F ve a–1/m grafikleri |
+| 7-A · Dairesel hareket | Hava yastıklı disk, flama, E/F fotoselleri | ω, α, eylemsizlik momenti |
+| 7-B · Açısal momentum | İki disk, mıknatıslı/yapışkan parçalar | L′/L, E′/E |
+| 8 · Merkezcil kuvvet | Motorlu kol, kuvvet algılayıcı (sıfırlama), veri kaydedici | F–ω², eğim = m·r |
+| 9 · Çarpışmalar | Hava masası, kıvılcım zamanlayıcısı, cetvel ve iletki | Momentum vektörleri, K′/K (6 çarpışma türü) |
+| 10-A · Cavendish | Burulma terazisi, ışık izi, zaman hızlandırma | G (son sapma ve ivmelenme yöntemleri) |
+| 10-B · Burulma modülü | Tel, çubuk, diskler, düzensiz cisim, mikrometre | D₀, Φ, eylemsizlik momenti |
+
+**Gerçekçilik:** Her deneyde fizik sayısal olarak çözülür (hava direnci, sürtünme, sönüm, makara eylemsizliği, mıknatıs gecikmesi gibi etkilerle). Analog ölçekleri öğrenci büyüteçle kendisi okur; dijital aletlerin çözünürlüğü ve gürültüsü vardır; kronometreyi öğrencinin kendisi başlatıp durdurur. Aletlerin değerleri her "düzenek" için rastgele biraz değişir (**Yeni düzenek** düğmesi).
+
+**Analiz:** Tablolar seçili satıra kayıt alır, türetilmiş sütunları hesaplar; grafikler en küçük kareler ile doğru, orijinden geçen doğru ya da parabol uydurur; sonuçlar föylerdeki kurala göre yuvarlanır (hata tek anlamlı basamak, ilk basamak 1 ise iki). Ölçümler tarayıcıda saklanır, rapor PDF olarak indirilir.
+
+**Dosyalar:** `lab/core.js` (sahne, büyüteç, kronometre, tablo, grafik, sonuç, PDF), `lab/draw.js` (düzenek çizimleri), `lab/gauge.js` (kumpas ve mikrometre), `lab/exp-*.js` (her deney: metinler üç dilde, fizik modeli, `selfTest`), `lab.js` (sayfa), `lab/lab.css`.
+
+**Yeni deney eklemek:** `lab/exp-ornek.js` dosyası `QBL.register({ id, order, text: {tr, en, de}, parts: [...], mount(api), selfTest() })` çağırır; `laboratuvar.html`'ye `<script>` satırı eklenir. `node tools/check.js` metinlerin üç dilde tam olduğunu, kullanılan metin anahtarlarını ve her deneyin `selfTest` fizik doğrulamalarını denetler.
+
 ## PDF indirme
 
 - **Soru sayfası:** “PDF indir” sınavı şekilleriyle gerçek bir PDF dosyası olarak indirir. Kontrol etmeden önce boş sınav kâğıdı (istenirse sonda cevap anahtarı), kontrolden sonra öğrencinin cevapları ve doğru cevaplar işaretli olarak.
@@ -290,6 +319,8 @@ ui.js              Ortak menü, dil seçimi, soru kartı ve alt bilgi
 account.js         Hesaplar ve sınav geçmişi (tarayıcı önbelleği)
 cloud.js           E-posta ile hesap: Firebase giriş ve Firestore eşitleme
 assistant.js       Yapay zekâ asistanı paneli (öğrenci tarafı)
+laboratuvar.html   Sanal laboratuvar sayfası (lab.js + lab/)
+lab/               Laboratuvar çekirdeği, çizimler, kumpas/mikrometre ve 14 deney
 worker/            Asistan ara sunucusu (Cloudflare Worker, Claude API)
 gizlilik.html      Gizlilik ve aydınlatma metni (privacy.js)
 firebase/          Firestore güvenlik kuralları

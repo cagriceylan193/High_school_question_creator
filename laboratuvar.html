@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sanal laboratuvar · Soru Üreteci</title>
+  <meta name="description" content="Fizik I (Mekanik) laboratuvar deneylerinin gerçekçi simülasyonları: ölçümleri oku, tabloyu doldur, grafiği çiz, sonucu hata payıyla bul.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="lab/lab.css">
+</head>
+<body>
+  <header id="siteHeader" data-page="lab"></header>
+
+  <main class="wrap wide lab-main">
+    <div id="labRoot"></div>
+    <noscript><p>Laboratuvar için JavaScript gerekir.</p></noscript>
+  </main>
+  <footer id="siteFooter"></footer>
+
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="engine.js"></script>
+  <script src="account.js"></script>
+  <script src="ui.js"></script>
+  <script src="pdf.js"></script>
+  <script src="lab/core.js"></script>
+  <script src="lab/draw.js"></script>
+  <script src="lab/gauge.js"></script>
+  <!-- Deneyler: tools/check.js her lab/exp-*.js dosyasının burada olduğunu denetler -->
+  <script src="lab/exp-olcu.js"></script>
+  <script src="lab/exp-yay.js"></script>
+  <script src="lab/exp-kuvvet.js"></script>
+  <script src="lab/exp-young.js"></script>
+  <script src="lab/exp-serbest-dusme.js"></script>
+  <script src="lab/exp-egik-atis.js"></script>
+  <script src="lab/exp-sarkac.js"></script>
+  <script src="lab/exp-newton.js"></script>
+  <script src="lab/exp-donme.js"></script>
+  <script src="lab/exp-torsiyon-carpisma.js"></script>
+  <script src="lab/exp-merkezcil.js"></script>
+  <script src="lab/exp-carpisma.js"></script>
+  <script src="lab/exp-cavendish.js"></script>
+  <script src="lab/exp-burulma.js"></script>
+  <script src="lab.js"></script>
+</body>
+</html>

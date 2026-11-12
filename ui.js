@@ -47,6 +47,7 @@
   const NAV = [
     ["home", "index.html", "navHome"],
     ["questions", "sorular.html", "navQuestions"],
+    ["lab", "laboratuvar.html", "navLab"],
     ["faq", "sss.html", "navFaq"],
     ["teacher", "ogretmen.html", "navTeacher"],
     ["account", "hesap.html", "navAccount"],
