@@ -41,6 +41,9 @@ globalThis.QB_PRIVACY = {
 <h2>Hakların</h2>
 <p>KVKK'nın 11. maddesi uyarınca verilerinin işlenip işlenmediğini öğrenme, bilgi isteme, düzeltilmesini veya silinmesini isteme ve diğer haklarını kullanmak için veri sorumlusuna başvurabilirsin. Verilerinin silinmesi için Hesabım sayfasındaki “Hesabı sil” düğmesini de kullanabilirsin.</p>
 
+<h2>Yapay zekâ asistanı</h2>
+<p>Asistanı yalnızca e-posta ile giriş yapan öğrenciler kullanabilir. “Yardım iste”ye yazdığın mesajlar, ilgili sorunun metni ve şekli, cevap üretilmesi için ara sunucumuz (Cloudflare) üzerinden Anthropic'in Claude yapay zekâ hizmetine (ABD) gönderilir. Kötüye kullanımı önlemek için hesabına ait anonim bir kimlik kodu da gönderilir; adın ve e-postan gönderilmez. Bu sohbetler sitede saklanmaz. Anthropic, ticari kullanım koşulları gereği API üzerinden gelen verileri modellerini eğitmek için kullanmaz. Asistana adını veya kişisel bilgilerini yazma.</p>
+
 <h2>Bu cihazda saklananlar</h2>
 <p>Seçtiğin dil, son yazdığın ad, e-postasız hesaplar ve oturum bilgisi tarayıcının yerel depolamasında tutulur. Tarayıcı verilerini silerek bunları kaldırabilirsin.</p>
 `,
@@ -84,6 +87,9 @@ globalThis.QB_PRIVACY = {
 <h2>Your rights</h2>
 <p>Under Article 11 of the KVKK you can ask the data controller whether your data is processed, request information, and ask for it to be corrected or deleted. You can also delete your data yourself with “Delete account” on the My account page.</p>
 
+<h2>AI assistant</h2>
+<p>Only students signed in with email can use the assistant. The messages you write under “Ask for help”, together with the text and diagram of the question, are sent through our relay server (Cloudflare) to Anthropic's Claude AI service (USA) to generate a reply. An anonymous ID code of your account is also sent to prevent misuse; your name and email are not sent. These chats are not stored by the site. Under its commercial terms, Anthropic does not use data received through its API to train its models. Don't write your name or other personal information to the assistant.</p>
+
 <h2>Stored on this device</h2>
 <p>Your chosen language, the last name you typed, accounts without email and sign-in state are kept in your browser's local storage. Clearing your browser data removes them.</p>
 `,
@@ -126,6 +132,9 @@ globalThis.QB_PRIVACY = {
 
 <h2>Deine Rechte</h2>
 <p>Nach Artikel 11 KVKK kannst du beim Verantwortlichen erfragen, ob deine Daten verarbeitet werden, Auskunft verlangen und die Berichtigung oder Löschung beantragen. Du kannst deine Daten auch selbst mit „Konto löschen“ auf der Seite „Mein Konto“ löschen.</p>
+
+<h2>KI-Assistent</h2>
+<p>Den Assistenten können nur mit E-Mail angemeldete Schüler nutzen. Was du unter „Hilfe holen“ schreibst, wird zusammen mit Text und Abbildung der Aufgabe über unseren Vermittlungsserver (Cloudflare) an den KI-Dienst Claude von Anthropic (USA) geschickt, um eine Antwort zu erzeugen. Zur Missbrauchsvermeidung wird außerdem eine anonyme Kennung deines Kontos übermittelt; Name und E-Mail werden nicht übermittelt. Die Unterhaltungen werden von der Seite nicht gespeichert. Nach seinen gewerblichen Nutzungsbedingungen verwendet Anthropic über die API erhaltene Daten nicht zum Training seiner Modelle. Schreib dem Assistenten nicht deinen Namen oder andere persönliche Daten.</p>
 
 <h2>Auf diesem Gerät gespeichert</h2>
 <p>Deine Sprachwahl, der zuletzt eingegebene Name, Konten ohne E-Mail und der Anmeldestatus liegen im lokalen Speicher deines Browsers. Wenn du die Browserdaten löschst, werden sie entfernt.</p>

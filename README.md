@@ -66,6 +66,31 @@ python3 -m http.server 8000
 
 `?emulator` parametresi yalnızca `localhost` / `127.0.0.1` adreslerinde çalışır ve gerçek projeye dokunmadan emülatörleri kullanır.
 
+## Yapay zekâ asistanı
+
+Soru sayfasında her sorunun altında **Yardım iste** paneli vardır. Öğrenci hazır sorulardan birini seçer (“Soruyu anlamadım”, “İpucu ver”, “Kavramı açıkla”) ya da kendi sorusunu yazar; asistan sorunun metnini ve şeklini (resim olarak) görerek akış hâlinde cevap verir.
+
+- **Test sırasında ipucu modu:** cevabı ve doğru şıkkı söylemez; doğru cevap sunucuya hiç gönderilmez.
+- **Kontrolden sonra açıklama modu:** çözümü adım adım anlatır, öğrencinin hatasını gösterir.
+- Yalnızca **e-posta ile giriş yapmış** öğrenciler kullanabilir (Firebase kimliği sunucuda doğrulanır). Soru başına mesaj sınırı vardır (`config.js → assistant.maxQuestionsPerItem`).
+- Model: Claude Opus 5.5 (`worker/wrangler.toml → MODEL`). Güvenlik sınıflandırıcısı bir isteği reddederse sunucu tarafında yedek modele geçiş (`fallbacks: "default"`) açıktır.
+
+**Mimari:** API anahtarı tarayıcıya konamaz. `worker/` klasöründeki küçük Cloudflare Worker ara sunucu olarak çalışır: anahtarı gizli değer olarak saklar, Firebase kimlik belgesini doğrular, izin verilen siteyi (`ALLOWED_ORIGINS`) kontrol eder, istek boyutlarını sınırlar ve cevabı akış hâlinde iletir.
+
+### Kurulum
+
+1. **Anthropic API anahtarı:** https://console.anthropic.com → hesap açın → **Billing**'den kredi yükleyin → **API Keys → Create Key**. **Limits** bölümünden aylık harcama sınırı koymanız önerilir.
+2. **Cloudflare (ücretsiz):** https://dash.cloudflare.com → hesap açın → **Workers & Pages** sayfasını bir kez açıp workers.dev alt alan adınızı seçin. **My Profile → API Tokens → Create Token → “Edit Cloudflare Workers”** şablonuyla bir anahtar oluşturun. **Account ID**'yi Workers & Pages sayfasının sağ tarafından kopyalayın.
+3. **GitHub gizli değerleri:** depo → **Settings → Secrets and variables → Actions → New repository secret**: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `ANTHROPIC_API_KEY`.
+4. **Yayınla:** depo → **Actions → “Asistanı yayınla (Cloudflare Worker)” → Run workflow**. Bitince Worker adresi (ör. `https://soru-ureteci-asistan.ADINIZ.workers.dev`) Cloudflare'de Workers & Pages altında görünür.
+5. Bu adresi `config.js → assistant.endpoint` alanına yazın. Boşken asistan sitede görünmez.
+
+İsteğe bağlı **günlük sınır:** Cloudflare'de bir KV alanı oluşturun ve `worker/wrangler.toml` içindeki `USAGE` bağlamasının yorumunu kaldırıp kimliğini yazın; öğrenci başına günlük sınır `DAILY_LIMIT` ile ayarlanır.
+
+**Maliyet:** Her cevap Claude API'den ücretlendirilir. Opus 5.5 ile bir öğrenci mesajı yaklaşık 1–2 ABD senti tutar (sistem talimatı, soru metni ve şekil girdisi ile kısa bir cevap; aynı sohbetteki sonraki mesajlar önceki mesajları da gönderdiği için biraz daha pahalıdır). Maliyeti düşürmek için `MODEL = "claude-haiku-5-5"` yazılabilir (yaklaşık 40 kat daha ucuz; açıklamalar daha basit olabilir).
+
+**Yerel test:** `cd worker && npm install && npx wrangler dev` (anahtarı `worker/.dev.vars` dosyasına `ANTHROPIC_API_KEY=...` olarak yazın; bu dosya depoya eklenmez).
+
 ## PDF indirme
 
 - **Soru sayfası:** “PDF indir” sınavı şekilleriyle gerçek bir PDF dosyası olarak indirir. Kontrol etmeden önce boş sınav kâğıdı (istenirse sonda cevap anahtarı), kontrolden sonra öğrencinin cevapları ve doğru cevaplar işaretli olarak.
@@ -264,6 +289,8 @@ hesap.html         Hesabım: giriş/kayıt, istatistikler, geçmiş (hesap.js)
 ui.js              Ortak menü, dil seçimi, soru kartı ve alt bilgi
 account.js         Hesaplar ve sınav geçmişi (tarayıcı önbelleği)
 cloud.js           E-posta ile hesap: Firebase giriş ve Firestore eşitleme
+assistant.js       Yapay zekâ asistanı paneli (öğrenci tarafı)
+worker/            Asistan ara sunucusu (Cloudflare Worker, Claude API)
 gizlilik.html      Gizlilik ve aydınlatma metni (privacy.js)
 firebase/          Firestore güvenlik kuralları
 vendor/firebase/   Firebase JS SDK (Apache 2.0)

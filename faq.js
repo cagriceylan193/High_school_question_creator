@@ -43,6 +43,10 @@ globalThis.QB_FAQ = {
       a: "Açık uçlu sorular, Maarif Modeli'ndeki ortak yazılılara benzer biçimde gerçek yaşamdan bir bağlam ve a), b), c) bölümlerinden oluşur. Hesap ve kısa cevap bölümleri (sayı yazma, “Artar / Azalır / Değişmez” seçme) otomatik puanlanır. Açıklama bölümlerinde ise kontrol ettikten sonra <b>örnek cevap</b> ve <b>dereceli puanlama anahtarı</b> (rubrik) açılır; cevabını karşılaştırıp karşıladığın ölçütleri işaretlersin, puanın buna göre hesaplanır. Öğretmenler PDF'in sonundaki dereceli puanlama anahtarıyla kâğıt sınavı değerlendirebilir. Soru sayfasında “Soru biçimi → Açık uçlu” seçerek yalnızca bu sorulardan oluşan bir sınav oluşturabilirsin.",
     },
     {
+      q: "Yapay zekâ asistanı nedir?",
+      a: "Soru sayfasında her sorunun altında <b>Yardım iste</b> düğmesi vardır. Soruyu anlamadığında, ipucu istediğinde ya da bir kavramı merak ettiğinde asistana yazabilirsin; asistan sorunun metnini ve şeklini görerek cevap verir. Test sırasında cevabı söylemez, anlamana yardım eder ve ipucu verir. Cevaplarını kontrol ettikten sonra çözümü adım adım açıklar ve nerede hata yaptığını gösterir. Asistanı kullanmak için e-posta ile giriş yapman gerekir; her soru için sınırlı sayıda soru sorabilirsin. Yazdıkların cevap üretilmesi için yapay zekâ hizmetine gönderilir, bu yüzden kişisel bilgi yazma.",
+    },
+    {
       q: "Adım ve cevaplarım bir yere kaydediliyor mu?",
       a: "Hesap açmazsan ya da e-postasız hesap kullanırsan hiçbir bilgi sunucuya gönderilmez; her şey kendi tarayıcında kalır. E-posta ile hesap açarsan adın, e-postan ve çözdüğün sınavlar Google Firebase'de yalnızca senin erişebileceğin şekilde saklanır; ayrıntılar <a href=\"gizlilik.html\">aydınlatma metninde</a>. Puanını öğretmenin görmez; sınavı kâğıtta yapıyorsanız cevaplarını kâğıda yaz.",
     },
@@ -105,6 +109,10 @@ globalThis.QB_FAQ = {
       a: "Open-ended questions, like the common written exams of Turkey's Maarif Model, consist of a real-life context and parts a), b), c). Calculation and short-answer parts (typing a number, choosing “increases / decreases / no change”) are scored automatically. For explanation parts, after checking you see a <b>sample answer</b> and a <b>scoring rubric</b>; compare your answer and tick the criteria you met, and your points are calculated from them. Teachers can mark paper exams with the rubric at the end of the PDF. Choose “Question format → Open-ended” on the questions page to get an exam with only these questions.",
     },
     {
+      q: "What is the AI assistant?",
+      a: "On the questions page there is an <b>Ask for help</b> button under every question. When you don't understand a question, want a hint or are curious about a concept, you can write to the assistant; it sees the question's text and diagram. During the test it won't give you the answer; it helps you understand and gives hints. After you check your answers it explains the solution step by step and shows where you went wrong. You need to sign in with email to use it, and you can ask a limited number of questions per item. What you write is sent to an AI service to generate a reply, so don't write personal information.",
+    },
+    {
       q: "Are my name and answers saved anywhere?",
       a: "Without an account, or with an account without email, nothing is sent to a server; everything stays in your own browser. With an email account, your name, email and solved exams are stored in Google Firebase where only you can access them; see the <a href=\"gizlilik.html\">privacy notice</a> for details. Your teacher doesn't see your score; if the exam is on paper, write your answers on the paper.",
     },
@@ -165,6 +173,10 @@ globalThis.QB_FAQ = {
     {
       q: "Wie werden offene Aufgaben bewertet?",
       a: "Offene Aufgaben bestehen – ähnlich wie die gemeinsamen schriftlichen Prüfungen des türkischen Maarif-Modells – aus einem Alltagskontext und den Teilen a), b), c). Rechen- und Kurzantwortteile (Zahl eingeben, „nimmt zu / nimmt ab / bleibt gleich“ wählen) werden automatisch bewertet. Bei Erklärungsteilen erscheinen nach dem Prüfen eine <b>Musterlösung</b> und ein <b>Bewertungsraster</b>; vergleiche deine Antwort und hake die erfüllten Kriterien ab, daraus werden deine Punkte berechnet. Lehrkräfte können Papierprüfungen mit dem Raster am Ende des PDFs bewerten. Wähle auf der Aufgabenseite „Aufgabenformat → Offene Aufgaben“, um eine Prüfung nur mit diesen Aufgaben zu erhalten.",
+    },
+    {
+      q: "Was ist der KI-Assistent?",
+      a: "Auf der Aufgabenseite gibt es unter jeder Aufgabe die Schaltfläche <b>Hilfe holen</b>. Wenn du eine Aufgabe nicht verstehst, einen Tipp möchtest oder ein Konzept erklärt haben willst, kannst du dem Assistenten schreiben; er sieht Text und Abbildung der Aufgabe. Während des Tests verrät er die Lösung nicht, sondern hilft beim Verstehen und gibt Tipps. Nach dem Prüfen erklärt er die Lösung Schritt für Schritt und zeigt, wo dein Fehler lag. Zur Nutzung musst du mit E-Mail angemeldet sein; pro Aufgabe kannst du eine begrenzte Zahl von Fragen stellen. Was du schreibst, wird zur Antworterzeugung an einen KI-Dienst geschickt, schreib also keine persönlichen Daten.",
     },
     {
       q: "Werden mein Name und meine Antworten gespeichert?",

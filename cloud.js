@@ -182,6 +182,13 @@
     await auth.sendPasswordResetEmail(String(email).trim());
   }
 
+  // Ara sunucuya (asistan) kimlik kanıtı: Firebase ID belgesi (gerekirse yenilenir)
+  async function idToken() {
+    await init();
+    const u = auth.currentUser;
+    return u ? u.getIdToken() : null;
+  }
+
   async function signOut() {
     await init();
     await auth.signOut();
@@ -225,7 +232,7 @@
     init,
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     sync, push, remove,
-    signUp, signIn, signOut, resetPassword, deleteAccount,
+    signUp, signIn, signOut, resetPassword, deleteAccount, idToken,
     errorKey,
   };
 })();

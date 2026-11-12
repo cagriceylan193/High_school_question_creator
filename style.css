@@ -349,6 +349,29 @@ p.ok, span.ok { color: var(--ok); }
   .part select { display: none; }
 }
 
+/* Yapay zekâ asistanı */
+.ai { padding-left: calc(2ch + 12px); display: grid; gap: 8px; }
+.ai-toggle { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; padding: 6px 12px; color: var(--accent); border-color: var(--accent-soft); background: var(--accent-soft); }
+.ai-toggle:hover { border-color: var(--accent); }
+.ai-spark { font-size: 12px; }
+.ai-box { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); min-width: 0; }
+.ai-mode { margin: 0; color: var(--muted); }
+.ai-notice { margin: 0; }
+.ai-log { display: grid; gap: 8px; }
+.ai-msg { display: grid; gap: 2px; max-width: 92%; padding: 8px 12px; border-radius: 10px; overflow-wrap: anywhere; }
+.ai-msg.me { justify-self: end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 3px; }
+.ai-msg.bot { justify-self: start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 3px; }
+.ai-msg .ai-who { opacity: 0.75; font-size: 11px; letter-spacing: 0.04em; }
+.ai-text { white-space: pre-wrap; font-size: 15px; line-height: 1.5; }
+.ai-msg.pending .ai-text { color: var(--muted); }
+.ai-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ai-chip { font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--surface); }
+.ai-form { display: flex; gap: 8px; align-items: flex-end; }
+.ai-form textarea { min-height: 44px; font-size: 15px; }
+.ai-left { margin: 0; }
+@media (max-width: 480px) { .ai { padding-left: 0; } .ai-msg { max-width: 100%; } }
+@media print { .ai { display: none !important; } }
+
 /* Bulut hesabı */
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 3px; background: var(--bg); justify-self: start; }
 .seg button { border: none; background: transparent; padding: 7px 16px; border-radius: 6px; color: var(--muted); }

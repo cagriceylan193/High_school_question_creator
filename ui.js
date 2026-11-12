@@ -309,12 +309,14 @@
       const sk = skillLine(inst.tpl);
       if (sk) body.append(sk);
       li.append(yaziliParts(inst, qi, lang, st));
+      const ai = assistantPanel(inst, lang, st);
       if (st.checked) {
         const got = QB.pointsOf(inst, resp), max = QB.maxPoints(inst);
         li.classList.add(got >= max ? "is-ok" : got > 0 ? "is-mid" : "is-bad");
         li.append(el("div", { class: "feedback total" },
           el("span", { class: "pill " + (got >= max ? "ok" : got > 0 ? "mid" : "bad") }, t("qPoints", { p: got, m: max }))));
       }
+      if (ai) li.append(ai);
       return li;
     }
     const ok = st.checked && QB.isCorrect(inst, resp);
@@ -340,7 +342,15 @@
       if (!ok && CONFIG.showCorrectAfterCheck && !inst.choices) fb.append(el("span", {}, t("correctIs", { a: QB.answerString(inst, lang) })));
       li.append(fb);
     }
+    const ai = assistantPanel(inst, lang, st);
+    if (ai) li.append(ai);
     return li;
+  }
+
+  // Yapay zekâ asistanı paneli (yalnızca soru sayfasında ve sunucu ayarlıysa)
+  function assistantPanel(inst, lang, st) {
+    if (!st.assist || inst.error || !globalThis.QBAI || !QBAI.enabled()) return null;
+    return QBAI.panel(inst, lang, { resp: st.resp, getResp: st.getResp, checked: st.checked });
   }
 
   function formatDate(iso, withTime) {

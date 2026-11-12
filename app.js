@@ -81,6 +81,8 @@
         resp: exam.responses[qi],
         checked: exam.checked,
         selfEdit: exam.checked,
+        assist: true,
+        getResp: () => exam.responses[qi],
         onPick: (ci) => { exam.responses[qi] = ci; },
         onInput: (v) => { exam.responses[qi] = v; },
         // Açık uçlu sorular: bölüm cevapları ve rubrikte işaretlenen ölçütler

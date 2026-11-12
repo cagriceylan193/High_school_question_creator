@@ -1,0 +1,22 @@
+# Soru Üreteci · Yapay zekâ asistanı (Cloudflare Worker)
+# Yayınlama: GitHub Actions → "Asistanı yayınla" iş akışı (README'ye bakın)
+name = "soru-ureteci-asistan"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Kullanılan Claude modeli. Maliyeti düşürmek için "claude-haiku-5-5" yazılabilir.
+MODEL = "claude-opus-5-5"
+FIREBASE_PROJECT_ID = "soru-ureteci"
+# Asistanı kullanabilecek siteler (virgülle ayrılmış)
+ALLOWED_ORIGINS = "https://cagriceylan193.github.io"
+# Öğrenci başına günlük soru sınırı (yalnızca aşağıdaki USAGE bağlaması eklenirse uygulanır)
+DAILY_LIMIT = "40"
+
+# İsteğe bağlı günlük sınır için bir KV alanı oluşturup kimliğini yazın:
+# [[kv_namespaces]]
+# binding = "USAGE"
+# id = "..."
+
+# ANTHROPIC_API_KEY burada YAZILMAZ; gizli değer (secret) olarak eklenir.

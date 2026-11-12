@@ -30,6 +30,13 @@ globalThis.QB_CONFIG = {
     appId: "1:103963102137:web:a0e92c7f04a4c9edbb4468",
   },
 
+  // Yapay zekâ asistanı: worker/ klasöründeki ara sunucunun adresi
+  // (ör. "https://soru-ureteci-asistan.ADINIZ.workers.dev"). Boşsa asistan görünmez.
+  assistant: {
+    endpoint: "",
+    maxQuestionsPerItem: 8, // bir soru için öğrencinin sorabileceği en fazla mesaj
+  },
+
   // Aydınlatma metninde (gizlilik.html) görünen veri sorumlusu ve iletişim.
   // Okulda kullanmadan önce kendi adınızı/okulunuzu ve bir iletişim adresi yazın.
   privacyOwner: "",
