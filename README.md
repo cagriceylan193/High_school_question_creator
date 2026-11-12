@@ -91,6 +91,10 @@ Soru sayfasında her sorunun altında **Yardım iste** paneli vardır. Öğrenci
 
 **Yerel test:** `cd worker && npm install && npx wrangler dev` (anahtarı `worker/.dev.vars` dosyasına `ANTHROPIC_API_KEY=...` olarak yazın; bu dosya depoya eklenmez).
 
+## Sınıf / sınav seçimi
+
+Sınav oluşturmadan önce öğrenci (ve öğretmen) **9. sınıf, 10. sınıf, 11. sınıf, TYT veya AYT** seçer; seçilmeden sınav oluşmaz. Konu, zorluk ve biçim seçenekleri seçime göre süzülür. TYT: 9–10. sınıf şablonlarından çoktan seçmeli sorular; AYT: 11–12. sınıf şablonlarından çoktan seçmeli sorular (`questions/fizik-ayt.js`). Şablonun `grade` alanı bu gruplamada kullanılır. Öğretmen bağlantısı seçimi `sinif=` parametresiyle taşır.
+
 ## Kalıp çeşitliliği ve yanlışları tekrar çözme
 
 - **Çeşitlilik:** Soru sayfasında "Daha önce çözdüğüm soru kalıplarını tekrar verme" seçiliyken (varsayılan) en az görülen kalıplar önce gelir; aynı sınav kodu tekrar kullanılsa bile hem kalıplar hem sayılar yenilenir. Görülen kalıplar hesaptaki geçmişten ve bu tarayıcıdaki kayıttan (`qb-seen`) sayılır. Öğretmen sayfası bundan etkilenmez: aynı kodla herkes aynı kalıpları alır.

@@ -114,34 +114,37 @@
   }
 
   // Konu seçim kutuları (öğrenci ve öğretmen sayfası)
-  function topicKeys() {
+  function topicKeys(pool) {
     const order = Object.keys(I18N.tr.topics || {});
-    const keys = [...new Set(QB.active().map(QB.topicOf).filter(Boolean))];
+    const keys = [...new Set((pool || QB.active()).map(QB.topicOf).filter(Boolean))];
     return keys.sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
   }
 
-  function renderTopicChips(box, wanted) {
-    const prev = new Set([...box.querySelectorAll("input:checked")].map((i) => i.value));
+  // pool: seçilen sınıfın şablonları (yoksa hepsi). Daha önce kaldırılmış işaretler korunur,
+  // yeni çıkan seçenekler işaretli gelir.
+  const offSet = (box) => new Set([...box.querySelectorAll("input:not(:checked)")].map((i) => i.value));
+  function renderTopicChips(box, wanted, pool) {
+    const off = offSet(box);
     const first = !box.children.length;
     box.innerHTML = "";
-    for (const k of topicKeys()) {
+    for (const k of topicKeys(pool)) {
       const id = "konu-" + k;
       const input = el("input", { type: "checkbox", id, value: k });
-      input.checked = first ? (!wanted || wanted.includes(k)) : prev.has(k);
+      input.checked = first ? (!wanted || wanted.includes(k)) : !off.has(k);
       box.append(el("label", { class: "chip", for: id }, input, topicName(k)));
     }
   }
 
-  function renderLevelChips(box, wanted) {
-    const prev = new Set([...box.querySelectorAll("input:checked")].map((i) => i.value));
+  function renderLevelChips(box, wanted, pool) {
+    const off = offSet(box);
     const first = !box.children.length;
-    const have = new Set(QB.active().map(QB.levelOf));
+    const have = new Set((pool || QB.active()).map(QB.levelOf));
     box.innerHTML = "";
     for (const lv of [1, 2, 3]) {
       if (!have.has(lv)) continue;
       const id = "zorluk-" + lv;
       const input = el("input", { type: "checkbox", id, value: lv });
-      input.checked = first ? (!wanted || wanted.includes(lv)) : prev.has(String(lv));
+      input.checked = first ? (!wanted || wanted.includes(lv)) : !off.has(String(lv));
       box.append(el("label", { class: "chip", for: id }, input, levelName(lv)));
     }
   }
@@ -266,16 +269,16 @@
     return el("p", { class: "outcome-line small muted" }, el("b", {}, t("mebOutcome") + ": "), o.text, " · ", el("b", {}, t("mebSkills") + ": "), o.skills.join(", "));
   }
 
-  function renderFormatChips(box, wanted) {
-    const prev = new Set([...box.querySelectorAll("input:checked")].map((i) => i.value));
+  function renderFormatChips(box, wanted, pool) {
+    const off = offSet(box);
     const first = !box.children.length;
-    const have = new Set(QB.active().map(QB.formatOf));
+    const have = new Set((pool || QB.active()).map(QB.formatOf));
     box.innerHTML = "";
     for (const f of ["test", "acik"]) {
       if (!have.has(f)) continue;
       const id = "bicim-" + f;
       const input = el("input", { type: "checkbox", id, value: f });
-      input.checked = first ? (!wanted || wanted.includes(f)) : prev.has(f);
+      input.checked = first ? (!wanted || wanted.includes(f)) : !off.has(f);
       box.append(el("label", { class: "chip", for: id }, input, (I18N[lang].formats || {})[f] || f));
     }
     if (box.parentElement) box.parentElement.hidden = have.size < 2;
@@ -284,6 +287,27 @@
     const all = box.querySelectorAll("input");
     const picked = [...box.querySelectorAll("input:checked")].map((i) => i.value);
     return picked.length === all.length ? [] : picked;
+  }
+
+  // Sınıf / sınav seçimi (tek seçim): 9, 10, 11, TYT, AYT — yalnız sorusu olanlar gösterilir
+  function renderGradeChips(box, wanted, onChange) {
+    const cur = (box.querySelector("input:checked") || {}).value || wanted || "";
+    box.innerHTML = "";
+    for (const g of QB.GROUPS) {
+      if (!QB.poolFor(g).length) continue;
+      const id = "sinif-" + g;
+      const input = el("input", { type: "radio", name: box.id + "-g", id, value: g });
+      input.checked = cur === g;
+      input.addEventListener("change", () => onChange && onChange(g));
+      box.append(el("label", { class: "chip grade-chip", for: id }, input, gradeName(g)));
+    }
+  }
+  function pickedGrade(box) {
+    const i = box.querySelector("input:checked");
+    return i ? i.value : "";
+  }
+  function gradeName(g) {
+    return ((I18N[lang].grades || {})[g]) || g;
   }
 
   function pickedTopics(box) {
@@ -433,6 +457,9 @@
     topicKeys,
     renderTopicChips,
     pickedTopics,
+    renderGradeChips,
+    pickedGrade,
+    gradeName,
     renderLevelChips,
     pickedLevels,
     renderFormatChips,

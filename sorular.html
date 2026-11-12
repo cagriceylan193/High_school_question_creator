@@ -18,6 +18,12 @@
       <p class="lead" data-i18n="startLead"></p>
       <p class="account-note" id="accountNote"></p>
       <form id="startForm" class="grid">
+        <div class="field grade-field">
+          <span class="grade-q" id="gradeQ" data-i18n="gradeLabel"></span>
+          <div class="chips" id="grades" role="radiogroup" aria-labelledby="gradeQ"></div>
+          <p class="small muted" data-i18n="gradeHint"></p>
+          <p class="error small" id="gradeErr" data-i18n="gradeRequired" hidden></p>
+        </div>
         <div class="fields">
           <label class="field"><span data-i18n="studentLabel"></span>
             <input type="text" id="student" autocomplete="name" required>
@@ -29,6 +35,7 @@
             <input type="number" id="count" min="1" max="100" required>
           </label>
         </div>
+        <div id="filters" class="grid" hidden>
         <div class="field" id="topicsWrap">
           <span class="small muted" data-i18n="topicsLabel"></span>
           <div class="chips" id="topics"></div>
@@ -40,6 +47,7 @@
         <div class="field">
           <span class="small muted" data-i18n="formatsLabel"></span>
           <div class="chips" id="formats"></div>
+        </div>
         </div>
         <label class="check-inline"><input type="checkbox" id="fresh" checked> <span data-i18n="freshLabel"></span></label>
         <div class="actions"><button type="submit" class="primary" data-i18n="startBtn"></button></div>
@@ -85,6 +93,7 @@
   <script src="questions/fizik-elektrik-optik.js"></script>
   <script src="questions/fizik-maarif.js"></script>
   <script src="questions/fizik-yazili.js"></script>
+  <script src="questions/fizik-ayt.js"></script>
   <script src="questions/ornekler.js"></script>
   <script src="questions/cozumler.js"></script>
   <script src="account.js"></script>

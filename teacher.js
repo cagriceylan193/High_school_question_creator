@@ -18,10 +18,23 @@
 
   // --- Cevap anahtarı ---------------------------------------------------------
   function renderTopics() {
-    UI.renderTopicChips($("topics"));
-    $("topicsWrap").hidden = UI.topicKeys().length < 2;
-    UI.renderLevelChips($("levels"));
-    UI.renderFormatChips($("formats"));
+    const saved = QB.GROUPS.includes(UI.storageGet("qb-t-grade")) ? UI.storageGet("qb-t-grade") : "";
+    UI.renderGradeChips($("grades"), saved, (g) => {
+      UI.storageSet("qb-t-grade", g);
+      $("gradeErr").hidden = true;
+      renderFilters();
+    });
+    renderFilters();
+  }
+  function renderFilters() {
+    const g = UI.pickedGrade($("grades"));
+    $("filters").hidden = !g;
+    if (!g) return;
+    const pool = QB.poolFor(g);
+    UI.renderTopicChips($("topics"), null, pool);
+    $("topicsWrap").hidden = UI.topicKeys(pool).length < 2;
+    UI.renderLevelChips($("levels"), null, pool);
+    UI.renderFormatChips($("formats"), null, pool);
   }
   renderTopics();
 
@@ -33,19 +46,20 @@
 
   function readForm() {
     const students = $("students").value.split("\n").map((s) => s.trim()).filter(Boolean);
-    return { code: $("code").value.trim(), count: Number($("count").value), topics: UI.pickedTopics($("topics")), levels: UI.pickedLevels($("levels")), formats: UI.pickedFormats($("formats")), students };
+    return { group: UI.pickedGrade($("grades")), code: $("code").value.trim(), count: Number($("count").value), topics: UI.pickedTopics($("topics")), levels: UI.pickedLevels($("levels")), formats: UI.pickedFormats($("formats")), students };
   }
 
   $("keyForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = readForm();
+    if (!f.group) { $("gradeErr").hidden = false; $("grades").scrollIntoView({ block: "center", behavior: "smooth" }); return; }
     if (!f.code || !f.students.length) return;
     UI.storageSet("qb-t-code", f.code);
     UI.storageSet("qb-t-count", String(f.count));
     UI.storageSet("qb-t-students", f.students.join("\n"));
     current = {
       ...f,
-      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, topics: f.topics, levels: f.levels, formats: f.formats }) })),
+      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, topics: f.topics, levels: f.levels, formats: f.formats, group: f.group }) })),
     };
     renderKey();
   });
@@ -54,6 +68,7 @@
     const u = new URL("sorular.html", location.href);
     u.searchParams.set("kod", current.code);
     u.searchParams.set("n", current.count);
+    if (current.group) u.searchParams.set("sinif", current.group);
     if (current.topics.length) u.searchParams.set("konu", current.topics.join(","));
     if (current.levels.length) u.searchParams.set("zorluk", current.levels.join(","));
     if (current.formats.length) u.searchParams.set("bicim", current.formats.join(","));

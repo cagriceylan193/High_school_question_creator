@@ -906,11 +906,25 @@
    * (aynı kalıpların sürekli çıkmasını önler). Verilmezse seçim yalnızca sınav
    * koduna bağlıdır: öğretmenin sınavında herkes aynı kalıpları görür.
    */
-  function buildExam({ student, code, count, subjects, topics, levels, formats, ids, seen, salt }) {
+  // Sınıf / sınav grupları: 9, 10, 11 → o sınıfın soruları;
+  // TYT → 9–10. sınıf konularından çoktan seçmeli; AYT → 11–12. sınıf konularından çoktan seçmeli.
+  const GROUPS = ["9", "10", "11", "tyt", "ayt"];
+  function inGroup(tpl, g) {
+    if (!g) return true;
+    const gr = Number(tpl.grade);
+    if (g === "tyt") return (gr === 9 || gr === 10) && formatOf(tpl) === "test";
+    if (g === "ayt") return gr >= 11 && formatOf(tpl) === "test";
+    return gr === Number(g);
+  }
+  function poolFor(g) {
+    return active().filter((t) => inGroup(t, g));
+  }
+
+  function buildExam({ student, code, count, subjects, topics, levels, formats, ids, seen, salt, group }) {
     const seed = examSeed(student, code);
     let pool = ids
       ? ids.map((id) => active().find((t) => t.id === id)).filter(Boolean)
-      : active().filter((t) =>
+      : poolFor(group).filter((t) =>
         (!subjects || !subjects.length || subjects.includes(t.subject)) &&
         (!topics || !topics.length || topics.includes(topicOf(t))) &&
         (!levels || !levels.length || levels.includes(levelOf(t))) &&
@@ -1008,6 +1022,9 @@
     practiceStats,
     mistakeIds,
     buildExam,
+    GROUPS,
+    inGroup,
+    poolFor,
     parseAnswer,
     isCorrect,
   };

@@ -20,10 +20,17 @@
 
     <section id="panel-key" class="panel">
       <form id="keyForm" class="grid">
+        <div class="field grade-field">
+          <span class="grade-q" id="gradeQ" data-i18n="gradeLabel"></span>
+          <div class="chips" id="grades" role="radiogroup" aria-labelledby="gradeQ"></div>
+          <p class="small muted" data-i18n="gradeHint"></p>
+          <p class="error small" id="gradeErr" data-i18n="gradeRequired" hidden></p>
+        </div>
         <div class="fields">
           <label class="field"><span data-i18n="codeLabel"></span><input type="text" id="code" required></label>
           <label class="field"><span data-i18n="countLabel"></span><input type="number" id="count" min="1" max="100" required></label>
         </div>
+        <div id="filters" class="grid" hidden>
         <div class="field" id="topicsWrap">
           <span class="small muted" data-i18n="topicsLabel"></span>
           <div class="chips" id="topics"></div>
@@ -35,6 +42,7 @@
         <div class="field">
           <span class="small muted" data-i18n="formatsLabel"></span>
           <div class="chips" id="formats"></div>
+        </div>
         </div>
         <label class="field"><span data-i18n="studentsLabel"></span>
           <textarea id="students" data-i18n-placeholder="studentsExample"></textarea>
@@ -82,6 +90,7 @@
   <script src="questions/fizik-elektrik-optik.js"></script>
   <script src="questions/fizik-maarif.js"></script>
   <script src="questions/fizik-yazili.js"></script>
+  <script src="questions/fizik-ayt.js"></script>
   <script src="questions/ornekler.js"></script>
   <script src="questions/cozumler.js"></script>
   <script src="account.js"></script>

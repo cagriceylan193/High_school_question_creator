@@ -13,11 +13,27 @@
   const wantedTopics = p.get("konu") ? p.get("konu").split(",") : null;
   const wantedLevels = p.get("zorluk") ? p.get("zorluk").split(",").map(Number) : null;
   const wantedFormats = p.get("bicim") ? p.get("bicim").split(",") : null;
+  // Sınıf / sınav (9, 10, 11, TYT, AYT): sınav oluşturmadan önce seçilmesi zorunlu.
+  // Bağlantıdaki ?sinif=… ya da bu tarayıcıda son seçilen değer hazır gelir.
+  const urlGrade = QB.GROUPS.includes(p.get("sinif")) ? p.get("sinif") : "";
+  const savedGrade = QB.GROUPS.includes(UI.storageGet("qb-grade")) ? UI.storageGet("qb-grade") : "";
   function renderTopics() {
-    UI.renderTopicChips($("topics"), wantedTopics);
-    $("topicsWrap").hidden = UI.topicKeys().length < 2;
-    UI.renderLevelChips($("levels"), wantedLevels);
-    UI.renderFormatChips($("formats"), wantedFormats);
+    UI.renderGradeChips($("grades"), urlGrade || savedGrade, (g) => {
+      UI.storageSet("qb-grade", g);
+      $("gradeErr").hidden = true;
+      renderFilters();
+    });
+    renderFilters();
+  }
+  function renderFilters() {
+    const g = UI.pickedGrade($("grades"));
+    $("filters").hidden = !g;
+    if (!g) return;
+    const pool = QB.poolFor(g);
+    UI.renderTopicChips($("topics"), wantedTopics, pool);
+    $("topicsWrap").hidden = UI.topicKeys(pool).length < 2;
+    UI.renderLevelChips($("levels"), wantedLevels, pool);
+    UI.renderFormatChips($("formats"), wantedFormats, pool);
   }
 
   const me = QBA.current();
@@ -59,7 +75,15 @@
 
   $("startForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")), UI.pickedLevels($("levels")), UI.pickedFormats($("formats")), { fresh: $("fresh").checked });
+    const group = UI.pickedGrade($("grades"));
+    if (!group) {
+      $("gradeErr").hidden = false;
+      $("grades").scrollIntoView({ block: "center", behavior: "smooth" });
+      const first = $("grades").querySelector("input");
+      if (first) first.focus({ preventScroll: true });
+      return;
+    }
+    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")), UI.pickedLevels($("levels")), UI.pickedFormats($("formats")), { fresh: $("fresh").checked, group });
   });
 
   // --- Kalıp çeşitliliği ------------------------------------------------------
@@ -99,9 +123,9 @@
       const n = Object.values(seen).reduce((a, b) => a + b, 0);
       if (n) seedCode = code + "#" + n;
     }
-    const items = QB.buildExam({ student, code: seedCode, count, topics, levels, formats, seen, ids: opt.ids });
+    const items = QB.buildExam({ student, code: seedCode, count, topics, levels, formats, seen, ids: opt.ids, group: opt.group });
     markSeen(items);
-    exam = { student, code, seedCode, count, topics, levels, formats, items, responses: items.map(() => null), checked: false, savedId: null, retry: !!opt.ids };
+    exam = { student, code, seedCode, count, topics, levels, formats, group: opt.group || "", items, responses: items.map(() => null), checked: false, savedId: null, retry: !!opt.ids };
     $("examHint").textContent = opt.ids ? t("retryHint") : t("answerHint");
     $("start").hidden = true;
     $("exam").hidden = false;
@@ -119,7 +143,7 @@
   function renderExam() {
     if (!exam) return;
     const lang = UI.lang;
-    $("examTitle").textContent = t("examFor", { name: exam.student, code: exam.code });
+    $("examTitle").textContent = t("examFor", { name: exam.student, code: exam.code }) + (exam.group ? " · " + UI.gradeName(exam.group) : "");
     const list = $("questions");
     list.innerHTML = "";
     // Yalnız açık uçlu sorulardan oluşan sınav: MEB yazılısı gibi toplam 100 puan
