@@ -14,6 +14,7 @@ const load = (rel) => vm.runInContext(fs.readFileSync(path.join(ROOT, rel), "utf
 
 load("config.js");
 load("i18n.js");
+load("faq.js");
 load("engine.js");
 
 const qFiles = fs.readdirSync(path.join(ROOT, "questions")).filter((f) => f.endsWith(".js")).sort();
@@ -24,7 +25,7 @@ const errors = [];
 const warnings = [];
 
 // 1) Soru dosyaları her iki HTML sayfasında da yüklenmeli.
-for (const page of ["index.html", "ogretmen.html"]) {
+for (const page of ["index.html", "sorular.html", "ogretmen.html"]) {
   const html = fs.readFileSync(path.join(ROOT, page), "utf8");
   for (const f of qFiles) {
     if (!html.includes(`src="questions/${f}"`)) errors.push(`${page}: <script src="questions/${f}"></script> satırı eksik`);
@@ -45,6 +46,9 @@ for (const l of QB.LANGS) {
 // 4) Her şablondan çok sayıda soru üret.
 for (const tpl of QB.templates) {
   if (tpl.subject && !I18N.tr.subjects[tpl.subject]) warnings.push(`${tpl.id}: '${tpl.subject}' dersi i18n.js'de tanımlı değil`);
+  if (tpl.topic) for (const l of QB.LANGS) {
+    if (!(I18N[l] && I18N[l].topics && I18N[l].topics[tpl.topic])) errors.push(`${tpl.id}: '${tpl.topic}' konusu i18n.js'de '${l}' dilinde tanımlı değil`);
+  }
   let shortChoices = 0;
   const answers = new Set();
   for (let i = 0; i < SAMPLES; i++) {
@@ -76,6 +80,13 @@ for (const tpl of QB.templates) {
   if (answers.size < 5) warnings.push(`${tpl.id}: yalnızca ${answers.size} farklı cevap üretiliyor; öğrenciler arasında çeşitlilik az`);
 }
 
+// 4b) SSS her dilde aynı sayıda soru içermeli.
+const FAQ = ctx.QB_FAQ;
+for (const l of QB.LANGS) {
+  if (!FAQ[l]) errors.push(`faq.js: '${l}' dili yok`);
+  else if (FAQ[l].length !== FAQ.tr.length) errors.push(`faq.js: '${l}' dilinde ${FAQ[l].length} soru var, Türkçede ${FAQ.tr.length}`);
+}
+
 // 5) Cevap okuma testleri.
 const parseCases = [["1,5", 1.5], ["1.5", 1.5], ["3/4", 0.75], ["-2", -2], ["1.234,5", 1234.5], ["2^3", 8], ["abc", NaN]];
 for (const [s, want] of parseCases) {
@@ -90,7 +101,7 @@ if (QB.templates.length) {
   if (a !== b) errors.push("Aynı öğrenci için sınav tekrarlanabilir değil");
 }
 
-console.log(`${QB.templates.length} şablon, ${qFiles.length} soru dosyası, diller: ${QB.LANGS.join(", ")}`);
+console.log(`${QB.templates.length} şablon (${QB.active().length} tanesi sitede açık), ${qFiles.length} soru dosyası, diller: ${QB.LANGS.join(", ")}`);
 for (const w of warnings) console.log("UYARI: " + w);
 for (const e of errors) console.log("HATA:  " + e);
 if (errors.length) {

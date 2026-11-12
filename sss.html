@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SSS · Soru Üreteci</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header id="siteHeader" data-page="faq"></header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1 data-i18n="faqTitle"></h1>
+      <p class="lead" data-i18n="faqLead"></p>
+    </div>
+    <div id="faqList" class="faq"></div>
+    <div class="actions">
+      <a class="button primary" href="sorular.html" data-i18n="homeStart"></a>
+    </div>
+  </main>
+  <footer id="siteFooter"></footer>
+
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="faq.js"></script>
+  <script src="engine.js"></script>
+  <script src="ui.js"></script>
+  <script>
+    (function () {
+      function render() {
+        const list = document.getElementById("faqList");
+        const open = new Set([...list.querySelectorAll("details[open]")].map((d) => d.dataset.i));
+        list.innerHTML = "";
+        (QB_FAQ[UI.lang] || QB_FAQ.tr).forEach((item, i) => {
+          const d = UI.el("details", { "data-i": i, id: "s" + (i + 1) },
+            UI.el("summary", {}, item.q),
+            UI.el("div", { class: "faq-answer", html: item.a }));
+          d.open = open.has(String(i)) || location.hash === "#s" + (i + 1);
+          list.append(d);
+        });
+      }
+      UI.onLang(render);
+      render();
+    })();
+  </script>
+</body>
+</html>

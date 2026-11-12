@@ -1,6 +1,7 @@
-// ÖRNEK ŞABLONLAR
-// Bu dosya sistemin nasıl çalıştığını göstermek için var. Kendi sorularınız
-// eklendikçe silinebilir. Şablon yazımı için README.md dosyasına bakın.
+// ÖRNEK ŞABLONLAR (matematik, kimya, geometri)
+// Şu an config.js'te yalnızca fizik açık olduğu için bu sorular sitede
+// görünmez. Dersi açmak için config.js'teki activeSubjects listesine ekleyin.
+// Şablon yazımı için README.md dosyasına bakın.
 
 QB.add({
   id: "ornek-mat-denklem",
@@ -19,25 +20,6 @@ QB.add({
     tr: "{a}<i>x</i> + {b} = {c} denkleminde <i>x</i> kaçtır?",
     en: "Solve {a}<i>x</i> + {b} = {c} for <i>x</i>.",
     de: "Löse die Gleichung {a}<i>x</i> + {b} = {c} nach <i>x</i> auf.",
-  },
-});
-
-QB.add({
-  id: "ornek-fiz-yol",
-  subject: "fizik",
-  grade: 9,
-  type: "open",
-  vars: {
-    ad: { type: "name" },
-    v: { min: 40, max: 120, step: 20 },
-    t: { min: 1, max: 5, step: 0.5 },
-  },
-  answer: "v * t",
-  unit: "km",
-  text: {
-    tr: "{ad}, otomobiliyle {v} km/sa sabit hızla {t} saat yol alıyor. Bu sürede kaç km yol alır?",
-    en: "{ad} drives at a constant {v} km/h for {t} hours. How many kilometres does {ad} travel?",
-    de: "{ad} fährt {t} Stunden lang mit konstant {v} km/h. Wie viele Kilometer legt {ad} zurück?",
   },
 });
 

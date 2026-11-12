@@ -10,13 +10,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="bar">
-    <div class="brand"><span class="mark">x²</span><span data-i18n="teacherTitle">Öğretmen sayfası</span></div>
-    <div class="bar-right">
-      <a href="index.html" data-i18n="studentLink">Öğrenci sayfası</a>
-      <select id="lang" class="lang" aria-label="Dil / Language / Sprache"></select>
-    </div>
-  </header>
+  <header id="siteHeader" data-page="teacher"></header>
 
   <main class="wrap wide">
     <div class="tabs" role="tablist">
@@ -30,9 +24,9 @@
           <label class="field"><span data-i18n="codeLabel"></span><input type="text" id="code" required></label>
           <label class="field"><span data-i18n="countLabel"></span><input type="number" id="count" min="1" max="100" required></label>
         </div>
-        <div class="field" id="subjectsWrap">
-          <span class="small muted" data-i18n="subjectsLabel"></span>
-          <div class="chips" id="subjects"></div>
+        <div class="field" id="topicsWrap">
+          <span class="small muted" data-i18n="topicsLabel"></span>
+          <div class="chips" id="topics"></div>
         </div>
         <label class="field"><span data-i18n="studentsLabel"></span>
           <textarea id="students" data-i18n-placeholder="studentsExample"></textarea>
@@ -58,16 +52,18 @@
         <span class="muted small" id="tplCount"></span>
       </div>
       <div id="problems"></div>
-      <div id="tplList" class="wrap" style="padding: 0; max-width: none; gap: 14px;"></div>
+      <div id="tplList" class="tpl-list"></div>
     </section>
 
     <div id="printArea"></div>
   </main>
+  <footer id="siteFooter"></footer>
 
   <script src="config.js"></script>
   <script src="i18n.js"></script>
   <script src="engine.js"></script>
-  <!-- Soru dosyaları: index.html ile aynı liste olmalı -->
+  <!-- Soru dosyaları: sorular.html ve index.html ile aynı liste olmalı -->
+  <script src="questions/fizik.js"></script>
   <script src="questions/ornekler.js"></script>
   <script src="ui.js"></script>
   <script src="teacher.js"></script>

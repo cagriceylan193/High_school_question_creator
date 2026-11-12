@@ -5,8 +5,6 @@
   const CONFIG = QB_CONFIG;
   const $ = (id) => document.getElementById(id);
 
-  UI.mountLangSelect($("lang"));
-
   // --- Sekmeler ---------------------------------------------------------------
   function showTab(name) {
     $("tab-key").setAttribute("aria-selected", name === "key");
@@ -19,32 +17,21 @@
   $("tab-preview").addEventListener("click", () => showTab("preview"));
 
   // --- Cevap anahtarı ---------------------------------------------------------
-  const subjectKeys = [...new Set(QB.templates.map((tp) => tp.subject).filter(Boolean))];
-  function renderSubjects() {
-    const box = $("subjects");
-    const picked = new Set([...box.querySelectorAll("input:checked")].map((i) => i.value));
-    const first = !box.children.length;
-    box.innerHTML = "";
-    for (const s of subjectKeys) {
-      const id = "sub-" + s;
-      const input = el("input", { type: "checkbox", id, value: s });
-      input.checked = first || picked.has(s);
-      box.append(el("label", { class: "chip", for: id }, input, UI.subjectName(s)));
-    }
-    $("subjectsWrap").hidden = subjectKeys.length < 2;
+  function renderTopics() {
+    UI.renderTopicChips($("topics"));
+    $("topicsWrap").hidden = UI.topicKeys().length < 2;
   }
-  renderSubjects();
+  renderTopics();
 
   $("code").value = UI.storageGet("qb-t-code") || CONFIG.defaultExamCode;
-  $("count").value = UI.storageGet("qb-t-count") || Math.min(CONFIG.defaultCount, Math.max(1, QB.templates.length));
+  $("count").value = UI.storageGet("qb-t-count") || Math.min(CONFIG.defaultCount, Math.max(1, QB.active().length));
   $("students").value = UI.storageGet("qb-t-students") || "";
 
-  let current = null; // { code, count, subjects, rows: [{ student, items }] }
+  let current = null; // { code, count, topics, rows: [{ student, items }] }
 
   function readForm() {
     const students = $("students").value.split("\n").map((s) => s.trim()).filter(Boolean);
-    const subjects = [...$("subjects").querySelectorAll("input:checked")].map((i) => i.value);
-    return { code: $("code").value.trim(), count: Number($("count").value), subjects, students };
+    return { code: $("code").value.trim(), count: Number($("count").value), topics: UI.pickedTopics($("topics")), students };
   }
 
   $("keyForm").addEventListener("submit", (e) => {
@@ -56,16 +43,16 @@
     UI.storageSet("qb-t-students", f.students.join("\n"));
     current = {
       ...f,
-      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, subjects: f.subjects }) })),
+      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, topics: f.topics }) })),
     };
     renderKey();
   });
 
   function shareLink() {
-    const u = new URL("index.html", location.href);
+    const u = new URL("sorular.html", location.href);
     u.searchParams.set("kod", current.code);
     u.searchParams.set("n", current.count);
-    if (current.subjects.length && current.subjects.length < subjectKeys.length) u.searchParams.set("ders", current.subjects.join(","));
+    if (current.topics.length) u.searchParams.set("konu", current.topics.join(","));
     u.searchParams.set("dil", UI.lang);
     return u.toString();
   }
@@ -143,7 +130,8 @@
 
   function renderPreview() {
     const lang = UI.lang;
-    $("tplCount").textContent = t("templateCount", { n: QB.templates.length });
+    const tpls = QB.active();
+    $("tplCount").textContent = t("templateCount", { n: tpls.length });
 
     const pb = $("problems");
     pb.innerHTML = "";
@@ -155,9 +143,9 @@
 
     const list = $("tplList");
     list.innerHTML = "";
-    for (const tpl of QB.templates) {
+    for (const tpl of tpls) {
       const card = el("div", { class: "panel tpl" });
-      const meta = [tpl.subject && UI.subjectName(tpl.subject), tpl.grade && t("grade", { g: tpl.grade }), tpl.type || CONFIG.defaultType].filter(Boolean).join(" · ");
+      const meta = [UI.topicName(QB.topicOf(tpl)), tpl.grade && t("grade", { g: tpl.grade }), tpl.type || CONFIG.defaultType].filter(Boolean).join(" · ");
       card.append(el("div", { class: "tpl-head" }, el("span", { class: "tpl-id" }, tpl.id), el("span", { class: "muted small" }, meta)));
       const ol = el("ol", { class: "samples" });
       for (let k = 1; k <= 3; k++) {
@@ -178,7 +166,7 @@
   }
 
   UI.onLang(() => {
-    renderSubjects();
+    renderTopics();
     renderKey();
     if (!$("panel-preview").hidden) renderPreview();
   });

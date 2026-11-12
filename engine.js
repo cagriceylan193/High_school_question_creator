@@ -410,7 +410,8 @@
   //   {=a*b}    → hesaplanan ifade
   //   {=a/b:1}  → hesaplanan ifade, 1 ondalık
   // ---------------------------------------------------------------------------
-  function fill(text, inst, lang) {
+  function fill(text, inst, lang, mark) {
+    const wrap = mark ? (s) => `<span class="v">${s}</span>` : (s) => s;
     return text.replace(/\{(=)?\s*([^{}]+?)\s*(?::(\d+))?\}/g, (m, eq, body, dd) => {
       let v, d = dd !== undefined ? Number(dd) : undefined;
       if (eq) v = evaluate(body, inst.scope);
@@ -419,8 +420,8 @@
         v = inst.scope[body];
         if (d === undefined) d = inst.dec[body];
       }
-      if (v instanceof NameRef) return (NAMES[lang] || NAMES.tr)[v.i];
-      return formatNum(v, d, lang);
+      if (v instanceof NameRef) return wrap((NAMES[lang] || NAMES.tr)[v.i]);
+      return wrap(formatNum(v, d, lang));
     });
   }
 
@@ -430,8 +431,9 @@
     return field[lang] ?? field.tr ?? "";
   }
 
-  function render(inst, lang) {
-    return fill(localized(inst.tpl.text, lang), inst, lang);
+  // mark = true → değişken değerleri <span class="v"> ile işaretlenir (ana sayfa örneği).
+  function render(inst, lang, mark) {
+    return fill(localized(inst.tpl.text, lang), inst, lang, mark);
   }
 
   function unitFor(inst, lang) {
@@ -460,9 +462,21 @@
     return normalize(student) + "|" + normalize(code);
   }
 
-  function buildExam({ student, code, count, subjects }) {
+  // config.js'teki activeSubjects listesine göre kullanımda olan şablonlar.
+  function active() {
+    const subs = CONFIG.activeSubjects;
+    return subs && subs.length ? templates.filter((t) => subs.includes(t.subject)) : templates.slice();
+  }
+
+  function topicOf(t) {
+    return t.topic || t.subject || "";
+  }
+
+  function buildExam({ student, code, count, subjects, topics }) {
     const seed = examSeed(student, code);
-    let pool = templates.filter((t) => !subjects || !subjects.length || subjects.includes(t.subject));
+    let pool = active().filter((t) =>
+      (!subjects || !subjects.length || subjects.includes(t.subject)) &&
+      (!topics || !topics.length || topics.includes(topicOf(t))));
     // Şablon seçimi yalnızca sınav koduna bağlı: aynı sınavda herkes aynı
     // soru kalıplarını aynı sırayla görür, sadece sayılar kişiye özeldir.
     pool = shuffle(pool, makeRng("pick", normalize(code)));
@@ -503,6 +517,8 @@
     NAMES,
     templates,
     problems,
+    active,
+    topicOf,
     add,
     compile,
     evaluate,

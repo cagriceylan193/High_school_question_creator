@@ -1,0 +1,142 @@
+// SSS (Sık Sorulan Sorular) içeriği. Her dilde aynı sırada olmalı.
+// Cevaplarda basit HTML kullanılabilir (<b>, <a href="...">).
+globalThis.QB_FAQ = {
+  tr: [
+    {
+      q: "Bu site ne işe yarar?",
+      a: "Lise öğrencileri için fizik alıştırma ve sınav sorusu üretir. Her soru bir kalıptır: soru aynıdır, sayılar her öğrenci için farklıdır. Cevabını yazdıktan sonra doğru olup olmadığını hemen görürsün.",
+    },
+    {
+      q: "Neden arkadaşımın soruları benimkinden farklı?",
+      a: "Sorulardaki sayılar adına ve sınav koduna göre seçilir. Aynı sınavda herkes aynı konulardan, aynı kalıpta soru alır, ama sayılar ve doğru cevap kişiye özeldir. Böylece cevapları birbirinden kopyalamak işe yaramaz, herkes kendi sorusunu çözer.",
+    },
+    {
+      q: "Sayfayı kapatıp açınca sorularım değişir mi?",
+      a: "Hayır. Adını ve sınav kodunu aynı yazdığın sürece aynı soruları görürsün. Büyük-küçük harf ve fazladan boşluk fark etmez. Ama adını farklı yazarsan (ör. “Ali” yerine “Ali Y.”) farklı sorular gelir, o yüzden adını her seferinde aynı yaz.",
+    },
+    {
+      q: "Sınav kodunu nereden bulurum?",
+      a: "Sınav kodunu öğretmenin verir. Öğretmeninin gönderdiği link ile girersen kod ve soru sayısı kendiliğinden yazılı gelir. Kendi başına alıştırma yapmak istersen istediğin bir kodu yazabilirsin; her yeni kod yeni sayılar demektir.",
+    },
+    {
+      q: "Cevabımı nasıl yazmalıyım?",
+      a: "Sadece sayıyı yaz, birimi yazmana gerek yok (birim kutunun yanında gösterilir). Ondalık için virgül de nokta da olur: <b>2,5</b> ve <b>2.5</b> aynıdır. Kesir de yazabilirsin: <b>3/4</b>. Çoktan seçmeli sorularda doğru şıkkı işaretlemen yeterli.",
+    },
+    {
+      q: "Yer çekimi ivmesi (g) kaç alınıyor?",
+      a: "Aksi yazmadıkça <b>g = 10 m/s²</b> alınır. Soruda gereken diğer sabitler (ör. suyun yoğunluğu) sorunun içinde verilir.",
+    },
+    {
+      q: "Dili değiştirince ne olur?",
+      a: "Sağ üstten Türkçe, İngilizce veya Almanca seçebilirsin. Soruların metni değişir, sayılar ve doğru cevap aynı kalır. Verdiğin cevaplar da silinmez. İngilizce ve Almanca fizik terimlerini öğrenmek için kullanışlıdır.",
+    },
+    {
+      q: "Hangi konular var?",
+      a: "Şu an 9. ve 10. sınıf fizik konuları var: madde ve özellikleri, hareket, kuvvet ve Newton yasaları, iş ve enerji, basınç ve elektrik. Yeni konular ve diğer dersler zamanla eklenecek.",
+    },
+    {
+      q: "Adım ve cevaplarım bir yere kaydediliyor mu?",
+      a: "Hayır. Site tamamen tarayıcında çalışır ve hiçbir sunucuya bilgi göndermez. Sadece bir dahaki sefere kolaylık olsun diye son yazdığın ad ve seçtiğin dil kendi tarayıcında hatırlanır. Puanını öğretmenin görmez; sınavı kâğıtta yapıyorsanız cevaplarını kâğıda yaz.",
+    },
+    {
+      q: "Öğretmenler siteyi nasıl kullanır?",
+      a: "<a href=\"ogretmen.html\">Öğretmen sayfasında</a> sınav kodunu, soru sayısını ve konuları seçip sınıf listesini yapıştırırsınız. Sayfa her öğrencinin cevap anahtarını, öğrencilere gönderilecek linki ve her öğrenciye ayrı yazdırılabilir sınav kâğıdını hazırlar. Not verilen sınavlarda kâğıt çıktı kullanmanızı öneririz, çünkü çevrim içi sayfa tarayıcıda çalıştığı için cevaplar teknik olarak hesaplanabilir.",
+    },
+    {
+      q: "Bir soruda hata buldum, ne yapmalıyım?",
+      a: "Öğretmenine sorunun ekran görüntüsünü, adını ve sınav kodunu gönder. Bu üç bilgiyle aynı soru tekrar üretilip kontrol edilebilir.",
+    },
+  ],
+  en: [
+    {
+      q: "What is this site for?",
+      a: "It generates physics practice and exam questions for high school students. Each question is a pattern: the question stays the same while the numbers change for every student. After you type your answer you immediately see whether it is right.",
+    },
+    {
+      q: "Why are my friend's questions different from mine?",
+      a: "The numbers are chosen from your name and the exam code. In the same exam everyone gets the same topics and patterns, but the numbers and the correct answer are personal. Copying someone else's answers doesn't work; everyone solves their own question.",
+    },
+    {
+      q: "Will my questions change if I close and reopen the page?",
+      a: "No. As long as you type the same name and exam code you get the same questions. Upper/lower case and extra spaces don't matter. If you write your name differently (e.g. “Alex S.” instead of “Alex”) you get different questions, so always type it the same way.",
+    },
+    {
+      q: "Where do I get the exam code?",
+      a: "Your teacher gives you the exam code. If you open the link your teacher sent, the code and number of questions are filled in for you. To practise on your own you can type any code; every new code means new numbers.",
+    },
+    {
+      q: "How should I type my answer?",
+      a: "Type just the number; you don't need the unit (it is shown next to the box). Use a comma or a point for decimals: <b>2,5</b> and <b>2.5</b> are the same. Fractions work too: <b>3/4</b>. For multiple-choice questions just pick the correct option.",
+    },
+    {
+      q: "What value is used for gravitational acceleration (g)?",
+      a: "Unless stated otherwise, <b>g = 10 m/s²</b>. Any other constants a question needs (e.g. the density of water) are given in the question.",
+    },
+    {
+      q: "What happens when I change the language?",
+      a: "You can choose Turkish, English or German in the top right. The question text changes; the numbers and the correct answer stay the same, and your answers are kept. It's a handy way to learn physics vocabulary in other languages.",
+    },
+    {
+      q: "Which topics are available?",
+      a: "Currently grade 9 and 10 physics: matter and its properties, motion, force and Newton's laws, work and energy, pressure and electricity. More topics and other subjects will be added over time.",
+    },
+    {
+      q: "Are my name and answers saved anywhere?",
+      a: "No. The site runs entirely in your browser and sends nothing to a server. Only the last name you typed and your language choice are remembered in your own browser for convenience. Your teacher doesn't see your score; if the exam is on paper, write your answers on the paper.",
+    },
+    {
+      q: "How do teachers use the site?",
+      a: "On the <a href=\"ogretmen.html\">teacher page</a> you choose the exam code, number of questions and topics, then paste your class list. The page builds an answer key for every student, a link to send to students and a separate printable exam sheet for each student. For graded exams we recommend printed sheets, because the online page runs in the browser and the answers could technically be worked out.",
+    },
+    {
+      q: "I found a mistake in a question. What should I do?",
+      a: "Send your teacher a screenshot of the question, your name and the exam code. With those three things the same question can be generated again and checked.",
+    },
+  ],
+  de: [
+    {
+      q: "Wofür ist diese Seite?",
+      a: "Sie erzeugt Physik-Übungs- und Prüfungsaufgaben für die Oberstufe. Jede Aufgabe ist ein Muster: Die Frage bleibt gleich, die Zahlen ändern sich für jeden Schüler. Nach der Eingabe siehst du sofort, ob deine Antwort stimmt.",
+    },
+    {
+      q: "Warum hat mein Mitschüler andere Aufgaben als ich?",
+      a: "Die Zahlen werden aus deinem Namen und dem Prüfungscode bestimmt. In derselben Prüfung bekommen alle dieselben Themen und Muster, aber Zahlen und richtige Antwort sind persönlich. Abschreiben bringt also nichts; jeder löst seine eigene Aufgabe.",
+    },
+    {
+      q: "Ändern sich meine Aufgaben, wenn ich die Seite schließe und wieder öffne?",
+      a: "Nein. Solange du denselben Namen und Prüfungscode eingibst, bekommst du dieselben Aufgaben. Groß- und Kleinschreibung und zusätzliche Leerzeichen spielen keine Rolle. Schreibst du deinen Namen anders (z. B. „Lukas M.“ statt „Lukas“), bekommst du andere Aufgaben. Schreib ihn also immer gleich.",
+    },
+    {
+      q: "Woher bekomme ich den Prüfungscode?",
+      a: "Den Prüfungscode bekommst du von deiner Lehrkraft. Wenn du den Link deiner Lehrkraft öffnest, sind Code und Aufgabenanzahl schon eingetragen. Zum selbstständigen Üben kannst du einen beliebigen Code eingeben; jeder neue Code bedeutet neue Zahlen.",
+    },
+    {
+      q: "Wie gebe ich meine Antwort ein?",
+      a: "Gib nur die Zahl ein, die Einheit brauchst du nicht (sie steht neben dem Feld). Für Dezimalzahlen geht Komma oder Punkt: <b>2,5</b> und <b>2.5</b> sind gleich. Brüche gehen auch: <b>3/4</b>. Bei Multiple-Choice-Aufgaben wählst du einfach die richtige Antwort.",
+    },
+    {
+      q: "Mit welchem Wert für die Fallbeschleunigung (g) wird gerechnet?",
+      a: "Wenn nichts anderes angegeben ist, mit <b>g = 10 m/s²</b>. Weitere Konstanten (z. B. die Dichte von Wasser) stehen in der Aufgabe.",
+    },
+    {
+      q: "Was passiert, wenn ich die Sprache wechsle?",
+      a: "Oben rechts kannst du Türkisch, Englisch oder Deutsch wählen. Der Aufgabentext ändert sich, Zahlen und richtige Antwort bleiben gleich, und deine Antworten bleiben erhalten. So lernst du nebenbei Physikbegriffe in anderen Sprachen.",
+    },
+    {
+      q: "Welche Themen gibt es?",
+      a: "Derzeit Physik der Klassen 9 und 10: Stoffe und ihre Eigenschaften, Bewegung, Kraft und Newtonsche Gesetze, Arbeit und Energie, Druck und Elektrizität. Weitere Themen und Fächer kommen nach und nach dazu.",
+    },
+    {
+      q: "Werden mein Name und meine Antworten gespeichert?",
+      a: "Nein. Die Seite läuft komplett in deinem Browser und schickt nichts an einen Server. Nur der zuletzt eingegebene Name und deine Sprachwahl werden zur Bequemlichkeit in deinem eigenen Browser gespeichert. Deine Lehrkraft sieht dein Ergebnis nicht; bei einer Prüfung auf Papier schreibst du die Antworten aufs Blatt.",
+    },
+    {
+      q: "Wie nutzen Lehrkräfte die Seite?",
+      a: "Auf der <a href=\"ogretmen.html\">Lehrerseite</a> wählen Sie Prüfungscode, Aufgabenanzahl und Themen und fügen die Klassenliste ein. Die Seite erstellt einen Lösungsschlüssel für jeden Schüler, einen Link für die Schüler und für jeden Schüler ein eigenes druckbares Prüfungsblatt. Für benotete Prüfungen empfehlen wir Ausdrucke, da die Online-Seite im Browser läuft und die Lösungen technisch berechnet werden könnten.",
+    },
+    {
+      q: "Ich habe einen Fehler in einer Aufgabe gefunden. Was soll ich tun?",
+      a: "Schick deiner Lehrkraft einen Screenshot der Aufgabe, deinen Namen und den Prüfungscode. Mit diesen drei Angaben lässt sich dieselbe Aufgabe erneut erzeugen und prüfen.",
+    },
+  ],
+};

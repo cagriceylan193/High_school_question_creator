@@ -7,51 +7,34 @@
 
   let exam = null; // { student, code, items, responses, checked }
 
-  UI.mountLangSelect($("lang"));
-
   // --- Başlangıç formu --------------------------------------------------------
-  const subjectKeys = [...new Set(QB.templates.map((tp) => tp.subject).filter(Boolean))];
-
-  function renderSubjects() {
-    const box = $("subjects");
-    const picked = new Set([...box.querySelectorAll("input:checked")].map((i) => i.value));
-    const first = !box.children.length;
-    box.innerHTML = "";
-    for (const s of subjectKeys) {
-      const id = "sub-" + s;
-      const input = el("input", { type: "checkbox", id, value: s });
-      input.checked = first ? true : picked.has(s);
-      box.append(el("label", { class: "chip", for: id }, input, UI.subjectName(s)));
-    }
-    $("subjectsWrap").hidden = subjectKeys.length < 2;
+  const p = UI.params;
+  const wantedTopics = p.get("konu") ? p.get("konu").split(",") : null;
+  function renderTopics() {
+    UI.renderTopicChips($("topics"), wantedTopics);
+    $("topicsWrap").hidden = UI.topicKeys().length < 2;
   }
 
-  const p = UI.params;
   $("student").value = p.get("ad") || UI.storageGet("qb-student") || "";
   $("code").value = p.get("kod") || CONFIG.defaultExamCode;
-  $("count").value = p.get("n") || Math.min(CONFIG.defaultCount, Math.max(1, QB.templates.length));
-  renderSubjects();
-  if (p.get("ders")) {
-    const want = p.get("ders").split(",");
-    $("subjects").querySelectorAll("input").forEach((i) => { i.checked = want.includes(i.value); });
-  }
-  if (!QB.templates.length) {
+  $("count").value = p.get("n") || Math.min(CONFIG.defaultCount, Math.max(1, QB.active().length));
+  renderTopics();
+  if (!QB.active().length) {
     $("startForm").hidden = true;
     $("emptyNote").hidden = false;
   }
 
   $("startForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const subjects = [...$("subjects").querySelectorAll("input:checked")].map((i) => i.value);
-    start($("student").value, $("code").value, Number($("count").value), subjects);
+    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")));
   });
 
-  function start(student, code, count, subjects) {
+  function start(student, code, count, topics) {
     student = student.trim();
     code = code.trim();
     if (!student || !code) return;
     UI.storageSet("qb-student", student);
-    const items = QB.buildExam({ student, code, count, subjects });
+    const items = QB.buildExam({ student, code, count, topics });
     exam = { student, code, items, responses: items.map(() => null), checked: false };
     $("start").hidden = true;
     $("exam").hidden = false;
@@ -77,7 +60,8 @@
     exam.items.forEach((inst, qi) => {
       const li = el("li", { class: "q" });
       const body = el("div", { class: "q-body" });
-      if (inst.tpl.subject) body.append(el("span", { class: "q-subject" }, UI.subjectName(inst.tpl.subject)));
+      const topic = QB.topicOf(inst.tpl);
+      if (topic) body.append(el("span", { class: "q-subject" }, UI.topicName(topic)));
       li.append(el("div", { class: "q-top" }, el("span", { class: "q-num", "aria-hidden": "true" }), body));
 
       if (inst.error) {
@@ -148,8 +132,8 @@
     window.scrollTo(0, 0);
   });
 
-  UI.onLang(() => { renderSubjects(); renderExam(); });
+  UI.onLang(() => { renderTopics(); renderExam(); });
 
   // Bağlantıda ad ve kod varsa sınavı doğrudan aç.
-  if (p.get("ad") && p.get("kod") && QB.templates.length) $("startForm").requestSubmit();
+  if (p.get("ad") && p.get("kod") && QB.active().length) $("startForm").requestSubmit();
 })();

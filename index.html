@@ -3,71 +3,80 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Soru Üreteci</title>
+  <title>Soru Üreteci · Lise Fizik</title>
+  <meta name="description" content="Lise öğrencileri için kişiye özel fizik soruları: kalıp aynı, sayılar farklı. Türkçe, İngilizce, Almanca.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="bar">
-    <div class="brand"><span class="mark">x²</span><span data-i18n="appName">Soru Üreteci</span></div>
-    <div class="bar-right">
-      <a href="ogretmen.html" data-i18n="teacherLink">Öğretmen sayfası</a>
-      <select id="lang" class="lang" aria-label="Dil / Language / Sprache"></select>
-    </div>
-  </header>
+  <header id="siteHeader" data-page="home"></header>
 
-  <main class="wrap">
-    <section id="start" class="panel">
-      <h1 data-i18n="startTitle">Sınava başla</h1>
-      <p class="lead" data-i18n="startLead"></p>
-      <form id="startForm" class="grid">
-        <div class="fields">
-          <label class="field"><span data-i18n="studentLabel"></span>
-            <input type="text" id="student" autocomplete="name" required>
-          </label>
-          <label class="field"><span data-i18n="codeLabel"></span>
-            <input type="text" id="code" required>
-          </label>
-          <label class="field"><span data-i18n="countLabel"></span>
-            <input type="number" id="count" min="1" max="100" required>
-          </label>
-        </div>
-        <div class="field" id="subjectsWrap">
-          <span class="small muted" data-i18n="subjectsLabel"></span>
-          <div class="chips" id="subjects"></div>
-        </div>
-        <div class="actions"><button type="submit" class="primary" data-i18n="startBtn"></button></div>
-      </form>
-      <p id="emptyNote" class="notice" data-i18n="noQuestions" hidden></p>
-    </section>
-
-    <section id="exam" hidden>
-      <div class="panel">
-        <div class="exam-head">
-          <div>
-            <h1 id="examTitle"></h1>
-            <p class="muted small" id="examHint" data-i18n="answerHint"></p>
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-text">
+          <p class="eyebrow" data-i18n="homeEyebrow"></p>
+          <h1 class="display" data-i18n="homeTitle"></h1>
+          <p class="lead" data-i18n="homeLead"></p>
+          <div class="actions">
+            <a class="button primary" href="sorular.html" data-i18n="homeStart"></a>
+            <a class="button" href="#nasil" data-i18n="homeHow"></a>
           </div>
-          <button type="button" id="newExam" class="no-print" data-i18n="newExam"></button>
         </div>
-        <ol class="questions" id="questions"></ol>
-        <div class="actions">
-          <button type="button" id="checkBtn" class="primary" data-i18n="check"></button>
-          <button type="button" id="clearBtn" data-i18n="retry"></button>
-          <span class="score" id="score" aria-live="polite"></span>
+
+        <div class="demo" aria-labelledby="demoTitle">
+          <div class="demo-head">
+            <h2 id="demoTitle" class="small-caps" data-i18n="demoTitle"></h2>
+            <button type="button" id="demoReroll" class="ghost" data-i18n="demoReroll"></button>
+          </div>
+          <div id="demoCards" class="demo-cards" aria-live="polite"></div>
+          <p class="muted small" data-i18n="demoNote"></p>
         </div>
       </div>
     </section>
+
+    <section class="band" id="nasil">
+      <div class="band-inner">
+        <h2 data-i18n="howTitle"></h2>
+        <ol class="steps">
+          <li><h3 data-i18n="step1Title"></h3><p class="muted" data-i18n="step1Text"></p></li>
+          <li><h3 data-i18n="step2Title"></h3><p class="muted" data-i18n="step2Text"></p></li>
+          <li><h3 data-i18n="step3Title"></h3><p class="muted" data-i18n="step3Text"></p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="band alt">
+      <div class="band-inner">
+        <div class="band-head">
+          <h2 data-i18n="topicsTitle"></h2>
+          <p class="muted" data-i18n="topicsLead"></p>
+        </div>
+        <div id="topicCards" class="topic-grid"></div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="band-inner">
+        <ul class="features">
+          <li><h3 data-i18n="feat1Title"></h3><p class="muted" data-i18n="feat1Text"></p></li>
+          <li><h3 data-i18n="feat2Title"></h3><p class="muted" data-i18n="feat2Text"></p></li>
+          <li><h3 data-i18n="feat3Title"></h3><p class="muted" data-i18n="feat3Text"></p></li>
+        </ul>
+      </div>
+    </section>
   </main>
+  <footer id="siteFooter"></footer>
 
   <script src="config.js"></script>
   <script src="i18n.js"></script>
   <script src="engine.js"></script>
-  <!-- Soru dosyaları: yeni bir dosya eklediğinizde buraya ve ogretmen.html'e de ekleyin -->
+  <!-- Soru dosyaları: sorular.html ve ogretmen.html ile aynı liste olmalı -->
+  <script src="questions/fizik.js"></script>
   <script src="questions/ornekler.js"></script>
   <script src="ui.js"></script>
-  <script src="app.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>

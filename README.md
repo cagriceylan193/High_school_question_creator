@@ -10,14 +10,18 @@ Lise öğrencileri için **kişiye özel soru** üreten, tarayıcıda çalışan
 - **Öğretmen sayfası:** sınıf listesi için cevap anahtarı, yazdırılabilir kişiye özel sınav kâğıtları ve şablon önizleme.
 - Kurulum gerekmez: düz HTML + JavaScript, sunucu ya da veritabanı yok.
 
-## Kullanım
+## Sayfalar
 
 | Sayfa | Ne işe yarar |
 |---|---|
-| `index.html` | Öğrenci adını ve sınav kodunu yazar, kendi sorularını çözer, "Kontrol et" ile sonucunu görür. |
-| `ogretmen.html` | Öğretmen sınav kodunu ve öğrenci listesini girer; cevap anahtarı, öğrenci linki ve yazdırılabilir kâğıtlar alır. "Soru şablonları" sekmesi her şablondan örnek gösterir. |
+| `index.html` | Ana sayfa: sitenin tanıtımı, aynı sorunun üç öğrenciye nasıl farklı sayılarla çıktığını gösteren canlı örnek, konu listesi. |
+| `sorular.html` | Soru sayfası: öğrenci adını ve sınav kodunu yazar, konu seçer, kendi sorularını çözer, "Kontrol et" ile sonucunu görür. |
+| `sss.html` | Sık sorulan sorular (içerik `faq.js` dosyasında, 3 dilde). |
+| `ogretmen.html` | Öğretmen sayfası: cevap anahtarı, öğrenci linki, yazdırılabilir kâğıtlar ve şablon önizleme. |
 
-Öğretmen sayfasının verdiği link (`index.html?kod=...&n=...&dil=...`) öğrencilere gönderilir. Linke `&ad=Ali` eklenirse sınav doğrudan açılır.
+Öğretmen sayfasının verdiği link (`sorular.html?kod=...&n=...&konu=...&dil=...`) öğrencilere gönderilir. Linke `&ad=Ali` eklenirse sınav doğrudan açılır.
+
+Şu an sitede **yalnızca fizik** açık. Diğer dersleri açmak için `config.js` içindeki `activeSubjects` listesine ders adını ekleyin (ör. `["fizik", "matematik"]`). Matematik, kimya ve geometri örnekleri `questions/ornekler.js` içinde hazır bekliyor.
 
 > **Not:** Her şey tarayıcıda çalıştığı için teknik bilgisi olan bir öğrenci cevapları hesaplayabilir. Not verilen sınavlar için öğretmen sayfasından **kâğıt çıktı** alın; çevrim içi sayfa alıştırma için idealdir.
 
@@ -32,12 +36,13 @@ Bilgisayarda denemek için `index.html` dosyasını tarayıcıda açmanız yeter
 
 ## Yeni soru ekleme
 
-Sorular `questions/` klasöründeki `.js` dosyalarındadır. `questions/ornekler.js` örnek dosyadır. Her soru bir `QB.add({...})` bloğudur:
+Sorular `questions/` klasöründeki `.js` dosyalarındadır. Fizik soruları `questions/fizik.js` içindedir. Yeni bir konu eklerseniz adını `i18n.js` içindeki `topics` listesine 3 dilde yazın. Her soru bir `QB.add({...})` bloğudur:
 
 ```js
 QB.add({
   id: "fiz-yol-01",            // benzersiz ad (her soruda farklı olmalı)
   subject: "fizik",            // matematik, geometri, fizik, kimya, biyoloji
+  topic: "hareket",            // konu (i18n.js içindeki "topics" listesinden)
   grade: 9,                    // sınıf (isteğe bağlı)
   type: "mc",                  // "mc" = çoktan seçmeli, "open" = açık uçlu
   vars: {
@@ -90,7 +95,7 @@ Koşullarda `< <= > >= == !=` ile `and`, `or`, `not` kullanılabilir.
 
 ### Yeni soru dosyası eklerken
 
-`questions/` içine yeni bir dosya (ör. `questions/fizik-9.js`) eklediğinizde, onu hem `index.html` hem de `ogretmen.html` içindeki soru dosyaları listesine ekleyin:
+`questions/` içine yeni bir dosya (ör. `questions/fizik-11.js`) eklediğinizde, onu `index.html`, `sorular.html` ve `ogretmen.html` içindeki soru dosyaları listesine ekleyin:
 
 ```html
 <script src="questions/fizik-9.js"></script>
@@ -114,10 +119,12 @@ Her `push` işleminde GitHub Actions bu kontrolü otomatik çalıştırır.
 ## Dosyalar
 
 ```
-index.html         Öğrenci sayfası
-ogretmen.html      Öğretmen sayfası
+index.html         Ana sayfa (home.js)
+sorular.html       Soru sayfası (app.js)
+sss.html           Sık sorulan sorular (faq.js)
+ogretmen.html      Öğretmen sayfası (teacher.js)
 engine.js          Soru motoru (rastgelelik, formül çözümleyici, biçimlendirme)
-ui.js, app.js, teacher.js   Arayüz kodu
+ui.js              Ortak menü, dil seçimi ve alt bilgi
 config.js, i18n.js Ayarlar ve çeviriler
 style.css          Görünüm
 questions/         Soru şablonları

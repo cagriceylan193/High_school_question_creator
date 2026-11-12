@@ -2,6 +2,9 @@
 globalThis.QB_CONFIG = {
   // Desteklenen diller. Her şablonun her dilde metni olmalı.
   languages: ["tr", "en", "de"],
+  // Sitede kullanılan dersler. Boş liste [] = tüm dersler.
+  // Diğer dersleri açmak için ekleyin: ["fizik", "matematik", "kimya"]
+  activeSubjects: ["fizik"],
   // Sayfa ilk açıldığında seçili dil.
   defaultLanguage: "tr",
   // Öğrenci sayfasında önceden yazılı gelen sınav kodu.
