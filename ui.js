@@ -158,8 +158,108 @@
   // Soru başlığındaki etiket: "Hareket · Zor"
   function questionTag(tpl) {
     const lv = QB.levelOf(tpl);
-    return el("span", { class: "q-subject" }, topicName(QB.topicOf(tpl)),
+    const tag = el("span", { class: "q-subject" }, topicName(QB.topicOf(tpl)),
       el("span", { class: "lvl lvl-" + lv }, levelName(lv)));
+    if (tpl.parts) tag.append(el("span", { class: "lvl open-tag" }, t("openTag")));
+    return tag;
+  }
+
+  function skillLine(tpl) {
+    if (!tpl.skills || !tpl.skills.length) return null;
+    const names = tpl.skills.map((k) => (I18N[lang].skills && I18N[lang].skills[k]) || k);
+    return el("p", { class: "skills small muted" }, t("skillsLabel") + ": " + names.join(" · "));
+  }
+
+  // Açık uçlu (bölümlü) soru: a), b), c) bölümleri, cevap alanları ve rubrik
+  // st = { resp: { p: [...], s: { "2": [true, false] } }, checked, locked, selfEdit, name, onPart, onRubric }
+  function yaziliParts(inst, qi, lang, st) {
+    const resp = st.resp && typeof st.resp === "object" ? st.resp : { p: [], s: {} };
+    const given = resp.p || [];
+    const scores = st.checked ? QB.partScores(inst, resp) : null;
+    const list = el("ol", { class: "parts" });
+    inst.tpl.parts.forEach((pt, i) => {
+      const name = `${st.name || "q" + qi}p${i}`;
+      const max = QB.partPoints(inst.tpl, i);
+      const locked = !!(st.locked || st.checked);
+      const li = el("li", { class: "part" });
+      li.append(el("div", { class: "part-head" },
+        el("span", { class: "part-letter" }, QB.PART_LETTERS[i] + ")"),
+        el("label", { class: "part-text", for: name, html: QB.partText(inst, i, lang) }),
+        el("span", { class: "part-pts" }, t("pts", { n: max }))));
+      const val = given[i];
+      if (pt.kind === "number") {
+        const input = el("input", { type: "text", id: name, inputmode: "decimal", autocomplete: "off" });
+        input.value = val ?? "";
+        input.disabled = locked;
+        input.addEventListener("input", () => st.onPart && st.onPart(i, input.value));
+        const unit = QB.partUnit(inst, i, lang);
+        li.append(el("div", { class: "open part-answer" }, input, unit ? el("span", { class: "unit" }, unit) : null));
+      } else if (pt.kind === "select") {
+        const sel = el("select", { id: name });
+        sel.append(el("option", { value: "" }, t("selectPick")));
+        QB.partOptions(inst, i, lang).forEach((o, k) => sel.append(el("option", { value: k }, o.replace(/<[^>]+>/g, ""))));
+        sel.value = val === null || val === undefined ? "" : String(val);
+        sel.disabled = locked;
+        sel.addEventListener("change", () => st.onPart && st.onPart(i, sel.value === "" ? null : Number(sel.value)));
+        li.append(el("div", { class: "open part-answer" }, sel));
+      } else {
+        const ta = el("textarea", { id: name, rows: 4, maxlength: 1500, placeholder: t("writeHere") });
+        ta.value = val ?? "";
+        ta.disabled = locked;
+        ta.addEventListener("input", () => st.onPart && st.onPart(i, ta.value));
+        li.append(el("div", { class: "part-answer" }, ta));
+      }
+
+      if (st.checked) {
+        const got = scores[i];
+        const cls = got >= max ? "ok" : got > 0 ? "mid" : "bad";
+        if (pt.kind !== "text") {
+          li.append(el("div", { class: "feedback" },
+            el("span", { class: "pill " + cls }, `${got} / ${max}`),
+            got >= max ? null : el("span", {}, t("correctIs", { a: QB.partAnswer(inst, i, lang) }))));
+        } else {
+          const ticks = (resp.s && resp.s[String(i)]) || [];
+          const rub = el("div", { class: "rubric" });
+          rub.append(el("div", { class: "model" }, el("b", {}, t("modelAnswer") + ": "), el("span", { html: QB.partModel(inst, i, lang) })));
+          rub.append(el("p", { class: "small muted" }, st.selfEdit ? t("rubricSelf") : t("rubricTitle")));
+          const ul = el("ul", { class: "rubric-list" });
+          QB.partRubric(inst, i, lang).forEach((r, j) => {
+            const cid = `${name}r${j}`;
+            const cb = el("input", { type: "checkbox", id: cid });
+            cb.checked = !!ticks[j];
+            cb.disabled = !st.selfEdit;
+            cb.addEventListener("change", () => st.onRubric && st.onRubric(i, j, cb.checked));
+            ul.append(el("li", {},
+              el("label", { for: cid, class: "check-inline" }, cb, el("span", { html: r.text })),
+              el("span", { class: "part-pts" }, t("pts", { n: r.points }))));
+          });
+          rub.append(ul, el("div", { class: "feedback" }, el("span", { class: "pill " + cls }, `${got} / ${max}`)));
+          li.append(rub);
+        }
+      }
+      list.append(li);
+    });
+    return list;
+  }
+
+  function renderFormatChips(box, wanted) {
+    const prev = new Set([...box.querySelectorAll("input:checked")].map((i) => i.value));
+    const first = !box.children.length;
+    const have = new Set(QB.active().map(QB.formatOf));
+    box.innerHTML = "";
+    for (const f of ["test", "acik"]) {
+      if (!have.has(f)) continue;
+      const id = "bicim-" + f;
+      const input = el("input", { type: "checkbox", id, value: f });
+      input.checked = first ? (!wanted || wanted.includes(f)) : prev.has(f);
+      box.append(el("label", { class: "chip", for: id }, input, (I18N[lang].formats || {})[f] || f));
+    }
+    if (box.parentElement) box.parentElement.hidden = have.size < 2;
+  }
+  function pickedFormats(box) {
+    const all = box.querySelectorAll("input");
+    const picked = [...box.querySelectorAll("input:checked")].map((i) => i.value);
+    return picked.length === all.length ? [] : picked;
   }
 
   function pickedTopics(box) {
@@ -205,6 +305,18 @@
 
     const CONFIG = globalThis.QB_CONFIG;
     const resp = st.resp;
+    if (inst.type === "yazili") {
+      const sk = skillLine(inst.tpl);
+      if (sk) body.append(sk);
+      li.append(yaziliParts(inst, qi, lang, st));
+      if (st.checked) {
+        const got = QB.pointsOf(inst, resp), max = QB.maxPoints(inst);
+        li.classList.add(got >= max ? "is-ok" : got > 0 ? "is-mid" : "is-bad");
+        li.append(el("div", { class: "feedback total" },
+          el("span", { class: "pill " + (got >= max ? "ok" : got > 0 ? "mid" : "bad") }, t("qPoints", { p: got, m: max }))));
+      }
+      return li;
+    }
     const ok = st.checked && QB.isCorrect(inst, resp);
     const blank = resp === null || resp === undefined || resp === "";
     if (inst.choices) {
@@ -251,6 +363,9 @@
     pickedTopics,
     renderLevelChips,
     pickedLevels,
+    renderFormatChips,
+    pickedFormats,
+    yaziliParts,
     levelName,
     questionTag,
     applyStatic,

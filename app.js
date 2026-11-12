@@ -12,10 +12,12 @@
   const p = UI.params;
   const wantedTopics = p.get("konu") ? p.get("konu").split(",") : null;
   const wantedLevels = p.get("zorluk") ? p.get("zorluk").split(",").map(Number) : null;
+  const wantedFormats = p.get("bicim") ? p.get("bicim").split(",") : null;
   function renderTopics() {
     UI.renderTopicChips($("topics"), wantedTopics);
     $("topicsWrap").hidden = UI.topicKeys().length < 2;
     UI.renderLevelChips($("levels"), wantedLevels);
+    UI.renderFormatChips($("formats"), wantedFormats);
   }
 
   const me = QBA.current();
@@ -45,16 +47,16 @@
 
   $("startForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")), UI.pickedLevels($("levels")));
+    start($("student").value, $("code").value, Number($("count").value), UI.pickedTopics($("topics")), UI.pickedLevels($("levels")), UI.pickedFormats($("formats")));
   });
 
-  function start(student, code, count, topics, levels) {
+  function start(student, code, count, topics, levels, formats) {
     student = student.trim();
     code = code.trim();
     if (!student || !code) return;
     UI.storageSet("qb-student", student);
-    const items = QB.buildExam({ student, code, count, topics, levels });
-    exam = { student, code, count, topics, levels, items, responses: items.map(() => null), checked: false, savedId: null };
+    const items = QB.buildExam({ student, code, count, topics, levels, formats });
+    exam = { student, code, count, topics, levels, formats, items, responses: items.map(() => null), checked: false, savedId: null };
     $("start").hidden = true;
     $("exam").hidden = false;
     renderExam();
@@ -78,14 +80,21 @@
       list.append(UI.questionCard(inst, qi, lang, {
         resp: exam.responses[qi],
         checked: exam.checked,
+        selfEdit: exam.checked,
         onPick: (ci) => { exam.responses[qi] = ci; },
         onInput: (v) => { exam.responses[qi] = v; },
+        // Açık uçlu sorular: bölüm cevapları ve rubrikte işaretlenen ölçütler
+        onPart: (i, v) => { const r = yresp(qi); r.p[i] = v; },
+        onRubric: (i, j, on) => {
+          const r = yresp(qi);
+          const arr = r.s[String(i)] || [];
+          arr[j] = on;
+          r.s[String(i)] = Array.from(arr, (x) => !!x);
+          rubricChanged();
+        },
       }));
     });
-
-    const valid = exam.items.filter((i) => !i.error);
-    const nOk = exam.items.filter((inst, qi) => !inst.error && QB.isCorrect(inst, exam.responses[qi])).length;
-    $("score").textContent = exam.checked ? t("score", { c: nOk, n: valid.length }) : "";
+    renderScore();
     $("checkBtn").hidden = exam.checked;
     $("clearBtn").hidden = !exam.checked;
     $("pdfKeyWrap").hidden = exam.checked;
@@ -99,6 +108,41 @@
     }
   }
 
+  // Açık uçlu sorunun cevap nesnesi
+  function yresp(qi) {
+    let r = exam.responses[qi];
+    if (!r || typeof r !== "object") r = exam.responses[qi] = { p: [], s: {} };
+    r.p = r.p || [];
+    r.s = r.s || {};
+    return r;
+  }
+
+  function results() {
+    const ok = exam.items.map((inst, qi) => !inst.error && QB.isCorrect(inst, exam.responses[qi]));
+    const valid = exam.items.filter((i) => !i.error);
+    let pts = 0, max = 0;
+    exam.items.forEach((inst, qi) => { if (!inst.error) { pts += QB.pointsOf(inst, exam.responses[qi]); max += QB.maxPoints(inst); } });
+    return { ok, n: valid.length, c: ok.filter(Boolean).length, pts, max, open: valid.some((i) => i.type === "yazili") };
+  }
+
+  function renderScore() {
+    if (!exam.checked) { $("score").textContent = ""; return; }
+    const r = results();
+    $("score").textContent = t("score", { c: r.c, n: r.n }) + (r.open ? " · " + t("pointsTotal", { p: r.pts, m: r.max }) : "");
+  }
+
+  // Rubrik işaretlendikçe puanı güncelle ve kayıtlı sınavı da güncelle
+  let saveTimer = null;
+  function rubricChanged() {
+    renderExam();
+    if (!exam.savedId) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const r = results();
+      QBA.updateAttempt(exam.savedId, { resp: JSON.parse(JSON.stringify(exam.responses)), ok: r.ok, score: r.c });
+    }, 800);
+  }
+
   $("checkBtn").addEventListener("click", () => {
     exam.checked = true;
     // Giriş yapılmışsa sonucu geçmişe kaydet
@@ -107,7 +151,7 @@
       const rec = QBA.addAttempt({
         code: exam.code, student: exam.student, lang: UI.lang, count: exam.count,
         topics: exam.topics, levels: exam.levels, seed: QB.examSeed(exam.student, exam.code),
-        ids: exam.items.map((i) => i.tpl.id), resp: exam.responses, ok,
+        ids: exam.items.map((i) => i.tpl.id), resp: JSON.parse(JSON.stringify(exam.responses)), ok,
         score: ok.filter(Boolean).length, total: exam.items.filter((i) => !i.error).length,
       });
       exam.savedId = rec ? rec.id : null;

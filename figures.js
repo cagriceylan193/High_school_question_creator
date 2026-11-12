@@ -61,6 +61,7 @@
     opaque: { stroke: INK, "stroke-width": 5, "stroke-linecap": "round" },
     lamp: { fill: "#ffe48a", stroke: INK, "stroke-width": 1.5 },
     mirror: { stroke: INK, "stroke-width": 3 },
+    thead: { fill: "#e6eefc", stroke: "none" },
   };
   function inlineStyles(svgText) {
     const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
@@ -76,6 +77,7 @@
         node.setAttribute("font-family", "Roboto");
         if (!node.getAttribute("font-size")) node.setAttribute("font-size", cls.includes("mut") ? "12" : "13");
         node.setAttribute("fill", cls.includes("mut") ? MUTED : cls.includes("acc") ? ACCENT : INK);
+        if (cls.includes("b")) node.setAttribute("font-weight", "bold");
         continue;
       }
       for (const c of cls) for (const [k, v] of Object.entries(STYLE[c] || {})) node.setAttribute(k, v);
@@ -216,6 +218,23 @@
     return polyline(p, "plot");
   }
 
+  // Veri tablosu: rows[0] başlık satırı; widths sütun genişlikleri
+  function table(x, y, widths, rowH, rows) {
+    const W = widths.reduce((a, b) => a + b, 0), H = rows.length * rowH;
+    let s = rect(x, y, W, rowH, "thead");
+    rows.forEach((row, ri) => {
+      let cx = x;
+      row.forEach((cell, ci) => {
+        s += text(cx + widths[ci] / 2, y + ri * rowH + rowH / 2, String(cell), ri === 0 ? { cls: "b", size: 12 } : {});
+        cx += widths[ci];
+      });
+    });
+    for (let ri = 0; ri <= rows.length; ri++) s += line(x, y + ri * rowH, x + W, y + ri * rowH, ri === 0 || ri === rows.length ? "ln" : "thin");
+    let cx = x;
+    for (let ci = 0; ci <= widths.length; ci++) { s += line(cx, y, cx, y + H, ci === 0 || ci === widths.length ? "ln" : "thin"); cx += widths[ci] || 0; }
+    return s;
+  }
+
   // Noktalardan geçen yumuşak eğri (Catmull-Rom)
   function curve(p, cls = "ln") {
     let d = `M${r(p[0][0])},${r(p[0][1])}`;
@@ -241,6 +260,6 @@
 
   root.QB_FIG = {
     svg, line, dashed, rect, circle, dot, poly, polyline, path, text, arrow,
-    inlineStyles, dimH, dimV, ground, grid, vessel, resistor, battery, switchOpen, switchClosed, graph, wave, curve, car, box, label, esc,
+    inlineStyles, dimH, dimV, ground, grid, vessel, resistor, battery, switchOpen, switchClosed, graph, wave, curve, table, car, box, label, esc,
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);

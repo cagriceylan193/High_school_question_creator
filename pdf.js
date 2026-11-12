@@ -64,6 +64,69 @@
     return m ? Number(m[1]) : 320;
   }
 
+  // Boş cevap satırları
+  function lines(k) {
+    return { canvas: Array.from({ length: k }, (_, i) => ({ type: "line", x1: 0, y1: 18 * (i + 1), x2: 440, y2: 18 * (i + 1), lineWidth: 0.5, lineColor: "#b8c0ca" })), margin: [16, 0, 0, 4] };
+  }
+
+  // Açık uçlu (bölümlü) sorunun a), b), c) bölümleri
+  function yaziliBlocks(inst, lang, resp, checked) {
+    const t = UI.t;
+    const r = resp && typeof resp === "object" ? resp : { p: [], s: {} };
+    const given = r.p || [];
+    const scores = checked ? QB.partScores(inst, r) : null;
+    const out = [];
+    if (inst.tpl.skills && inst.tpl.skills.length) {
+      const names = inst.tpl.skills.map((k) => (QB_I18N[lang].skills || {})[k] || k).join(" · ");
+      out.push({ text: `${t("skillsLabel")}: ${names}`, fontSize: 8, color: C.muted, margin: [0, 0, 0, 4] });
+    }
+    inst.tpl.parts.forEach((pt, i) => {
+      const max = QB.partPoints(inst.tpl, i);
+      const part = [{
+        columns: [
+          { text: QB.PART_LETTERS[i] + ")", width: 16, bold: true, color: C.accent },
+          { text: runs(QB.partText(inst, i, lang)), width: "*" },
+          { text: t("pts", { n: max }), width: 44, alignment: "right", noWrap: true, fontSize: 8, color: C.muted },
+        ],
+        margin: [0, 6, 0, 3],
+      }];
+      if (!checked) {
+        if (pt.kind === "number") {
+          const u = QB.partUnit(inst, i, lang);
+          part.push({ text: `${t("answerLabel")}: ______________ ${u || ""}`, margin: [16, 4, 0, 2] });
+        } else if (pt.kind === "select") {
+          part.push({ text: QB.partOptions(inst, i, lang).map((o) => "(   ) " + plain(o)).join("      "), margin: [16, 4, 0, 2] });
+        } else {
+          part.push(lines(4));
+        }
+      } else {
+        const got = scores[i];
+        const col = got >= max ? C.ok : got > 0 ? "#a8640a" : C.bad;
+        let mine;
+        if (pt.kind === "select") mine = given[i] === null || given[i] === undefined || given[i] === "" ? "—" : plain(QB.partOptions(inst, i, lang)[Number(given[i])] || "—");
+        else mine = given[i] === null || given[i] === undefined || String(given[i]).trim() === "" ? "—" : String(given[i]) + (pt.kind === "number" && QB.partUnit(inst, i, lang) ? " " + QB.partUnit(inst, i, lang) : "");
+        part.push({ text: [{ text: t("pdfYourAnswer") + ": ", color: C.muted }, { text: mine, color: pt.kind === "text" ? C.ink : col }], margin: [16, 2, 0, 2] });
+        if (pt.kind !== "text") {
+          if (got < max) part.push({ text: t("correctIs", { a: QB.partAnswer(inst, i, lang) }), fontSize: 9, margin: [16, 0, 0, 2] });
+        } else {
+          part.push({ text: [{ text: t("modelAnswer") + ": ", bold: true }, ...runs(QB.partModel(inst, i, lang))], fontSize: 9, margin: [16, 3, 0, 2] });
+          const ticks = (r.s && r.s[String(i)]) || [];
+          QB.partRubric(inst, i, lang).forEach((rb, j) => part.push({
+            columns: [{ text: ticks[j] ? "[x]" : "[  ]", width: 20, color: ticks[j] ? C.ok : C.muted }, { text: runs(rb.text), width: "*" }, { text: t("pts", { n: rb.points }), width: 44, alignment: "right", noWrap: true, color: C.muted }],
+            fontSize: 8.5, margin: [16, 1, 0, 1],
+          }));
+        }
+        part.push({ text: `${got} / ${max}`, bold: true, color: col, fontSize: 9, margin: [16, 2, 0, 0] });
+      }
+      out.push({ stack: part, unbreakable: true });
+    });
+    if (checked) {
+      const got = QB.pointsOf(inst, r), max = QB.maxPoints(inst);
+      out.push({ text: t("qPoints", { p: got, m: max }), bold: true, color: got >= max ? C.ok : got > 0 ? "#a8640a" : C.bad, margin: [0, 6, 0, 0] });
+    }
+    return out;
+  }
+
   function questionBlock(inst, n, lang, resp, checked) {
     const t = UI.t;
     const stack = [];
@@ -84,6 +147,14 @@
       columns: [{ text: QB.ROMAN[i] + ".", width: 24, color: C.muted }, { text: runs(st), width: "*" }], margin: [6, 1, 0, 1],
     }));
     if (p.ask) stack.push({ text: runs(p.ask, { bold: true }), margin: [0, 3, 0, 2] });
+
+    if (inst.type === "yazili") {
+      stack.push(...yaziliBlocks(inst, lang, resp, checked));
+      return {
+        stack: [{ columns: [{ text: `${n}.`, width: 20, bold: true, color: C.accent }, { stack, width: "*" }] }],
+        margin: [0, 0, 0, 16],
+      };
+    }
 
     if (inst.choices) {
       if (inst.type === "changes") {
@@ -139,9 +210,16 @@
   function sheetHeader(sheet, lang, first) {
     const t = UI.t;
     const valid = sheet.items.filter((i) => !i.error);
-    const score = sheet.checked
-      ? t("score", { c: valid.filter((inst) => QB.isCorrect(inst, sheet.responses[sheet.items.indexOf(inst)])).length, n: valid.length })
-      : "";
+    let score = "";
+    if (sheet.checked) {
+      const rs = (inst) => sheet.responses[sheet.items.indexOf(inst)];
+      score = t("score", { c: valid.filter((inst) => QB.isCorrect(inst, rs(inst))).length, n: valid.length });
+      if (valid.some((i) => i.type === "yazili")) {
+        const pts = valid.reduce((a, inst) => a + QB.pointsOf(inst, rs(inst)), 0);
+        const max = valid.reduce((a, inst) => a + QB.maxPoints(inst), 0);
+        score += " · " + t("pointsTotal", { p: pts, m: max });
+      }
+    }
     return [
       {
         columns: [
@@ -183,6 +261,23 @@
       }));
       const half = Math.ceil(cells.length / 2);
       out.push({ columns: [{ stack: cells.slice(0, half) }, { stack: cells.slice(half) }], columnGap: 20 });
+
+      // Açık uçlu sorular: bölüm cevapları, örnek cevaplar ve dereceli puanlama anahtarı
+      sh.items.forEach((inst, qi) => {
+        if (inst.error || inst.type !== "yazili") return;
+        const block = [{ text: `${qi + 1}. ${t("rubricTitle")} (${t("pts", { n: QB.maxPoints(inst) })})`, bold: true, fontSize: 10, margin: [0, 10, 0, 3] }];
+        inst.tpl.parts.forEach((pt, i) => {
+          const head = { text: [{ text: QB.PART_LETTERS[i] + ") ", bold: true, color: C.accent }, { text: `(${t("pts", { n: QB.partPoints(inst.tpl, i) })}) `, color: C.muted }], fontSize: 9, margin: [6, 2, 0, 1] };
+          if (pt.kind !== "text") { head.text.push({ text: QB.partAnswer(inst, i, lang) }); block.push(head); return; }
+          head.text.push({ text: t("modelAnswer") + ": ", bold: true }, ...runs(QB.partModel(inst, i, lang)));
+          block.push(head);
+          QB.partRubric(inst, i, lang).forEach((rb) => block.push({
+            columns: [{ text: "•", width: 10 }, { text: runs(rb.text), width: "*" }, { text: t("pts", { n: rb.points }), width: 44, alignment: "right", noWrap: true, color: C.muted }],
+            fontSize: 8.5, margin: [18, 0, 0, 1],
+          }));
+        });
+        out.push({ stack: block, unbreakable: true });
+      });
     }
     return out;
   }

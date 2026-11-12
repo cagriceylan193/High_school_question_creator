@@ -39,6 +39,10 @@ globalThis.QB_FAQ = {
       a: "Sayısal çoktan seçmeli ve açık uçlu soruların yanında <b>“I, II, III yargılarından hangileri doğrudur?”</b>, <b>sıralama</b> (ör. P<sub>K</sub> &gt; P<sub>L</sub> = P<sub>M</sub>) ve <b>“Artar / Azalır / Değişmez”</b> soruları var. Birçok soruda grafik, devre, kap veya dalga şekli bulunur; şekildeki sayılar da sana özeldir. Her soru <b>Kolay</b>, <b>Orta</b> veya <b>Zor</b> olarak işaretlidir. Soru sayfasında zorluğu seçebilirsin; sınavda sorular kolaydan zora sıralanır.",
     },
     {
+      q: "Açık uçlu sorular nasıl puanlanır?",
+      a: "Açık uçlu sorular, Maarif Modeli'ndeki ortak yazılılara benzer biçimde gerçek yaşamdan bir bağlam ve a), b), c) bölümlerinden oluşur. Hesap ve kısa cevap bölümleri (sayı yazma, “Artar / Azalır / Değişmez” seçme) otomatik puanlanır. Açıklama bölümlerinde ise kontrol ettikten sonra <b>örnek cevap</b> ve <b>dereceli puanlama anahtarı</b> (rubrik) açılır; cevabını karşılaştırıp karşıladığın ölçütleri işaretlersin, puanın buna göre hesaplanır. Öğretmenler PDF'in sonundaki dereceli puanlama anahtarıyla kâğıt sınavı değerlendirebilir. Soru sayfasında “Soru biçimi → Açık uçlu” seçerek yalnızca bu sorulardan oluşan bir sınav oluşturabilirsin.",
+    },
+    {
       q: "Adım ve cevaplarım bir yere kaydediliyor mu?",
       a: "Hesap açmazsan ya da e-postasız hesap kullanırsan hiçbir bilgi sunucuya gönderilmez; her şey kendi tarayıcında kalır. E-posta ile hesap açarsan adın, e-postan ve çözdüğün sınavlar Google Firebase'de yalnızca senin erişebileceğin şekilde saklanır; ayrıntılar <a href=\"gizlilik.html\">aydınlatma metninde</a>. Puanını öğretmenin görmez; sınavı kâğıtta yapıyorsanız cevaplarını kâğıda yaz.",
     },
@@ -97,6 +101,10 @@ globalThis.QB_FAQ = {
       a: "Besides numerical multiple-choice and open questions, there are <b>“Which of statements I, II, III are true?”</b>, <b>ordering</b> (e.g. P<sub>K</sub> &gt; P<sub>L</sub> = P<sub>M</sub>) and <b>“increases / decreases / no change”</b> questions. Many questions include a graph, circuit, container or wave diagram, and the numbers in the diagram are personal to you too. Every question is marked <b>Easy</b>, <b>Medium</b> or <b>Hard</b>. You can choose the difficulty on the questions page; in an exam the questions go from easy to hard.",
     },
     {
+      q: "How are open-ended questions scored?",
+      a: "Open-ended questions, like the common written exams of Turkey's Maarif Model, consist of a real-life context and parts a), b), c). Calculation and short-answer parts (typing a number, choosing “increases / decreases / no change”) are scored automatically. For explanation parts, after checking you see a <b>sample answer</b> and a <b>scoring rubric</b>; compare your answer and tick the criteria you met, and your points are calculated from them. Teachers can mark paper exams with the rubric at the end of the PDF. Choose “Question format → Open-ended” on the questions page to get an exam with only these questions.",
+    },
+    {
       q: "Are my name and answers saved anywhere?",
       a: "Without an account, or with an account without email, nothing is sent to a server; everything stays in your own browser. With an email account, your name, email and solved exams are stored in Google Firebase where only you can access them; see the <a href=\"gizlilik.html\">privacy notice</a> for details. Your teacher doesn't see your score; if the exam is on paper, write your answers on the paper.",
     },
@@ -153,6 +161,10 @@ globalThis.QB_FAQ = {
     {
       q: "Welche Aufgabentypen und Schwierigkeitsstufen gibt es?",
       a: "Neben Multiple-Choice- und offenen Rechenaufgaben gibt es <b>„Welche der Aussagen I, II, III sind richtig?“</b>, <b>Reihenfolgen</b> (z. B. P<sub>K</sub> &gt; P<sub>L</sub> = P<sub>M</sub>) und <b>„nimmt zu / nimmt ab / bleibt gleich“</b>. Viele Aufgaben enthalten ein Diagramm, eine Schaltung, ein Gefäß oder eine Welle; auch die Zahlen in der Abbildung sind persönlich. Jede Aufgabe ist als <b>Leicht</b>, <b>Mittel</b> oder <b>Schwer</b> markiert. Auf der Aufgabenseite kannst du die Schwierigkeit wählen; in einer Prüfung gehen die Aufgaben von leicht nach schwer.",
+    },
+    {
+      q: "Wie werden offene Aufgaben bewertet?",
+      a: "Offene Aufgaben bestehen – ähnlich wie die gemeinsamen schriftlichen Prüfungen des türkischen Maarif-Modells – aus einem Alltagskontext und den Teilen a), b), c). Rechen- und Kurzantwortteile (Zahl eingeben, „nimmt zu / nimmt ab / bleibt gleich“ wählen) werden automatisch bewertet. Bei Erklärungsteilen erscheinen nach dem Prüfen eine <b>Musterlösung</b> und ein <b>Bewertungsraster</b>; vergleiche deine Antwort und hake die erfüllten Kriterien ab, daraus werden deine Punkte berechnet. Lehrkräfte können Papierprüfungen mit dem Raster am Ende des PDFs bewerten. Wähle auf der Aufgabenseite „Aufgabenformat → Offene Aufgaben“, um eine Prüfung nur mit diesen Aufgaben zu erhalten.",
     },
     {
       q: "Werden mein Name und meine Antworten gespeichert?",

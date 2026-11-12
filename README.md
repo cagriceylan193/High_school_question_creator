@@ -85,7 +85,7 @@ Bilgisayarda denemek için `index.html` dosyasını tarayıcıda açmanız yeter
 
 ## Yeni soru ekleme
 
-Sorular `questions/` klasöründeki `.js` dosyalarındadır. Fizik soruları: `fizik.js` (temel), `fizik-madde.js` (madde, basınç, kaldırma kuvveti, ısı), `fizik-hareket.js` (hareket, kuvvet, enerji), `fizik-elektrik-optik.js` (elektrostatik, elektrik, optik, dalgalar). Tüm sorular ve şekiller bu proje için özgün olarak yazılmıştır; yayınevi kitaplarından soru, metin veya şekil kopyalanmamalıdır. Yeni bir konu eklerseniz adını `i18n.js` içindeki `topics` listesine 3 dilde yazın. Her soru bir `QB.add({...})` bloğudur:
+Sorular `questions/` klasöründeki `.js` dosyalarındadır. Fizik soruları: `fizik.js` (temel), `fizik-madde.js` (madde, basınç, kaldırma kuvveti, ısı), `fizik-hareket.js` (hareket, kuvvet, enerji), `fizik-elektrik-optik.js` (elektrostatik, elektrik, optik, dalgalar), `fizik-maarif.js` (açık uçlu, bağlamlı sorular). Tüm sorular ve şekiller bu proje için özgün olarak yazılmıştır; yayınevi kitaplarından soru, metin veya şekil kopyalanmamalıdır. Yeni bir konu eklerseniz adını `i18n.js` içindeki `topics` listesine 3 dilde yazın. Her soru bir `QB.add({...})` bloğudur:
 
 ```js
 QB.add({
@@ -166,6 +166,38 @@ changes: [
   { label: { tr: "Batan hacim", ... }, before: "...", after: "..." },
 ],
 ```
+
+**5) Açık uçlu, bağlamlı sorular (Maarif Modeli yaklaşımı)** — `parts` listesi. Gerçek yaşamdan bir bağlam (`text`, isteğe bağlı `figure` / tablo) ve a), b), c) bölümleri. Her bölüm `kind` alır:
+
+| `kind` | Öğrenci ne yapar | Puanlama |
+|---|---|---|
+| `number` | Sayı yazar (`answer`, `unit`, `decimals`) | Otomatik |
+| `select` | Seçer: `options` + `answer` (1'den başlayan sıra) ya da `change: { before, after }` → Artar / Azalır / Değişmez | Otomatik |
+| `text` | Açıklama yazar; `model` örnek cevap, `rubric` ölçütler | Rubrikle (öğrenci öz değerlendirme yapar; öğretmen PDF'teki anahtarla okur) |
+
+```js
+QB.add({
+  id: "maarif-ornek",
+  subject: "fizik", topic: "kuvvet", grade: 9, level: 3,
+  skills: ["hesap", "gerekce"],                 // i18n.js → skills
+  vars: { m: { values: [40, 50] }, a: { values: [1, 2] }, N: "m * (10 + a)" },
+  text: { tr: "...bağlam...", en: "...", de: "..." },
+  parts: [
+    { kind: "number", points: 2, text: { tr: "Baskül kaç N gösterir?", en: "...", de: "..." }, answer: "N", unit: "N" },
+    { kind: "select", text: { tr: "Sabit hızda değer nasıl değişir?", en: "...", de: "..." }, change: { before: "N", after: "m * 10" } },
+    { kind: "text", text: { tr: "Nedenini açıkla.", en: "...", de: "..." },
+      model: { tr: "Örnek cevap ... N = {N} N", en: "...", de: "..." },
+      rubric: [
+        { points: 1, text: { tr: "Tepki kuvvetini belirtir.", en: "...", de: "..." } },
+        { points: 1, text: { tr: "Newton'un 2. yasasıyla ilişkilendirir.", en: "...", de: "..." } },
+      ] },
+  ],
+});
+```
+
+Metinde `{if:koşul|doğruysa|yanlışsa}` sayıya göre farklı ifade yazdırır (ör. `{if:d > 0|yukarı|aşağı}`). Türkçe metinlerde değişken isimden sonra ek kullanmayın (`{ad}'nın` her isme uymaz); “öğrenci”, “bisikletli” gibi bir sözcük kullanın.
+
+Örnekler: `questions/fizik-maarif.js`. Beceri etiketleri (`skills`) genel adlardır; isterseniz Maarif programındaki alan becerisi kodlarına göre düzenleyebilirsiniz.
 
 ### Şekilli sorular
 

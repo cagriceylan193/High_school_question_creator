@@ -270,6 +270,15 @@
       const topics = att.topics && att.topics.length ? att.topics.map(UI.topicName).join(", ") : t("allSubjects");
       const levels = att.levels && att.levels.length ? " · " + att.levels.map(UI.levelName).join(", ") : "";
 
+      // Açık uçlu soru varsa puanı da göster
+      let pointsLine = null;
+      if (att.ids.some((id) => (QB.templates.find((x) => x.id === id) || {}).parts)) {
+        const items = rebuild(att);
+        let pts = 0, max = 0;
+        items.forEach((inst, qi) => { if (!inst.error) { pts += QB.pointsOf(inst, att.resp[qi]); max += QB.maxPoints(inst); } });
+        pointsLine = el("span", { class: "small" }, t("pointsTotal", { p: pts, m: max }));
+      }
+
       const li = el("li", { class: "hist-item" });
       const review = el("div", { class: "hist-review" });
       review.hidden = !open.has(att.id);
@@ -295,6 +304,7 @@
             el("span", { class: "hist-date" }, UI.formatDate(att.at, true)),
             el("span", { class: "hist-code" }, att.code),
             el("span", { class: "muted small" }, topics + levels),
+            pointsLine,
             att.pending ? el("span", { class: "pending small" }, t("pendingTag")) : null),
           el("span", { class: "hist-score " + rateClass(pct) }, `${att.score}/${att.total}`)),
         el("div", { class: "actions" }, reviewBtn, pdfBtn, del),

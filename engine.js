@@ -345,6 +345,20 @@
         if (!tpl.items || Object.keys(tpl.items).length < 3 || Object.keys(tpl.items).length > 4) throw new Error("'items' 3-4 öğe içermeli");
       } else if (kind === "changes") {
         if (!Array.isArray(tpl.changes) || tpl.changes.length < 1 || tpl.changes.length > 3) throw new Error("'changes' 1-3 öğe içermeli");
+      } else if (kind === "yazili") {
+        if (!Array.isArray(tpl.parts) || !tpl.parts.length || tpl.parts.length > 6) throw new Error("'parts' 1-6 bölüm içermeli");
+        tpl.parts.forEach((pt, i) => {
+          const tag = `${i + 1}. bölüm`;
+          if (!["number", "select", "text"].includes(pt.kind)) throw new Error(`${tag}: 'kind' number, select veya text olmalı`);
+          for (const l of LANGS) if (!localized(pt.text, l)) throw new Error(`${tag}: '${l}' metni yok`);
+          if (pt.kind === "number" && pt.answer === undefined) throw new Error(`${tag}: 'answer' yok`);
+          if (pt.kind === "select" && !pt.change && !(Array.isArray(pt.options) && pt.answer !== undefined)) throw new Error(`${tag}: 'options' + 'answer' ya da 'change' gerekli`);
+          if (pt.kind === "text") {
+            if (!pt.model) throw new Error(`${tag}: örnek cevap ('model') yok`);
+            if (!Array.isArray(pt.rubric) || !pt.rubric.length) throw new Error(`${tag}: 'rubric' yok`);
+            pt.rubric.forEach((r, j) => { for (const l of LANGS) if (!localized(r.text, l)) throw new Error(`${tag}: rubrik ${j + 1} '${l}' metni yok`); });
+          }
+        });
       } else if (tpl.answer === undefined) throw new Error("'answer' alanı yok");
       if (tpl.level !== undefined && ![1, 2, 3].includes(tpl.level)) throw new Error("'level' 1, 2 veya 3 olmalı");
       if (tpl.figure !== undefined && typeof tpl.figure !== "function") throw new Error("'figure' bir fonksiyon olmalı");
@@ -423,6 +437,29 @@
         return { ...base, answer, choices: keyChoices(answer, weakOrders(labels), rng) };
       }
 
+      if (type === "yazili") {
+        let bad = false;
+        const parts = tpl.parts.map((pt) => {
+          if (pt.kind === "number") {
+            const a = evaluate(pt.answer, scope);
+            if (!Number.isFinite(a)) bad = true;
+            return { kind: "number", answer: a, d: pt.decimals ?? (Number.isInteger(round(a, 6)) ? 0 : 2) };
+          }
+          if (pt.kind === "select") {
+            if (pt.change) {
+              const b = evaluate(pt.change.before, scope), a = evaluate(pt.change.after, scope);
+              return { kind: "select", answer: near(a, b) ? 2 : a > b ? 0 : 1, change: true };
+            }
+            const k = Math.round(evaluate(pt.answer, scope)) - 1;
+            if (!(k >= 0 && k < pt.options.length)) bad = true;
+            return { kind: "select", answer: k };
+          }
+          return { kind: "text" };
+        });
+        if (bad) continue;
+        return { ...base, parts, answer: null };
+      }
+
       if (type === "changes") {
         const outs = tpl.changes.map((c) => {
           const b = evaluate(c.before, scope), a = evaluate(c.after, scope);
@@ -447,6 +484,7 @@
     if (tpl.statements) return "statements";
     if (tpl.items) return "order";
     if (tpl.changes) return "changes";
+    if (tpl.parts) return "yazili";
     return CONFIG.defaultType || "mc";
   }
 
@@ -531,6 +569,8 @@
   // ---------------------------------------------------------------------------
   function fill(text, inst, lang, mark) {
     const wrap = mark ? (s) => `<span class="v">${s}</span>` : (s) => s;
+    // {if:koşul|doğruysa|yanlışsa} → koşula göre metin
+    text = text.replace(/\{if:([^{}|]+)\|([^{}|]*)\|([^{}|]*)\}/g, (m, c, a, b) => (evaluate(c, inst.scope) ? a : b));
     return text.replace(/\{(=)?\s*([^{}]+?)\s*(?::(\d+))?\}/g, (m, eq, body, dd) => {
       let v, d = dd !== undefined ? Number(dd) : undefined;
       if (eq) v = evaluate(body, inst.scope);
@@ -631,6 +671,75 @@
       default: return esc(choiceText(inst, i, lang));
     }
   }
+  // --- Açık uçlu (yazılı) sorular -------------------------------------------------
+  const PART_LETTERS = "abcdef";
+  const CHANGE_KEYS = ["up", "down", "same"];
+
+  function partPoints(tpl, i) {
+    const pt = tpl.parts[i];
+    if (pt.kind === "text") return pt.rubric.reduce((s, r) => s + (r.points ?? 1), 0);
+    return pt.points ?? (pt.kind === "number" ? 2 : 1);
+  }
+  function maxPoints(inst) {
+    if (inst.type !== "yazili") return 1;
+    return inst.tpl.parts.reduce((s, _, i) => s + partPoints(inst.tpl, i), 0);
+  }
+  function partText(inst, i, lang, mark) {
+    return fill(localized(inst.tpl.parts[i].text, lang), inst, lang, mark);
+  }
+  function partOptions(inst, i, lang) {
+    const pt = inst.tpl.parts[i];
+    if (pt.change) return CHANGE_KEYS.map((k) => (LOC[lang] || LOC.tr)[k]);
+    return pt.options.map((o) => fill(localized(o, lang), inst, lang));
+  }
+  function partUnit(inst, i, lang) {
+    return localized(inst.tpl.parts[i].unit, lang);
+  }
+  function partModel(inst, i, lang) {
+    return fill(localized(inst.tpl.parts[i].model, lang), inst, lang);
+  }
+  function partRubric(inst, i, lang) {
+    return inst.tpl.parts[i].rubric.map((r) => ({ text: fill(localized(r.text, lang), inst, lang), points: r.points ?? 1 }));
+  }
+  // Bir bölümün doğru cevabı (düz yazı)
+  function partAnswer(inst, i, lang) {
+    const p = inst.parts[i];
+    if (p.kind === "number") {
+      const u = partUnit(inst, i, lang);
+      return formatNum(p.answer, p.d, lang) + (u ? " " + u : "");
+    }
+    if (p.kind === "select") return partOptions(inst, i, lang)[p.answer];
+    return partModel(inst, i, lang).replace(/<[^>]+>/g, "");
+  }
+  // Öğrencinin cevabı: { p: [bölüm cevapları], s: { "2": [true, false] } } (s: rubrikte işaretlenen ölçütler)
+  function partScores(inst, resp) {
+    const r = resp && typeof resp === "object" ? resp : {};
+    const given = r.p || [];
+    return inst.tpl.parts.map((pt, i) => {
+      const p = inst.parts[i];
+      if (p.kind === "number") {
+        const x = parseAnswer(given[i]);
+        const tol = pt.tolerance ?? 0.5 * Math.pow(10, -p.d);
+        return Number.isFinite(x) && Math.abs(x - p.answer) <= tol + 1e-9 * Math.max(1, Math.abs(p.answer)) ? partPoints(inst.tpl, i) : 0;
+      }
+      if (p.kind === "select") return given[i] !== null && given[i] !== undefined && Number(given[i]) === p.answer ? partPoints(inst.tpl, i) : 0;
+      const ticks = (r.s && r.s[String(i)]) || [];
+      return pt.rubric.reduce((s, rb, j) => s + (ticks[j] ? (rb.points ?? 1) : 0), 0);
+    });
+  }
+  function pointsOf(inst, resp) {
+    if (inst.type !== "yazili") return isCorrect(inst, resp) ? 1 : 0;
+    return partScores(inst, resp).reduce((a, b) => a + b, 0);
+  }
+  function hasTextParts(inst) {
+    return inst.type === "yazili" && inst.tpl.parts.some((p) => p.kind === "text");
+  }
+  // Soru biçimi: test (seçmeli) ya da açık uçlu
+  function formatOf(tpl) {
+    const k = kindOf(tpl);
+    return k === "yazili" || k === "open" ? "acik" : "test";
+  }
+
   // "Artar / Azalır" sorularında şıkların üstündeki sütun başlıkları
   function choiceHeader(inst, lang) {
     if (inst.type !== "changes") return "";
@@ -649,6 +758,9 @@
   const LETTERS = "ABCDEFGHIJ";
 
   function answerString(inst, lang) {
+    if (inst.type === "yazili") {
+      return inst.parts.map((p, i) => `${PART_LETTERS[i]}) ${p.kind === "text" ? "…" : partAnswer(inst, i, lang)}`).join("  ");
+    }
     if (inst.choices) {
       const i = inst.choices.findIndex((c) => c.correct);
       return `${LETTERS[i]}) ${choiceText(inst, i, lang)}`;
@@ -673,12 +785,13 @@
     return t.topic || t.subject || "";
   }
 
-  function buildExam({ student, code, count, subjects, topics, levels }) {
+  function buildExam({ student, code, count, subjects, topics, levels, formats }) {
     const seed = examSeed(student, code);
     let pool = active().filter((t) =>
       (!subjects || !subjects.length || subjects.includes(t.subject)) &&
       (!topics || !topics.length || topics.includes(topicOf(t))) &&
-      (!levels || !levels.length || levels.includes(levelOf(t))));
+      (!levels || !levels.length || levels.includes(levelOf(t))) &&
+      (!formats || !formats.length || formats.includes(formatOf(t))));
     // Şablon seçimi yalnızca sınav koduna bağlı: aynı sınavda herkes aynı
     // soru kalıplarını aynı sırayla görür, sadece sayılar kişiye özeldir.
     pool = shuffle(pool, makeRng("pick", normalize(code)));
@@ -706,6 +819,7 @@
   }
 
   function isCorrect(inst, response) {
+    if (inst.type === "yazili") return pointsOf(inst, response) >= maxPoints(inst);
     if (inst.choices) {
       return response !== null && response !== undefined && inst.choices[response] && inst.choices[response].correct;
     }
@@ -725,6 +839,19 @@
     topicOf,
     levelOf,
     kindOf,
+    formatOf,
+    PART_LETTERS,
+    partPoints,
+    maxPoints,
+    partText,
+    partOptions,
+    partUnit,
+    partModel,
+    partRubric,
+    partAnswer,
+    partScores,
+    pointsOf,
+    hasTextParts,
     add,
     compile,
     evaluate,

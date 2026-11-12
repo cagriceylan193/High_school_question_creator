@@ -123,6 +123,19 @@
       return rec;
     },
 
+    // Kaydedilmiş sınavı günceller (ör. açık uçlu sorularda rubrik işaretlendikçe)
+    updateAttempt(aid, patch) {
+      const d = read();
+      const u = d.users[currentId()];
+      if (!u) return;
+      const a = u.history.find((x) => x.id === aid);
+      if (!a) return;
+      Object.assign(a, patch);
+      if (u.cloud) a.pending = true;
+      write(d);
+      if (u.cloud && root.QBC) root.QBC.init().then(() => root.QBC.push()).catch(() => {});
+    },
+
     deleteAttempt(aid) {
       const d = read();
       const u = d.users[currentId()];

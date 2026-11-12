@@ -48,6 +48,7 @@ for (const l of QB.LANGS) {
 // 4) Her şablondan çok sayıda soru üret.
 for (const tpl of QB.templates) {
   if (tpl.subject && !I18N.tr.subjects[tpl.subject]) warnings.push(`${tpl.id}: '${tpl.subject}' dersi i18n.js'de tanımlı değil`);
+  for (const sk of tpl.skills || []) if (!(I18N.tr.skills || {})[sk]) errors.push(`${tpl.id}: '${sk}' becerisi i18n.js'de tanımlı değil`);
   if (tpl.topic) for (const l of QB.LANGS) {
     if (!(I18N[l] && I18N[l].topics && I18N[l].topics[tpl.topic])) errors.push(`${tpl.id}: '${tpl.topic}' konusu i18n.js'de '${l}' dilinde tanımlı değil`);
   }
@@ -68,6 +69,22 @@ for (const tpl of QB.templates) {
         if (/[{}]/.test(txt)) errors.push(`${tpl.id} (${l}): metinde çözülmemiş süslü parantez var: ${txt}`);
         if (/NaN|Infinity|∞|undefined/.test(txt)) errors.push(`${tpl.id} (${l}): metinde geçersiz değer: ${txt.slice(0, 200)}`);
         if (tpl.figure && !txt.includes("<svg")) errors.push(`${tpl.id} (${l}): şekil çizilemedi`);
+        if (inst.type === "yazili") {
+          const bits = [];
+          inst.tpl.parts.forEach((pt, i) => {
+            bits.push(QB.partText(inst, i, l), QB.partAnswer(inst, i, l));
+            if (pt.kind === "select") bits.push(...QB.partOptions(inst, i, l));
+            if (pt.kind === "text") { bits.push(QB.partModel(inst, i, l)); QB.partRubric(inst, i, l).forEach((r) => bits.push(r.text)); }
+          });
+          for (const b of bits) {
+            if (/[{}]/.test(b)) errors.push(`${tpl.id} (${l}): bölümde çözülmemiş süslü parantez: ${b.slice(0, 120)}`);
+            if (/NaN|Infinity|undefined/.test(b)) errors.push(`${tpl.id} (${l}): bölümde geçersiz değer: ${b.slice(0, 120)}`);
+          }
+          // Doğru cevaplar + tüm ölçütler işaretli → tam puan
+          const resp = { p: inst.parts.map((p, i) => (p.kind === "number" ? QB.formatNum(p.answer, p.d, l) : p.kind === "select" ? p.answer : "x")), s: {} };
+          inst.tpl.parts.forEach((pt, i) => { if (pt.kind === "text") resp.s[String(i)] = pt.rubric.map(() => true); });
+          if (QB.pointsOf(inst, resp) !== QB.maxPoints(inst)) errors.push(`${tpl.id} (${l}): doğru cevaplarla tam puan alınamıyor (${QB.pointsOf(inst, resp)}/${QB.maxPoints(inst)})`);
+        }
         if (inst.choices) inst.choices.forEach((c, ci) => {
           const ct = QB.choiceText(inst, ci, l);
           if (!ct || /NaN|undefined/.test(ct)) errors.push(`${tpl.id} (${l}): ${ci + 1}. şık geçersiz: ${ct}`);

@@ -246,6 +246,8 @@ ol.questions { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px
 .fig .opaque { stroke: currentColor; stroke-width: 5; stroke-linecap: round; }
 .fig .lamp { fill: var(--fig-lamp); stroke: currentColor; stroke-width: 1.5; }
 .fig .mirror { stroke: currentColor; stroke-width: 3; }
+.fig .thead { fill: var(--accent-soft); stroke: none; }
+.fig text.b { font-weight: 600; }
 
 .samples .sample { display: grid; gap: 8px; padding-block: 6px; }
 .samples .ans { color: var(--ok); font-weight: 500; }
@@ -312,6 +314,40 @@ p.ok, span.ok { color: var(--ok); }
 .hist-score.low { background: var(--bad-soft); color: var(--bad); }
 .hist-item .actions button { padding: 6px 12px; font-size: 14px; }
 .hist-review .questions { margin-top: 4px; }
+
+/* Açık uçlu (bölümlü) sorular */
+.open-tag { border-color: var(--accent); color: var(--accent); }
+.skills { margin: 0; }
+.parts { list-style: none; margin: 0; padding: 0 0 0 calc(2ch + 12px); display: grid; gap: 14px; }
+.part { display: grid; gap: 8px; padding-top: 12px; border-top: 1px dashed var(--line); min-width: 0; }
+.part-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: baseline; }
+.part-letter { font-family: var(--mono); font-weight: 500; color: var(--accent); }
+.part-text { color: var(--ink); overflow-wrap: anywhere; }
+.part-pts { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.part-answer { padding-left: calc(1.5ch + 8px); }
+.part-answer.open { padding-left: calc(1.5ch + 8px); }
+.part textarea { min-height: 96px; font-size: 15px; }
+.part select { max-width: 280px; }
+.rubric { display: grid; gap: 8px; margin-left: calc(1.5ch + 8px); padding: 12px 14px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+.rubric .model { font-size: 14px; overflow-wrap: anywhere; }
+.rubric-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rubric-list li { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.rubric-list .check-inline { align-items: flex-start; color: var(--ink); }
+.rubric-list .check-inline input { margin-top: 4px; }
+.pill.mid { background: var(--accent-soft); color: var(--warn); }
+.q.is-mid { border-color: var(--warn); }
+.feedback.total { padding-left: calc(2ch + 12px); }
+.key-parts { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.key-parts .model { margin: 2px 0; }
+@media (max-width: 480px) {
+  .parts, .feedback.total { padding-left: 0; }
+  .part-answer, .part-answer.open, .rubric { padding-left: 0; margin-left: 0; }
+  .rubric { padding: 10px 12px; }
+}
+@media print {
+  .part textarea { border: 1px solid #999; min-height: 110px; }
+  .part select { display: none; }
+}
 
 /* Bulut hesabı */
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 3px; background: var(--bg); justify-self: start; }

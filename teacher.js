@@ -21,6 +21,7 @@
     UI.renderTopicChips($("topics"));
     $("topicsWrap").hidden = UI.topicKeys().length < 2;
     UI.renderLevelChips($("levels"));
+    UI.renderFormatChips($("formats"));
   }
   renderTopics();
 
@@ -32,7 +33,7 @@
 
   function readForm() {
     const students = $("students").value.split("\n").map((s) => s.trim()).filter(Boolean);
-    return { code: $("code").value.trim(), count: Number($("count").value), topics: UI.pickedTopics($("topics")), levels: UI.pickedLevels($("levels")), students };
+    return { code: $("code").value.trim(), count: Number($("count").value), topics: UI.pickedTopics($("topics")), levels: UI.pickedLevels($("levels")), formats: UI.pickedFormats($("formats")), students };
   }
 
   $("keyForm").addEventListener("submit", (e) => {
@@ -44,7 +45,7 @@
     UI.storageSet("qb-t-students", f.students.join("\n"));
     current = {
       ...f,
-      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, topics: f.topics, levels: f.levels }) })),
+      rows: f.students.map((student) => ({ student, items: QB.buildExam({ student, code: f.code, count: f.count, topics: f.topics, levels: f.levels, formats: f.formats }) })),
     };
     renderKey();
   });
@@ -55,6 +56,7 @@
     u.searchParams.set("n", current.count);
     if (current.topics.length) u.searchParams.set("konu", current.topics.join(","));
     if (current.levels.length) u.searchParams.set("zorluk", current.levels.join(","));
+    if (current.formats.length) u.searchParams.set("bicim", current.formats.join(","));
     u.searchParams.set("dil", UI.lang);
     return u.toString();
   }
@@ -74,7 +76,7 @@
       row.items.forEach((inst) => {
         if (inst.error) { tr.append(el("td", { class: "error" }, "!")); return; }
         const full = QB.answerString(inst, lang);
-        const short = inst.choices ? full.slice(0, 1) : full;
+        const short = inst.type === "yazili" ? t("rubricCell") : inst.choices ? full.slice(0, 1) : full;
         tr.append(el("td", { title: full }, short));
       });
       tbody.append(tr);
@@ -112,7 +114,9 @@
         li.append(el("div", { class: "q-top" }, el("span", { class: "q-num" }), body));
         if (inst.error) { body.append(el("p", { class: "error" }, inst.error)); ol.append(li); continue; }
         body.append(el("div", { class: "q-text", html: QB.render(inst, lang) }));
-        if (inst.choices) {
+        if (inst.type === "yazili") {
+          li.append(UI.yaziliParts(inst, 0, lang, { locked: true, name: "pr" + Math.random().toString(36).slice(2, 7) }));
+        } else if (inst.choices) {
           li.append(UI.choiceList(inst, lang));
         } else {
           const unit = QB.unitFor(inst, lang);
@@ -130,6 +134,23 @@
     window.print();
   });
   window.addEventListener("afterprint", () => document.body.classList.remove("printing-sheets"));
+
+  // Açık uçlu soru için öğretmen anahtarı: bölüm cevapları, örnek cevap ve rubrik
+  function yaziliKey(inst, lang) {
+    const ol = el("ol", { class: "key-parts" });
+    inst.tpl.parts.forEach((pt, i) => {
+      const li = el("li", {}, el("b", {}, QB.PART_LETTERS[i] + ") "), el("span", { class: "muted small" }, `(${t("pts", { n: QB.partPoints(inst.tpl, i) })}) `));
+      if (pt.kind !== "text") li.append(el("span", { class: "ans" }, QB.partAnswer(inst, i, lang)));
+      else {
+        li.append(el("div", { class: "model small" }, el("b", {}, t("modelAnswer") + ": "), el("span", { html: QB.partModel(inst, i, lang) })));
+        const ul = el("ul", { class: "rubric-list small" });
+        QB.partRubric(inst, i, lang).forEach((r) => ul.append(el("li", {}, el("span", { html: r.text }), el("span", { class: "part-pts" }, t("pts", { n: r.points })))));
+        li.append(el("div", { class: "small muted" }, t("rubricTitle")), ul);
+      }
+      ol.append(li);
+    });
+    return ol;
+  }
 
   // --- Şablon önizleme --------------------------------------------------------
   let roll = 0;
@@ -160,7 +181,8 @@
           const inst = QB.generate(tpl, `önizleme-${roll}-${k}`);
           const li = el("li", { class: "sample" }, el("div", { class: "q-text", html: QB.render(inst, lang) }));
           if (inst.choices) li.append(UI.choiceList(inst, lang));
-          li.append(el("div", { class: "ans" }, "→ " + QB.answerString(inst, lang)));
+          if (inst.type === "yazili") li.append(yaziliKey(inst, lang));
+          else li.append(el("div", { class: "ans" }, "→ " + QB.answerString(inst, lang)));
           ol.append(li);
         } catch (e) {
           card.classList.add("broken");
