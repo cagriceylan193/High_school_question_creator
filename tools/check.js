@@ -26,7 +26,7 @@ const errors = [];
 const warnings = [];
 
 // 1) Soru dosyaları her iki HTML sayfasında da yüklenmeli.
-for (const page of ["index.html", "sorular.html", "ogretmen.html"]) {
+for (const page of ["index.html", "sorular.html", "ogretmen.html", "hesap.html"]) {
   const html = fs.readFileSync(path.join(ROOT, page), "utf8");
   for (const f of qFiles) {
     if (!html.includes(`src="questions/${f}"`)) errors.push(`${page}: <script src="questions/${f}"></script> satırı eksik`);

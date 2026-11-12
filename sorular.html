@@ -16,6 +16,7 @@
     <section id="start" class="panel">
       <h1 data-i18n="startTitle">Sınava başla</h1>
       <p class="lead" data-i18n="startLead"></p>
+      <p class="account-note" id="accountNote"></p>
       <form id="startForm" class="grid">
         <div class="fields">
           <label class="field"><span data-i18n="studentLabel"></span>
@@ -48,14 +49,20 @@
             <h1 id="examTitle"></h1>
             <p class="muted small" id="examHint" data-i18n="answerHint"></p>
           </div>
-          <button type="button" id="newExam" class="no-print" data-i18n="newExam"></button>
+          <div class="exam-tools no-print">
+            <button type="button" id="pdfBtn" data-i18n="pdfDownload"></button>
+            <label class="check-inline" id="pdfKeyWrap"><input type="checkbox" id="pdfKey"> <span data-i18n="pdfWithKey"></span></label>
+            <button type="button" id="newExam" data-i18n="newExam"></button>
+          </div>
         </div>
+        <p class="error small" id="pdfStatus" aria-live="polite"></p>
         <ol class="questions" id="questions"></ol>
         <div class="actions">
           <button type="button" id="checkBtn" class="primary" data-i18n="check"></button>
           <button type="button" id="clearBtn" data-i18n="retry"></button>
           <span class="score" id="score" aria-live="polite"></span>
         </div>
+        <p class="notice" id="savedNote" hidden></p>
       </div>
     </section>
   </main>
@@ -71,7 +78,9 @@
   <script src="questions/fizik-hareket.js"></script>
   <script src="questions/fizik-elektrik-optik.js"></script>
   <script src="questions/ornekler.js"></script>
+  <script src="account.js"></script>
   <script src="ui.js"></script>
+  <script src="pdf.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

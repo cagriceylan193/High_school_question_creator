@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hesabım · Soru Üreteci</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header id="siteHeader" data-page="account"></header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1 data-i18n="accTitle"></h1>
+      <p class="lead" data-i18n="accLead"></p>
+    </div>
+    <p class="notice" id="noStorage" data-i18n="accNoStorage" hidden></p>
+
+    <!-- Giriş yapılmamış -->
+    <section id="guest" class="stack" hidden>
+      <div class="acc-grid">
+        <div class="panel">
+          <h2 data-i18n="accLoginTitle"></h2>
+          <div id="profiles" class="profiles"></div>
+          <p class="muted small" id="noProfiles" data-i18n="accNoProfiles"></p>
+          <form id="pinForm" class="grid" hidden>
+            <label class="field"><span id="pinLabel"></span>
+              <input type="password" id="pinInput" inputmode="numeric" maxlength="4" autocomplete="off">
+            </label>
+            <div class="actions">
+              <button type="submit" class="primary" data-i18n="accLoginBtn"></button>
+              <button type="button" id="pinCancel" data-i18n="accCancel"></button>
+            </div>
+            <p class="error small" id="pinError" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h2 data-i18n="accSignupTitle"></h2>
+          <form id="signupForm" class="grid">
+            <label class="field"><span data-i18n="accName"></span>
+              <input type="text" id="suName" autocomplete="name" maxlength="60" required>
+            </label>
+            <div class="fields">
+              <label class="field"><span data-i18n="accClass"></span>
+                <input type="text" id="suClass" maxlength="20" placeholder="10-A">
+              </label>
+              <label class="field"><span data-i18n="accPin"></span>
+                <input type="password" id="suPin" inputmode="numeric" maxlength="4" autocomplete="new-password">
+              </label>
+            </div>
+            <p class="muted small" data-i18n="accPinHint"></p>
+            <div class="actions"><button type="submit" class="primary" data-i18n="accCreate"></button></div>
+            <p class="error small" id="suError" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel slim">
+        <div class="actions">
+          <label class="button file"><input type="file" id="restoreGuest" accept=".json,application/json" class="sr-only"><span data-i18n="accRestore"></span></label>
+          <span class="muted small" data-i18n="accRestoreGuestHint"></span>
+        </div>
+        <p class="small" id="restoreGuestMsg" aria-live="polite"></p>
+      </div>
+      <p class="muted small" data-i18n="accLocalNote"></p>
+    </section>
+
+    <!-- Giriş yapılmış -->
+    <section id="member" class="stack" hidden>
+      <div class="panel profile-card">
+        <div class="profile-id">
+          <span class="avatar lg" id="avatar" aria-hidden="true"></span>
+          <div><h2 id="pName"></h2><p class="muted small" id="pMeta"></p></div>
+        </div>
+        <div class="actions">
+          <a class="button primary" href="sorular.html" data-i18n="homeStart"></a>
+          <button type="button" id="logout" data-i18n="accLogout"></button>
+        </div>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <section class="panel">
+        <h2 data-i18n="accByTopic"></h2>
+        <div id="topicBars" class="bars"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h2 data-i18n="accHistory"></h2><span class="muted small" id="histCount"></span></div>
+        <p class="error small" id="pdfStatus" aria-live="polite"></p>
+        <ol class="history" id="history"></ol>
+        <p class="muted" id="histEmpty" data-i18n="accHistoryEmpty" hidden></p>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="accData"></h2>
+        <p class="muted small" data-i18n="accBackupHint"></p>
+        <div class="actions">
+          <button type="button" id="backupBtn" data-i18n="accBackup"></button>
+          <label class="button file"><input type="file" id="restoreMember" accept=".json,application/json" class="sr-only"><span data-i18n="accRestore"></span></label>
+          <button type="button" id="deleteAcc" class="danger"></button>
+        </div>
+        <p class="small" id="dataMsg" aria-live="polite"></p>
+        <p class="muted small" data-i18n="accLocalNote"></p>
+      </section>
+    </section>
+  </main>
+  <footer id="siteFooter"></footer>
+
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="engine.js"></script>
+  <!-- Soru dosyaları: geçmişteki sınavları yeniden göstermek için gerekli -->
+  <script src="figures.js"></script>
+  <script src="questions/fizik.js"></script>
+  <script src="questions/fizik-madde.js"></script>
+  <script src="questions/fizik-hareket.js"></script>
+  <script src="questions/fizik-elektrik-optik.js"></script>
+  <script src="questions/ornekler.js"></script>
+  <script src="account.js"></script>
+  <script src="ui.js"></script>
+  <script src="pdf.js"></script>
+  <script src="hesap.js"></script>
+</body>
+</html>

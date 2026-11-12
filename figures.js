@@ -23,8 +23,64 @@
 
   // "R_1" → R + alt simge 1 ;  "d_{su}" → d + alt simge su
   function label(s) {
-    return esc(s).replace(/_(\{[^}]*\}|[^\s])/g, (m, g) =>
-      `<tspan dy="4" font-size="0.78em">${g.replace(/[{}]/g, "")}</tspan><tspan dy="-4">​</tspan>`);
+    const parts = String(s).split(/_(\{[^}]*\}|[^\s])/);
+    let out = esc(parts[0]);
+    for (let i = 1; i < parts.length; i += 2) {
+      out += `<tspan dy="4" font-size="10">${esc(parts[i].replace(/[{}]/g, ""))}</tspan>`;
+      if (parts[i + 1]) out += `<tspan dy="-4">${esc(parts[i + 1])}</tspan>`;
+    }
+    return out;
+  }
+
+  // PDF ve dışa aktarım için: CSS sınıflarını SVG özniteliklerine çevirir
+  // (CSS'in olmadığı yerlerde de şekil aynı görünsün diye; açık tema renkleri).
+  const INK = "#18222d", MUTED = "#5a6877", ACCENT = "#2356c4";
+  const STYLE = {
+    ln: { stroke: INK, "stroke-width": 1.6, fill: "none", "stroke-linecap": "round", "stroke-linejoin": "round" },
+    thick: { "stroke-width": 3 },
+    thin: { stroke: MUTED, "stroke-width": 1, fill: "none" },
+    dash: { stroke: MUTED, "stroke-width": 1, "stroke-dasharray": "4 3", fill: "none" },
+    grid: { stroke: "#dfe5ec", "stroke-width": 1, fill: "none" },
+    obj: { fill: "#ffffff", stroke: INK, "stroke-width": 1.6, "stroke-linejoin": "round" },
+    ghost: { fill: "none", stroke: MUTED, "stroke-width": 1, "stroke-dasharray": "3 3" },
+    dot: { fill: INK, stroke: "none" },
+    head: { fill: INK, stroke: "none" },
+    acc: { stroke: ACCENT, "stroke-width": 2, fill: "none" },
+    "acc-head": { fill: ACCENT, stroke: "none" },
+    plot: { stroke: ACCENT, "stroke-width": 2.4, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" },
+    track: { stroke: INK, "stroke-width": 2.4, fill: "none" },
+    liq: { fill: "#cfe3f7", stroke: "none" },
+    liq2: { fill: "#f6dfb3", stroke: "none" },
+    liq3: { fill: "#dcd3f2", stroke: "none" },
+    "liq-edge": { stroke: "#6d9ccc", "stroke-width": 1.5, fill: "none" },
+    "liq-stroke": { stroke: "#cfe3f7", "stroke-width": 26, fill: "none" },
+    "liq2-stroke": { stroke: "#f6dfb3", "stroke-width": 26, fill: "none" },
+    wire: { fill: "#c9a26a", stroke: INK, "stroke-width": 1 },
+    screen: { stroke: INK, "stroke-width": 3 },
+    shadow: { stroke: INK, "stroke-width": 7, "stroke-opacity": 0.55 },
+    opaque: { stroke: INK, "stroke-width": 5, "stroke-linecap": "round" },
+    lamp: { fill: "#ffe48a", stroke: INK, "stroke-width": 1.5 },
+    mirror: { stroke: INK, "stroke-width": 3 },
+  };
+  function inlineStyles(svgText) {
+    const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+    const root = doc.documentElement;
+    root.removeAttribute("class");
+    for (const node of root.querySelectorAll("*")) {
+      const cls = (node.getAttribute("class") || "").split(/\s+/).filter(Boolean);
+      node.removeAttribute("class");
+      if (node.tagName === "tspan") continue;
+      if (node.tagName === "text") {
+        // PDF çiziciği alt simgeleri (tspan dy) desteklemiyor: düz yazıya çevir ("R1")
+        if (node.querySelector("tspan")) node.textContent = node.textContent;
+        node.setAttribute("font-family", "Roboto");
+        if (!node.getAttribute("font-size")) node.setAttribute("font-size", cls.includes("mut") ? "12" : "13");
+        node.setAttribute("fill", cls.includes("mut") ? MUTED : cls.includes("acc") ? ACCENT : INK);
+        continue;
+      }
+      for (const c of cls) for (const [k, v] of Object.entries(STYLE[c] || {})) node.setAttribute(k, v);
+    }
+    return new XMLSerializer().serializeToString(root);
   }
 
   function svg(w, h, aria) {
@@ -185,6 +241,6 @@
 
   root.QB_FIG = {
     svg, line, dashed, rect, circle, dot, poly, polyline, path, text, arrow,
-    dimH, dimV, ground, grid, vessel, resistor, battery, switchOpen, switchClosed, graph, wave, curve, car, box, label, esc,
+    inlineStyles, dimH, dimV, ground, grid, vessel, resistor, battery, switchOpen, switchClosed, graph, wave, curve, car, box, label, esc,
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);

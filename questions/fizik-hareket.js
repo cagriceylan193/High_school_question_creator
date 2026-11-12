@@ -35,6 +35,7 @@
       t: { values: [2, 4, 5, 8, 10] },
       x1: "x0 + v * t",
     },
+    where: "v * t >= x0",
     answer: "v",
     unit: "m/s",
     distractors: ["x1 / t", "x0 / t", "(x1 - x0) / (2 * t)", "x1 - x0"],

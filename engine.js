@@ -565,22 +565,33 @@
     return String(inst.tpl.figure(inst.scope, f));
   }
 
-  // Sorunun tam HTML'i: metin, şekil, yargılar (I, II, III) ve soru cümlesi.
+  // Sorunun parçaları (HTML): metin, şekil (SVG), yargılar ve soru cümlesi.
   // mark = true → değişken değerleri <span class="v"> ile işaretlenir (ana sayfa örneği).
-  function render(inst, lang, mark) {
+  function renderParts(inst, lang, mark) {
     const tpl = inst.tpl;
-    let html = `<div class="q-stem">${fill(localized(tpl.text, lang), inst, lang, mark)}</div>`;
-    const fig = figure(inst, lang);
-    if (fig) {
-      const box = `<div class="q-fig">${fig}</div>`;
-      html = tpl.figureFirst ? box + html : html + box;
-    }
-    if (tpl.statements) {
-      html += `<ol class="q-stmts">${tpl.statements.map((st, i) =>
-        `<li><span class="roman">${ROMAN[i]}.</span><span>${fill(localized(st.text, lang), inst, lang, mark)}</span></li>`).join("")}</ol>`;
-    }
     const ask = tpl.ask ? localized(tpl.ask, lang) : tpl.statements ? (LOC[lang] || LOC.tr).ask : "";
-    if (ask) html += `<p class="q-ask">${fill(ask, inst, lang, mark)}</p>`;
+    return {
+      stem: fill(localized(tpl.text, lang), inst, lang, mark),
+      figure: figure(inst, lang),
+      figureFirst: !!tpl.figureFirst,
+      statements: (tpl.statements || []).map((st) => fill(localized(st.text, lang), inst, lang, mark)),
+      ask: ask ? fill(ask, inst, lang, mark) : "",
+    };
+  }
+
+  // Sorunun tam HTML'i
+  function render(inst, lang, mark) {
+    const p = renderParts(inst, lang, mark);
+    let html = `<div class="q-stem">${p.stem}</div>`;
+    if (p.figure) {
+      const box = `<div class="q-fig">${p.figure}</div>`;
+      html = p.figureFirst ? box + html : html + box;
+    }
+    if (p.statements.length) {
+      html += `<ol class="q-stmts">${p.statements.map((st, i) =>
+        `<li><span class="roman">${ROMAN[i]}.</span><span>${st}</span></li>`).join("")}</ol>`;
+    }
+    if (p.ask) html += `<p class="q-ask">${p.ask}</p>`;
     return html;
   }
 
@@ -722,6 +733,8 @@
     formatNum,
     generate,
     render,
+    renderParts,
+    ROMAN,
     localized,
     unitFor,
     valueString,

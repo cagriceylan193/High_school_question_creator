@@ -40,7 +40,15 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Adım ve cevaplarım bir yere kaydediliyor mu?",
-      a: "Hayır. Site tamamen tarayıcında çalışır ve hiçbir sunucuya bilgi göndermez. Sadece bir dahaki sefere kolaylık olsun diye son yazdığın ad ve seçtiğin dil kendi tarayıcında hatırlanır. Puanını öğretmenin görmez; sınavı kâğıtta yapıyorsanız cevaplarını kâğıda yaz.",
+      a: "Hiçbir sunucuya bilgi gönderilmez. Hesap oluşturursan adın ve çözdüğün sınavlar yalnızca kendi tarayıcında saklanır; başka kimse göremez. Hesap oluşturmazsan sadece son yazdığın ad ve seçtiğin dil hatırlanır. Puanını öğretmenin görmez; sınavı kâğıtta yapıyorsanız cevaplarını kâğıda yaz.",
+    },
+    {
+      q: "Hesap nasıl çalışır?",
+      a: "<a href=\"hesap.html\">Hesabım</a> sayfasında adınla bir hesap oluşturursun. Giriş yaptıktan sonra “Cevapları kontrol et”e bastığın her sınav kaydedilir: tarihi, puanı ve hangi konulardan olduğu listelenir, istediğin sınavı şekilleriyle birlikte tekrar inceleyebilirsin. Hesap bu cihazdaki tarayıcıda durur; başka bir cihaza geçerken “Yedek indir” ile dosya al, diğer cihazda “Yedek yükle” ile aç. Bilgisayarı başkalarıyla paylaşıyorsan 4 haneli bir PIN koyabilirsin.",
+    },
+    {
+      q: "Soruları PDF olarak nasıl indiririm?",
+      a: "Soru sayfasında sınavı oluşturduktan sonra <b>PDF indir</b>'e bas. Cevapları kontrol etmeden indirirsen boş bir sınav kâğıdı alırsın; “Cevap anahtarını ekle” seçiliyse son sayfada cevaplar olur. Kontrol ettikten sonra indirirsen PDF'te kendi cevapların ve doğru cevaplar işaretli olur. Hesabım sayfasından eski sınavlarını da PDF olarak indirebilirsin. Öğretmenler tüm sınıfın kâğıtlarını tek bir PDF'te alabilir.",
     },
     {
       q: "Öğretmenler siteyi nasıl kullanır?",
@@ -90,7 +98,15 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Are my name and answers saved anywhere?",
-      a: "No. The site runs entirely in your browser and sends nothing to a server. Only the last name you typed and your language choice are remembered in your own browser for convenience. Your teacher doesn't see your score; if the exam is on paper, write your answers on the paper.",
+      a: "Nothing is ever sent to a server. If you create an account, your name and the exams you solve are stored only in your own browser, where no one else can see them. Without an account, only the last name you typed and your language choice are remembered. Your teacher doesn't see your score; if the exam is on paper, write your answers on the paper.",
+    },
+    {
+      q: "How does the account work?",
+      a: "On the <a href=\"hesap.html\">My account</a> page you create an account with your name. Once you're signed in, every exam you check with “Check answers” is saved: its date, score and topics are listed, and you can review any exam again with its diagrams. The account lives in the browser on this device; to switch devices, use “Download backup” and open the file on the other device with “Load backup”. If you share the computer, you can set a 4-digit PIN.",
+    },
+    {
+      q: "How do I download the questions as a PDF?",
+      a: "After generating an exam on the questions page, press <b>Download PDF</b>. If you download before checking, you get a blank exam sheet; with “Include answer key” ticked, the last page has the answers. If you download after checking, your answers and the correct ones are marked. You can also download past exams from My account. Teachers can get the whole class's sheets in a single PDF.",
     },
     {
       q: "How do teachers use the site?",
@@ -140,7 +156,15 @@ globalThis.QB_FAQ = {
     },
     {
       q: "Werden mein Name und meine Antworten gespeichert?",
-      a: "Nein. Die Seite läuft komplett in deinem Browser und schickt nichts an einen Server. Nur der zuletzt eingegebene Name und deine Sprachwahl werden zur Bequemlichkeit in deinem eigenen Browser gespeichert. Deine Lehrkraft sieht dein Ergebnis nicht; bei einer Prüfung auf Papier schreibst du die Antworten aufs Blatt.",
+      a: "Es wird nichts an einen Server geschickt. Wenn du ein Konto anlegst, werden dein Name und deine gelösten Prüfungen nur in deinem eigenen Browser gespeichert, wo niemand sonst sie sieht. Ohne Konto werden nur der zuletzt eingegebene Name und deine Sprachwahl gemerkt. Deine Lehrkraft sieht dein Ergebnis nicht; bei einer Prüfung auf Papier schreibst du die Antworten aufs Blatt.",
+    },
+    {
+      q: "Wie funktioniert das Konto?",
+      a: "Auf der Seite <a href=\"hesap.html\">Mein Konto</a> legst du mit deinem Namen ein Konto an. Wenn du angemeldet bist, wird jede Prüfung gespeichert, die du mit „Antworten prüfen“ abschließt: Datum, Ergebnis und Themen werden aufgelistet, und du kannst jede Prüfung samt Abbildungen erneut ansehen. Das Konto liegt im Browser auf diesem Gerät; für einen Gerätewechsel lädst du mit „Sicherung herunterladen“ eine Datei herunter und öffnest sie auf dem anderen Gerät mit „Sicherung laden“. Wenn du den Computer teilst, kannst du eine 4-stellige PIN setzen.",
+    },
+    {
+      q: "Wie lade ich die Aufgaben als PDF herunter?",
+      a: "Erzeuge auf der Aufgabenseite eine Prüfung und tippe auf <b>PDF herunterladen</b>. Vor dem Prüfen erhältst du ein leeres Prüfungsblatt; mit „Lösungsschlüssel anhängen“ stehen die Lösungen auf der letzten Seite. Nach dem Prüfen sind deine Antworten und die richtigen Lösungen markiert. Alte Prüfungen kannst du unter „Mein Konto“ herunterladen. Lehrkräfte erhalten die Blätter der ganzen Klasse in einem PDF.",
     },
     {
       q: "Wie nutzen Lehrkräfte die Seite?",

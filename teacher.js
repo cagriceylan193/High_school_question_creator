@@ -85,10 +85,18 @@
     $("shareBox").hidden = false;
     $("printKey").hidden = false;
     $("printSheets").hidden = false;
+    $("pdfSheets").hidden = false;
+    $("pdfKeyWrap").hidden = false;
   }
 
   $("shareLink").addEventListener("focus", (e) => e.target.select());
   $("printKey").addEventListener("click", () => window.print());
+
+  QBPDF.bindButton($("pdfSheets"), () => ({
+    sheets: current.rows.map((row) => ({ student: row.student, code: current.code, items: row.items })),
+    includeKey: $("pdfKey").checked,
+    filename: `${QBPDF.slug(current.code)}_${current.rows.length}.pdf`,
+  }), $("pdfStatus"));
 
   // --- Yazdırılabilir sınav kâğıtları -----------------------------------------
   $("printSheets").addEventListener("click", () => {

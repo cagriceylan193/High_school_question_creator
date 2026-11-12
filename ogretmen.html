@@ -39,8 +39,11 @@
           <button type="submit" class="primary" data-i18n="makeKey"></button>
           <button type="button" id="printKey" data-i18n="printKey" hidden></button>
           <button type="button" id="printSheets" data-i18n="printSheets" hidden></button>
+          <button type="button" id="pdfSheets" data-i18n="pdfSheets" hidden></button>
+          <label class="check-inline" id="pdfKeyWrap" hidden><input type="checkbox" id="pdfKey" checked> <span data-i18n="pdfWithKey"></span></label>
         </div>
       </form>
+      <p class="error small" id="pdfStatus" aria-live="polite"></p>
       <p class="notice" data-i18n="keyNote"></p>
       <div id="shareBox" class="linkbox no-print" hidden>
         <span class="small muted" data-i18n="studentLink"></span>
@@ -73,7 +76,9 @@
   <script src="questions/fizik-hareket.js"></script>
   <script src="questions/fizik-elektrik-optik.js"></script>
   <script src="questions/ornekler.js"></script>
+  <script src="account.js"></script>
   <script src="ui.js"></script>
+  <script src="pdf.js"></script>
   <script src="teacher.js"></script>
 </body>
 </html>

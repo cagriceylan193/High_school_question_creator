@@ -17,13 +17,40 @@ Lise öğrencileri için **kişiye özel soru** üreten, tarayıcıda çalışan
 | `index.html` | Ana sayfa: sitenin tanıtımı, aynı sorunun üç öğrenciye nasıl farklı sayılarla çıktığını gösteren canlı örnek, konu listesi. |
 | `sorular.html` | Soru sayfası: öğrenci adını ve sınav kodunu yazar, konu seçer, kendi sorularını çözer, "Kontrol et" ile sonucunu görür. |
 | `sss.html` | Sık sorulan sorular (içerik `faq.js` dosyasında, 3 dilde). |
-| `ogretmen.html` | Öğretmen sayfası: cevap anahtarı, öğrenci linki, yazdırılabilir kâğıtlar ve şablon önizleme. |
+| `ogretmen.html` | Öğretmen sayfası: cevap anahtarı, öğrenci linki, yazdırılabilir ve PDF kâğıtlar, şablon önizleme. |
+| `hesap.html` | Hesabım: öğrenci hesabı, çözülen sınavların geçmişi, konulara göre başarı, PDF ve yedek. |
 
 Öğretmen sayfasının verdiği link (`sorular.html?kod=...&n=...&konu=...&dil=...`) öğrencilere gönderilir. Linke `&ad=Ali` eklenirse sınav doğrudan açılır.
 
 Şu an sitede **yalnızca fizik** açık. Diğer dersleri açmak için `config.js` içindeki `activeSubjects` listesine ders adını ekleyin (ör. `["fizik", "matematik"]`). Matematik, kimya ve geometri örnekleri `questions/ornekler.js` içinde hazır bekliyor.
 
 > **Not:** Her şey tarayıcıda çalıştığı için teknik bilgisi olan bir öğrenci cevapları hesaplayabilir. Not verilen sınavlar için öğretmen sayfasından **kâğıt çıktı** alın; çevrim içi sayfa alıştırma için idealdir.
+
+## Hesap (üyelik) ve geçmiş
+
+`hesap.html` sayfasında öğrenci adıyla bir hesap oluşturur. Giriş yaptıktan sonra soru sayfasında **“Cevapları kontrol et”**e basılan her sınav hesaba kaydedilir; hesap sayfasında:
+
+- çözülen sınav, cevaplanan soru ve başarı oranı,
+- konulara göre başarı çubukları,
+- tarih, sınav kodu ve puanla sınav listesi; her sınav şekilleriyle **yeniden incelenebilir**, **PDF olarak indirilebilir** veya silinebilir.
+
+**Sunucu yoktur:** hesaplar ve geçmiş öğrencinin kendi tarayıcısında (localStorage) tutulur, hiçbir yere gönderilmez. Bu yüzden:
+
+- Aynı bilgisayarı birden fazla öğrenci kullanabilir; isteğe bağlı **4 haneli PIN** arkadaşların birbirinin geçmişini açmasını engeller (gerçek bir güvenlik önlemi değildir).
+- Başka cihaza geçmek için **“Yedek indir”** ile bir dosya alınır, diğer cihazda **“Yedek yükle”** ile açılır.
+- Tarayıcı verileri silinirse hesap da silinir. Gizli pencerede hesap kaydedilmez.
+
+Bir sınav kaydı soruların kendisini değil, onları yeniden üretmek için gerekenleri tutar (tohum, şablon kimlikleri, cevaplar); kayıtlar çok küçüktür. Not: Bir şablonun değişkenleri sonradan değiştirilirse eski kayıtlarda o sorunun sayıları da değişir.
+
+Gerçek, cihazlar arası üyelik (e-posta/şifre ile her yerden giriş) için Firebase veya Supabase gibi bir hizmet gerekir; öğrenci verileri bir sunucuya gideceği için KVKK açısından ayrıca değerlendirilmelidir.
+
+## PDF indirme
+
+- **Soru sayfası:** “PDF indir” sınavı şekilleriyle gerçek bir PDF dosyası olarak indirir. Kontrol etmeden önce boş sınav kâğıdı (istenirse sonda cevap anahtarı), kontrolden sonra öğrencinin cevapları ve doğru cevaplar işaretli olarak.
+- **Hesabım:** geçmişteki her sınav için “PDF indir”.
+- **Öğretmen sayfası:** “Kâğıtları PDF indir” tüm sınıfın kâğıtlarını tek dosyada, istenirse sonda cevap anahtarıyla verir.
+
+PDF'ler [pdfmake](https://github.com/bpampuch/pdfmake) 0.2.7 ile tarayıcıda oluşturulur (MIT lisansı, Roboto fontu Apache 2.0). Kütüphane `vendor/pdfmake/` klasöründedir ve yalnızca ilk “PDF indir” tıklamasında yüklenir; internet bağlantısı veya CDN gerekmez. Şekiller PDF'te vektördür, metin seçilebilir.
 
 ## İnternette yayınlama (GitHub Pages, ücretsiz)
 
@@ -149,7 +176,7 @@ Koşullarda `< <= > >= == !=` ile `and`, `or`, `not` kullanılabilir.
 
 ### Yeni soru dosyası eklerken
 
-`questions/` içine yeni bir dosya (ör. `questions/fizik-11.js`) eklediğinizde, onu `index.html`, `sorular.html` ve `ogretmen.html` içindeki soru dosyaları listesine ekleyin:
+`questions/` içine yeni bir dosya (ör. `questions/fizik-11.js`) eklediğinizde, onu `index.html`, `sorular.html`, `ogretmen.html` ve `hesap.html` içindeki soru dosyaları listesine ekleyin:
 
 ```html
 <script src="questions/fizik-11.js"></script>
@@ -179,7 +206,11 @@ sss.html           Sık sorulan sorular (faq.js)
 ogretmen.html      Öğretmen sayfası (teacher.js)
 engine.js          Soru motoru (rastgelelik, formül çözümleyici, soru tipleri, biçimlendirme)
 figures.js         Şekil çizim araçları (SVG)
-ui.js              Ortak menü, dil seçimi ve alt bilgi
+hesap.html         Hesabım: giriş/kayıt, istatistikler, geçmiş (hesap.js)
+ui.js              Ortak menü, dil seçimi, soru kartı ve alt bilgi
+account.js         Hesaplar ve sınav geçmişi (tarayıcıda saklanır)
+pdf.js             PDF indirme
+vendor/pdfmake/    PDF kütüphanesi (MIT)
 config.js, i18n.js Ayarlar ve çeviriler
 style.css          Görünüm
 questions/         Soru şablonları

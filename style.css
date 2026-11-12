@@ -85,8 +85,10 @@ body {
 .site-header .lang { grid-area: lang; }
 @media (max-width: 640px) {
   .site-header-inner { grid-template-columns: 1fr auto; grid-template-areas: "brand lang" "nav nav"; }
-  .nav { margin-inline: -12px; padding-inline: 4px; }
+  .nav { margin-inline: -8px; padding-inline: 0; gap: 0; }
+  .nav a { font-size: 14px; padding: 7px 8px; }
 }
+@media (max-width: 380px) { .nav a { padding: 7px 5px; font-size: 13.5px; } }
 
 /* Alt bilgi */
 .site-footer { border-top: 1px solid var(--line); background: var(--surface); }
@@ -126,7 +128,7 @@ p { margin: 0; }
 form.grid { display: grid; gap: 14px; }
 .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 label.field { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
-input[type="text"], input[type="number"], textarea, select {
+input[type="text"], input[type="number"], input[type="password"], textarea, select {
   font: inherit; font-size: 16px; color: var(--ink); background: var(--bg);
   border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; width: 100%; min-width: 0;
 }
@@ -247,6 +249,69 @@ ol.questions { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px
 
 .samples .sample { display: grid; gap: 8px; padding-block: 6px; }
 .samples .ans { color: var(--ok); font-weight: 500; }
+
+/* Hesap ve PDF */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.stack { display: grid; gap: 20px; }
+.avatar {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 600; flex: none;
+}
+.avatar.lg { width: 52px; height: 52px; font-size: 22px; }
+.nav-account { display: inline-flex; align-items: center; gap: 6px; }
+.account-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+.account-note a, .notice a { color: var(--accent); }
+.exam-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.check-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.check-inline input { accent-color: var(--accent); margin: 0; }
+label.button.file { display: inline-flex; align-items: center; cursor: pointer; font-size: 15px; font-weight: 500; border-radius: 6px; padding: 9px 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+label.button.file:hover { border-color: var(--muted); }
+label.button.file:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.danger { color: var(--bad); }
+button.danger.armed { background: var(--bad); border-color: var(--bad); color: #fff; }
+p.ok, span.ok { color: var(--ok); }
+.panel.slim { padding: 14px 18px; gap: 8px; }
+.acc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: start; }
+.profiles { display: grid; gap: 8px; }
+.profile {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 12px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+}
+.profile:hover { border-color: var(--accent); }
+.profile .avatar { width: 30px; height: 30px; font-size: 14px; }
+.profile-name { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+.lock { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font-family: var(--mono); }
+.profile-card { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+.profile-id { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.profile-id h2 { overflow-wrap: anywhere; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.stat { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+.stat b { font-family: var(--mono); font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .stat b { font-size: 19px; } .stat { padding: 12px; } }
+.bars { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr) auto; align-items: center; gap: 12px; font-size: 14px; }
+@media (max-width: 520px) { .bar-row { grid-template-columns: minmax(0, 1fr) auto; } .bar-track { grid-column: 1 / -1; grid-row: 2; } }
+.bar-name { overflow-wrap: anywhere; }
+.bar-track { height: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 999px; }
+.bar-fill.good { background: var(--ok); }
+.bar-fill.mid { background: var(--warn); }
+.bar-fill.low { background: var(--bad); }
+.bar-val { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.history { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.hist-item { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; background: var(--bg); min-width: 0; }
+.hist-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.hist-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; min-width: 0; }
+.hist-date { font-weight: 500; }
+.hist-code { font-family: var(--mono); font-size: 13px; border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; background: var(--surface); }
+.hist-score { font-family: var(--mono); font-weight: 500; font-size: 15px; padding: 2px 10px; border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hist-score.good { background: var(--ok-soft); color: var(--ok); }
+.hist-score.mid { background: var(--accent-soft); color: var(--warn); }
+.hist-score.low { background: var(--bad-soft); color: var(--bad); }
+.hist-item .actions button { padding: 6px 12px; font-size: 14px; }
+.hist-review .questions { margin-top: 4px; }
 
 /* Öğretmen */
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }

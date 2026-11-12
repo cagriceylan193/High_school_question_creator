@@ -1,11 +1,12 @@
-// Öğrenci sayfası
+// Soru sayfası (öğrenci)
 (function () {
   "use strict";
   const { t, el } = UI;
   const CONFIG = QB_CONFIG;
   const $ = (id) => document.getElementById(id);
 
-  let exam = null; // { student, code, items, responses, checked }
+  // { student, code, count, topics, levels, items, responses, checked, savedId }
+  let exam = null;
 
   // --- Başlangıç formu --------------------------------------------------------
   const p = UI.params;
@@ -17,7 +18,8 @@
     UI.renderLevelChips($("levels"), wantedLevels);
   }
 
-  $("student").value = p.get("ad") || UI.storageGet("qb-student") || "";
+  const me = QBA.current();
+  $("student").value = p.get("ad") || (me && me.name) || UI.storageGet("qb-student") || "";
   $("code").value = p.get("kod") || CONFIG.defaultExamCode;
   $("count").value = p.get("n") || Math.min(CONFIG.defaultCount, Math.max(1, QB.active().length));
   renderTopics();
@@ -25,6 +27,20 @@
     $("startForm").hidden = true;
     $("emptyNote").hidden = false;
   }
+
+  // Hesap bilgisi: giriş yapılmışsa sonuçların kaydedileceğini söyle
+  function renderAccountNote() {
+    const box = $("accountNote");
+    box.innerHTML = "";
+    const u = QBA.current();
+    if (u) {
+      box.append(el("span", { class: "avatar", "aria-hidden": "true" }, u.name.charAt(0).toLocaleUpperCase("tr-TR")),
+        el("span", {}, t("accSignedInAs", { name: u.name }) + " "), el("a", { href: "hesap.html" }, t("navAccount")));
+    } else {
+      box.append(el("span", {}, t("accSaveHint") + " "), el("a", { href: "hesap.html" }, t("accSignInLink")));
+    }
+  }
+  renderAccountNote();
 
   $("startForm").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -37,7 +53,7 @@
     if (!student || !code) return;
     UI.storageSet("qb-student", student);
     const items = QB.buildExam({ student, code, count, topics, levels });
-    exam = { student, code, items, responses: items.map(() => null), checked: false };
+    exam = { student, code, count, topics, levels, items, responses: items.map(() => null), checked: false, savedId: null };
     $("start").hidden = true;
     $("exam").hidden = false;
     renderExam();
@@ -57,73 +73,64 @@
     $("examTitle").textContent = t("examFor", { name: exam.student, code: exam.code });
     const list = $("questions");
     list.innerHTML = "";
-    let nOk = 0;
-
     exam.items.forEach((inst, qi) => {
-      const li = el("li", { class: "q" });
-      const body = el("div", { class: "q-body" });
-      body.append(UI.questionTag(inst.tpl));
-      li.append(el("div", { class: "q-top" }, el("span", { class: "q-num", "aria-hidden": "true" }), body));
-
-      if (inst.error) {
-        body.append(el("p", { class: "error" }, t("questionError", { e: inst.error })));
-        list.append(li);
-        return;
-      }
-      let text;
-      try { text = QB.render(inst, lang); } catch (err) { text = null; body.append(el("p", { class: "error" }, t("questionError", { e: err.message }))); }
-      if (text !== null) body.append(el("div", { class: "q-text", html: text }));
-
-      const resp = exam.responses[qi];
-      const ok = exam.checked && QB.isCorrect(inst, resp);
-      const blank = resp === null || resp === "";
-      if (ok) nOk++;
-
-      if (inst.choices) {
-        li.append(UI.choiceList(inst, lang, {
-          name: "q" + qi, picked: resp, locked: exam.checked, checked: exam.checked,
-          showRight: ok || CONFIG.showCorrectAfterCheck,
-          onPick: (ci) => { exam.responses[qi] = ci; },
-        }));
-      } else {
-        const id = "q" + qi;
-        const input = el("input", { type: "text", id, inputmode: "decimal", autocomplete: "off", "aria-label": t("answerLabel") });
-        input.value = resp ?? "";
-        input.disabled = exam.checked;
-        input.addEventListener("input", () => { exam.responses[qi] = input.value; });
-        const unit = QB.unitFor(inst, lang);
-        li.append(el("div", { class: "open" }, el("label", { for: id, class: "small muted" }, t("answerLabel") + ":"), input, unit ? el("span", { class: "unit" }, unit) : null));
-      }
-
-      if (exam.checked) {
-        li.classList.add(ok ? "is-ok" : "is-bad");
-        const fb = el("div", { class: "feedback" },
-          el("span", { class: "pill " + (ok ? "ok" : blank ? "blank" : "bad") }, t(ok ? "correct" : blank ? "blank" : "wrong")));
-        if (!ok && CONFIG.showCorrectAfterCheck && !inst.choices) fb.append(el("span", {}, t("correctIs", { a: QB.answerString(inst, lang) })));
-        li.append(fb);
-      }
-      list.append(li);
+      list.append(UI.questionCard(inst, qi, lang, {
+        resp: exam.responses[qi],
+        checked: exam.checked,
+        onPick: (ci) => { exam.responses[qi] = ci; },
+        onInput: (v) => { exam.responses[qi] = v; },
+      }));
     });
 
-    const valid = exam.items.filter((i) => !i.error).length;
-    $("score").textContent = exam.checked ? t("score", { c: nOk, n: valid }) : "";
+    const valid = exam.items.filter((i) => !i.error);
+    const nOk = exam.items.filter((inst, qi) => !inst.error && QB.isCorrect(inst, exam.responses[qi])).length;
+    $("score").textContent = exam.checked ? t("score", { c: nOk, n: valid.length }) : "";
     $("checkBtn").hidden = exam.checked;
     $("clearBtn").hidden = !exam.checked;
+    $("pdfKeyWrap").hidden = exam.checked;
+
+    const saved = $("savedNote");
+    saved.innerHTML = "";
+    saved.hidden = !exam.checked;
+    if (exam.checked) {
+      if (exam.savedId) saved.append(el("span", {}, t("accSaved") + " "), el("a", { href: "hesap.html" }, t("navAccount")));
+      else saved.append(el("span", {}, t("accSaveHint") + " "), el("a", { href: "hesap.html" }, t("accSignInLink")));
+    }
   }
 
   $("checkBtn").addEventListener("click", () => {
     exam.checked = true;
+    // Giriş yapılmışsa sonucu geçmişe kaydet
+    if (QBA.current()) {
+      const ok = exam.items.map((inst, qi) => !inst.error && QB.isCorrect(inst, exam.responses[qi]));
+      const rec = QBA.addAttempt({
+        code: exam.code, student: exam.student, lang: UI.lang, count: exam.count,
+        topics: exam.topics, levels: exam.levels, seed: QB.examSeed(exam.student, exam.code),
+        ids: exam.items.map((i) => i.tpl.id), resp: exam.responses, ok,
+        score: ok.filter(Boolean).length, total: exam.items.filter((i) => !i.error).length,
+      });
+      exam.savedId = rec ? rec.id : null;
+    }
     renderExam();
     $("score").scrollIntoView({ block: "nearest" });
   });
+
   $("clearBtn").addEventListener("click", () => {
     exam.checked = false;
+    exam.savedId = null;
     exam.responses = exam.items.map(() => null);
     renderExam();
     window.scrollTo(0, 0);
   });
 
-  UI.onLang(() => { renderTopics(); renderExam(); });
+  // PDF: kontrol edilmişse cevaplarla birlikte, değilse boş kâğıt (+ istenirse cevap anahtarı)
+  QBPDF.bindButton($("pdfBtn"), () => ({
+    sheets: [{ student: exam.student, code: exam.code, items: exam.items, responses: exam.responses, checked: exam.checked }],
+    includeKey: !exam.checked && $("pdfKey").checked,
+    filename: `${QBPDF.slug(exam.student)}_${QBPDF.slug(exam.code)}.pdf`,
+  }), $("pdfStatus"));
+
+  UI.onLang(() => { renderTopics(); renderAccountNote(); renderExam(); });
 
   // Bağlantıda ad ve kod varsa sınavı doğrudan aç.
   if (p.get("ad") && p.get("kod") && QB.active().length) $("startForm").requestSubmit();

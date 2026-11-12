@@ -49,6 +49,7 @@
     ["questions", "sorular.html", "navQuestions"],
     ["faq", "sss.html", "navFaq"],
     ["teacher", "ogretmen.html", "navTeacher"],
+    ["account", "hesap.html", "navAccount"],
   ];
 
   function renderHeader() {
@@ -63,8 +64,14 @@
       el("span", { class: "brand-name" }, t("appName")));
 
     const nav = el("nav", { class: "nav", "aria-label": t("menu") });
+    const me = globalThis.QBA && globalThis.QBA.current();
     for (const [key, href, label] of NAV) {
-      nav.append(el("a", { href, "aria-current": key === page ? "page" : false }, t(label)));
+      const a = el("a", { href, "aria-current": key === page ? "page" : false }, t(label));
+      if (key === "account") {
+        a.classList.add("nav-account");
+        if (me) a.prepend(el("span", { class: "avatar", "aria-hidden": "true" }, me.name.trim().charAt(0).toLocaleUpperCase("tr-TR")));
+      }
+      nav.append(a);
     }
 
     const sel = el("select", { id: "lang", class: "lang", "aria-label": "Dil / Language / Sprache" });
@@ -180,8 +187,59 @@
     return box;
   }
 
+  // Tek bir soru kartı (soru sayfası ve hesap geçmişi ortak kullanır)
+  // st = { resp, checked, locked, name, onPick, onInput }
+  function questionCard(inst, qi, lang, st = {}) {
+    const li = el("li", { class: "q" });
+    const body = el("div", { class: "q-body" });
+    body.append(questionTag(inst.tpl));
+    li.append(el("div", { class: "q-top" }, el("span", { class: "q-num", "aria-hidden": "true" }), body));
+    if (inst.error) {
+      body.append(el("p", { class: "error" }, t("questionError", { e: inst.error })));
+      return li;
+    }
+    try { body.append(el("div", { class: "q-text", html: QB.render(inst, lang) })); }
+    catch (err) { body.append(el("p", { class: "error" }, t("questionError", { e: err.message }))); }
+
+    const CONFIG = globalThis.QB_CONFIG;
+    const resp = st.resp;
+    const ok = st.checked && QB.isCorrect(inst, resp);
+    const blank = resp === null || resp === undefined || resp === "";
+    if (inst.choices) {
+      li.append(choiceList(inst, lang, {
+        name: st.name || "q" + qi, picked: resp, locked: st.locked || st.checked, checked: st.checked,
+        showRight: ok || CONFIG.showCorrectAfterCheck, onPick: st.onPick,
+      }));
+    } else {
+      const id = (st.name || "q" + qi) + "in";
+      const input = el("input", { type: "text", id, inputmode: "decimal", autocomplete: "off", "aria-label": t("answerLabel") });
+      input.value = resp ?? "";
+      input.disabled = !!(st.locked || st.checked);
+      if (st.onInput) input.addEventListener("input", () => st.onInput(input.value));
+      const unit = QB.unitFor(inst, lang);
+      li.append(el("div", { class: "open" }, el("label", { for: id, class: "small muted" }, t("answerLabel") + ":"), input, unit ? el("span", { class: "unit" }, unit) : null));
+    }
+    if (st.checked) {
+      li.classList.add(ok ? "is-ok" : "is-bad");
+      const fb = el("div", { class: "feedback" },
+        el("span", { class: "pill " + (ok ? "ok" : blank ? "blank" : "bad") }, t(ok ? "correct" : blank ? "blank" : "wrong")));
+      if (!ok && CONFIG.showCorrectAfterCheck && !inst.choices) fb.append(el("span", {}, t("correctIs", { a: QB.answerString(inst, lang) })));
+      li.append(fb);
+    }
+    return li;
+  }
+
+  function formatDate(iso, withTime) {
+    const loc = { tr: "tr-TR", en: "en-GB", de: "de-DE" }[lang] || lang;
+    try {
+      return new Intl.DateTimeFormat(loc, withTime ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "long" }).format(new Date(iso));
+    } catch { return String(iso).slice(0, 10); }
+  }
+
   globalThis.UI = {
     choiceList,
+    questionCard,
+    formatDate,
     get lang() { return lang; },
     t,
     subjectName,
