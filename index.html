@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Soru Üreteci</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand"><span class="mark">x²</span><span data-i18n="appName">Soru Üreteci</span></div>
+    <div class="bar-right">
+      <a href="ogretmen.html" data-i18n="teacherLink">Öğretmen sayfası</a>
+      <select id="lang" class="lang" aria-label="Dil / Language / Sprache"></select>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="start" class="panel">
+      <h1 data-i18n="startTitle">Sınava başla</h1>
+      <p class="lead" data-i18n="startLead"></p>
+      <form id="startForm" class="grid">
+        <div class="fields">
+          <label class="field"><span data-i18n="studentLabel"></span>
+            <input type="text" id="student" autocomplete="name" required>
+          </label>
+          <label class="field"><span data-i18n="codeLabel"></span>
+            <input type="text" id="code" required>
+          </label>
+          <label class="field"><span data-i18n="countLabel"></span>
+            <input type="number" id="count" min="1" max="100" required>
+          </label>
+        </div>
+        <div class="field" id="subjectsWrap">
+          <span class="small muted" data-i18n="subjectsLabel"></span>
+          <div class="chips" id="subjects"></div>
+        </div>
+        <div class="actions"><button type="submit" class="primary" data-i18n="startBtn"></button></div>
+      </form>
+      <p id="emptyNote" class="notice" data-i18n="noQuestions" hidden></p>
+    </section>
+
+    <section id="exam" hidden>
+      <div class="panel">
+        <div class="exam-head">
+          <div>
+            <h1 id="examTitle"></h1>
+            <p class="muted small" id="examHint" data-i18n="answerHint"></p>
+          </div>
+          <button type="button" id="newExam" class="no-print" data-i18n="newExam"></button>
+        </div>
+        <ol class="questions" id="questions"></ol>
+        <div class="actions">
+          <button type="button" id="checkBtn" class="primary" data-i18n="check"></button>
+          <button type="button" id="clearBtn" data-i18n="retry"></button>
+          <span class="score" id="score" aria-live="polite"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="engine.js"></script>
+  <!-- Soru dosyaları: yeni bir dosya eklediğinizde buraya ve ogretmen.html'e de ekleyin -->
+  <script src="questions/ornekler.js"></script>
+  <script src="ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

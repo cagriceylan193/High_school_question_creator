@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Soru Üreteci · Öğretmen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand"><span class="mark">x²</span><span data-i18n="teacherTitle">Öğretmen sayfası</span></div>
+    <div class="bar-right">
+      <a href="index.html" data-i18n="studentLink">Öğrenci sayfası</a>
+      <select id="lang" class="lang" aria-label="Dil / Language / Sprache"></select>
+    </div>
+  </header>
+
+  <main class="wrap wide">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tab-key" aria-selected="true" data-i18n="tabKey"></button>
+      <button type="button" role="tab" id="tab-preview" aria-selected="false" data-i18n="tabPreview"></button>
+    </div>
+
+    <section id="panel-key" class="panel">
+      <form id="keyForm" class="grid">
+        <div class="fields">
+          <label class="field"><span data-i18n="codeLabel"></span><input type="text" id="code" required></label>
+          <label class="field"><span data-i18n="countLabel"></span><input type="number" id="count" min="1" max="100" required></label>
+        </div>
+        <div class="field" id="subjectsWrap">
+          <span class="small muted" data-i18n="subjectsLabel"></span>
+          <div class="chips" id="subjects"></div>
+        </div>
+        <label class="field"><span data-i18n="studentsLabel"></span>
+          <textarea id="students" data-i18n-placeholder="studentsExample"></textarea>
+        </label>
+        <div class="actions">
+          <button type="submit" class="primary" data-i18n="makeKey"></button>
+          <button type="button" id="printKey" data-i18n="printKey" hidden></button>
+          <button type="button" id="printSheets" data-i18n="printSheets" hidden></button>
+        </div>
+      </form>
+      <p class="notice" data-i18n="keyNote"></p>
+      <div id="shareBox" class="linkbox no-print" hidden>
+        <span class="small muted" data-i18n="studentLink"></span>
+        <input type="text" id="shareLink" readonly aria-label="Link">
+      </div>
+      <div id="keyOut"></div>
+    </section>
+
+    <section id="panel-preview" hidden>
+      <div class="actions">
+        <p class="muted" data-i18n="previewLead"></p>
+        <button type="button" id="reroll" data-i18n="reroll"></button>
+        <span class="muted small" id="tplCount"></span>
+      </div>
+      <div id="problems"></div>
+      <div id="tplList" class="wrap" style="padding: 0; max-width: none; gap: 14px;"></div>
+    </section>
+
+    <div id="printArea"></div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="engine.js"></script>
+  <!-- Soru dosyaları: index.html ile aynı liste olmalı -->
+  <script src="questions/ornekler.js"></script>
+  <script src="ui.js"></script>
+  <script src="teacher.js"></script>
+</body>
+</html>
