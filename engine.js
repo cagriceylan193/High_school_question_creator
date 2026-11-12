@@ -332,14 +332,26 @@
     try {
       if (!id) throw new Error("Şablonun 'id' alanı yok");
       if (templates.some((t) => t.id === id)) throw new Error(`Aynı id iki kez kullanılmış: ${id}`);
+      // Kavram soruları: soru kökü her varyantın içindedir; 'text' isteğe bağlı giriş cümlesidir
+      if (tpl.bank && !tpl.text) tpl.text = { tr: "", en: "", de: "" };
       if (!tpl.text || typeof tpl.text !== "object") throw new Error("'text' alanı yok");
-      for (const l of LANGS) if (!tpl.text[l]) throw new Error(`'${l}' dilinde metin yok`);
       const kind = kindOf(tpl);
+      if (kind !== "kavram") for (const l of LANGS) if (!tpl.text[l]) throw new Error(`'${l}' dilinde metin yok`);
       if (kind === "statements") {
         if (!Array.isArray(tpl.statements) || tpl.statements.length < 2 || tpl.statements.length > 4) throw new Error("'statements' 2-4 yargı içermeli");
         tpl.statements.forEach((st, i) => {
           if (st.truth === undefined) throw new Error(`${i + 1}. yargının 'truth' alanı yok`);
           for (const l of LANGS) if (!localized(st.text, l)) throw new Error(`${i + 1}. yargının '${l}' metni yok`);
+        });
+      } else if (kind === "kavram") {
+        // bank: [{ q, right, wrong: [en az 4], why }] — her biri {tr, en, de}
+        if (!Array.isArray(tpl.bank) || tpl.bank.length < 2) throw new Error("'bank' en az 2 varyant içermeli");
+        const need = (CONFIG.choiceCount ?? 5) - 1;
+        tpl.bank.forEach((b, i) => {
+          const tag = `${i + 1}. varyant`;
+          for (const key of ["q", "right", "why"]) for (const l of LANGS) if (!localized(b[key], l)) throw new Error(`${tag}: '${key}' alanının '${l}' metni yok`);
+          if (!Array.isArray(b.wrong) || b.wrong.length < need) throw new Error(`${tag}: en az ${need} yanlış seçenek ('wrong') gerekli`);
+          b.wrong.forEach((w, j) => { for (const l of LANGS) if (!localized(w, l)) throw new Error(`${tag}: ${j + 1}. yanlış seçeneğin '${l}' metni yok`); });
         });
       } else if (kind === "order") {
         if (!tpl.items || Object.keys(tpl.items).length < 3 || Object.keys(tpl.items).length > 4) throw new Error("'items' 3-4 öğe içermeli");
@@ -473,6 +485,15 @@
         return { ...base, parts, answer: null };
       }
 
+      if (type === "kavram") {
+        const vi = Math.floor(rng() * tpl.bank.length);
+        const b = tpl.bank[vi];
+        const n = CONFIG.choiceCount ?? 5;
+        const wrong = shuffle(b.wrong.slice(), rng).slice(0, n - 1);
+        const choices = shuffle([{ t: b.right, correct: true }, ...wrong.map((t) => ({ t, correct: false }))], rng);
+        return { ...base, variant: vi, answer: "v" + vi, choices };
+      }
+
       if (type === "changes") {
         const outs = tpl.changes.map((c) => {
           const b = evaluate(c.before, scope), a = evaluate(c.after, scope);
@@ -498,6 +519,7 @@
     if (tpl.items) return "order";
     if (tpl.changes) return "changes";
     if (tpl.parts) return "yazili";
+    if (tpl.bank) return "kavram";
     return CONFIG.defaultType || "mc";
   }
 
@@ -626,7 +648,7 @@
     const tpl = inst.tpl;
     const ask = tpl.ask ? localized(tpl.ask, lang) : tpl.statements ? (LOC[lang] || LOC.tr).ask : "";
     return {
-      stem: fill(localized(tpl.text, lang), inst, lang, mark),
+      stem: fill([localized(tpl.text, lang), inst.type === "kavram" ? localized(tpl.bank[inst.variant].q, lang) : ""].filter(Boolean).join(" "), inst, lang, mark),
       figure: figure(inst, lang),
       figureFirst: !!tpl.figureFirst,
       statements: (tpl.statements || []).map((st) => fill(localized(st.text, lang), inst, lang, mark)),
@@ -674,6 +696,7 @@
       case "statements": return stmtLabel(c.k, lang);
       case "order": return orderLabel(inst, c.k, false);
       case "changes": return c.k.split(",").map((o) => L[o]).join(" / ");
+      case "kavram": return fill(localized(c.t, lang), inst, lang).replace(/<[^>]+>/g, "");
       default: return valueString(inst, c.v, lang);
     }
   }
@@ -683,6 +706,7 @@
     switch (inst.type) {
       case "order": return orderLabel(inst, c.k, true);
       case "changes": return `<span class="chg">${c.k.split(",").map((o) => `<span>${L[o]}</span>`).join("")}</span>`;
+      case "kavram": return fill(localized(c.t, lang), inst, lang);
       default: return esc(choiceText(inst, i, lang));
     }
   }
@@ -742,8 +766,14 @@
   }
   // Doldurulmuş çözüm adımları (HTML dizisi); çözüm yoksa boş dizi
   function solutionSteps(inst, lang) {
+    if (inst.error) return [];
+    if (inst.type === "kavram") {
+      const w = inst.tpl.bank[inst.variant].why;
+      const v = (w && (w[lang] || w.tr)) || [];
+      return [].concat(v).map((x) => fill(x, inst, lang));
+    }
     const s = SOLUTIONS[inst.tpl.id];
-    if (!s || inst.error) return [];
+    if (!s) return [];
     const list = (Array.isArray(s[lang]) && s[lang]) || s.tr || [];
     return list.map((x) => fill(x, inst, lang));
   }
@@ -906,9 +936,9 @@
    * (aynı kalıpların sürekli çıkmasını önler). Verilmezse seçim yalnızca sınav
    * koduna bağlıdır: öğretmenin sınavında herkes aynı kalıpları görür.
    */
-  // Sınıf / sınav grupları: 9, 10, 11 → o sınıfın soruları;
+  // Sınıf / sınav grupları: 9, 10, 11, 12 → o sınıfın soruları;
   // TYT → 9–10. sınıf konularından çoktan seçmeli; AYT → 11–12. sınıf konularından çoktan seçmeli.
-  const GROUPS = ["9", "10", "11", "tyt", "ayt"];
+  const GROUPS = ["9", "10", "11", "12", "tyt", "ayt"];
   function inGroup(tpl, g) {
     if (!g) return true;
     const gr = Number(tpl.grade);
