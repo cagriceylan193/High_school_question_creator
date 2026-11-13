@@ -192,7 +192,8 @@
     list.innerHTML = "";
     for (const tpl of tpls) {
       const card = el("div", { class: "panel tpl" });
-      const meta = [UI.topicName(QB.topicOf(tpl)), tpl.grade && t("grade", { g: tpl.grade }), UI.levelName(QB.levelOf(tpl)), QB.kindOf(tpl)].filter(Boolean).join(" · ");
+      const mg = QB.maarifGrade(tpl);
+      const meta = [UI.topicName(QB.topicOf(tpl)), mg ? t("grade", { g: mg }) : t("notInMaarif"), UI.levelName(QB.levelOf(tpl)), QB.kindOf(tpl)].filter(Boolean).join(" · ");
       card.append(el("div", { class: "tpl-head" }, el("span", { class: "tpl-id" }, tpl.id), el("span", { class: "muted small" }, meta)));
       const ol = el("ol", { class: "samples" });
       for (let k = 1; k <= 2; k++) {

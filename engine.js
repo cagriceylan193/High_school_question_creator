@@ -938,13 +938,22 @@
    */
   // Sınıf / sınav grupları: 9, 10, 11, 12 → o sınıfın soruları;
   // TYT → 9–10. sınıf konularından çoktan seçmeli; AYT → 11–12. sınıf konularından çoktan seçmeli.
+  // 2026–27: 9, 10 ve 11. sınıflar Maarif programını, 12. sınıf ve YKS 2027 adayları eski (2018)
+  // programı izler. Şablonun 'grade' alanı eski programdaki sınıfıdır (TYT/AYT ayrımı buna göre);
+  // Maarif'teki sınıfı questions/_mufredat.js'te verilir (0 = Maarif programında yok, yalnız TYT/AYT).
   const GROUPS = ["9", "10", "11", "12", "tyt", "ayt"];
+  const CURRICULUM = {};
+  function curriculum(map) { Object.assign(CURRICULUM, map); }
+  function maarifGrade(tpl) {
+    return Object.prototype.hasOwnProperty.call(CURRICULUM, tpl.id) ? CURRICULUM[tpl.id] : Number(tpl.grade) || 0;
+  }
   function inGroup(tpl, g) {
     if (!g) return true;
     const gr = Number(tpl.grade);
     if (g === "tyt") return (gr === 9 || gr === 10) && formatOf(tpl) === "test";
     if (g === "ayt") return gr >= 11 && formatOf(tpl) === "test";
-    return gr === Number(g);
+    if (g === "12") return maarifGrade(tpl) === 12 || gr === 12;
+    return maarifGrade(tpl) === Number(g);
   }
   function poolFor(g) {
     return active().filter((t) => inGroup(t, g));
@@ -1053,6 +1062,9 @@
     mistakeIds,
     buildExam,
     GROUPS,
+    CURRICULUM,
+    curriculum,
+    maarifGrade,
     inGroup,
     poolFor,
     parseAnswer,

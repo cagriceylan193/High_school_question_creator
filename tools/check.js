@@ -127,6 +127,14 @@ for (const [id, sol] of Object.entries(QB.SOLUTIONS)) {
   }
 }
 
+// 4c) Her fizik şablonunun Maarif sınıfı questions/_mufredat.js'te verilmeli (0 = programda yok).
+for (const tpl of QB.templates) {
+  if (tpl.subject !== "fizik") continue;
+  if (!Object.prototype.hasOwnProperty.call(QB.CURRICULUM, tpl.id)) errors.push(`_mufredat.js: '${tpl.id}' şablonunun Maarif sınıfı yok`);
+  else if (![0, 9, 10, 11, 12].includes(QB.CURRICULUM[tpl.id])) errors.push(`_mufredat.js: '${tpl.id}' için sınıf 0, 9, 10, 11 veya 12 olmalı`);
+}
+for (const id of Object.keys(QB.CURRICULUM)) if (!QB.templates.some((t) => t.id === id)) errors.push(`_mufredat.js: '${id}' adında şablon yok`);
+
 // 4b) SSS her dilde aynı sayıda soru içermeli.
 const FAQ = ctx.QB_FAQ;
 for (const l of QB.LANGS) {

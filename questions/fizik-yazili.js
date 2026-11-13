@@ -175,7 +175,7 @@
   QB.add({
     id: "yazili-dalga-ip",
     subject: "fizik", topic: "dalga", grade: 10, level: 2,
-    outcome: "FİZ.10.4.3",
+    outcome: "FİZ.10.4.4",
     vars: {
       f: { values: [2, 4, 5, 8] },
       L: { values: [3, 4, 6, 8] },
@@ -225,7 +225,7 @@
   QB.add({
     id: "yazili-periyodik-sarkac",
     subject: "fizik", topic: "dalga", grade: 10, level: 2,
-    outcome: "FİZ.10.4.4",
+    outcome: "FİZ.10.4.1",
     vars: {
       ad: { type: "name" },
       n: { values: [10, 20] },
