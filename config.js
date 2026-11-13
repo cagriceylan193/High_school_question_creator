@@ -37,6 +37,15 @@ globalThis.QB_CONFIG = {
     maxQuestionsPerItem: 8, // bir soru için öğrencinin sorabileceği en fazla mesaj
   },
 
+  // Özel ders buluşturma (ders.html). Üniversite öğrencisi eğitmenler platforma ücret ödemez;
+  // diğer eğitmenler aylık üyelik ücreti öder. Ücreti siz belirleyin (TL); null = "belirlenecek".
+  // live: false iken sayfa örnek ilanlarla tanıtım modunda çalışır, hiçbir veri toplamaz.
+  tutoring: {
+    live: false,
+    memberFeeMonthly: null,
+    currency: "TL",
+  },
+
   // Aydınlatma metninde (gizlilik.html) görünen veri sorumlusu ve iletişim.
   // Okulda kullanmadan önce kendi adınızı/okulunuzu ve bir iletişim adresi yazın.
   privacyOwner: "",

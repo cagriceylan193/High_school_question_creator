@@ -579,3 +579,24 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .tutor-badge { width: fit-content; align-self: flex-start; justify-self: start; }
 .tutor-card { display: block; align-content: start; }
 .tutor-card > * + * { margin-top: 10px; }
+.tutor-feeline { margin: 6px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--ok-soft); font-weight: 500; }
+.tutor-filters { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; margin-top: 12px; }
+.tutor-filter { min-width: 150px; flex: 1 1 150px; }
+.tutor-filter select { width: 100%; }
+.tutor-listings { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 8px 0 18px; }
+.tutor-listing { display: grid; gap: 8px; align-content: start; }
+.tutor-listing h3 { margin: 0; font-size: 17px; }
+.tutor-listing p { margin: 0; }
+.tutor-listing-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.tutor-price { font-weight: 600; white-space: nowrap; color: var(--accent); }
+.tutor-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tutor-type, .tutor-demo { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.tutor-type-uni { background: var(--ok-soft); border-color: transparent; color: var(--ok); font-weight: 600; }
+.tutor-demo { color: var(--muted); border-style: dashed; }
+.tutor-listing button { justify-self: start; }
+.tutor-teach { margin-top: 12px; display: grid; gap: 12px; }
+.tutor-teach h2 { margin: 0; font-size: 19px; }
+.tutor-teach p { margin: 0; }
+.tutor-fee { padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); }
+.tutor-fee.is-free { background: var(--ok-soft); }
+.tutor-listing button:disabled, .tutor-teach button:disabled { opacity: 0.55; cursor: not-allowed; }
