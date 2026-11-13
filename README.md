@@ -93,7 +93,22 @@ Soru sayfasında her sorunun altında **Yardım iste** paneli vardır. Öğrenci
 
 ## Sınıf / sınav seçimi
 
-Sınav oluşturmadan önce öğrenci (ve öğretmen) **9. sınıf, 10. sınıf, 11. sınıf, TYT veya AYT** seçer; seçilmeden sınav oluşmaz. Konu, zorluk ve biçim seçenekleri seçime göre süzülür. TYT: 9–10. sınıf şablonlarından çoktan seçmeli sorular; AYT: 11–12. sınıf şablonlarından çoktan seçmeli sorular (`questions/fizik-ayt.js`). Şablonun `grade` alanı bu gruplamada kullanılır. Öğretmen bağlantısı seçimi `sinif=` parametresiyle taşır.
+Sınav oluşturmadan önce öğrenci (ve öğretmen) **9., 10., 11., 12. sınıf, TYT veya AYT** seçer; seçilmeden sınav oluşmaz. Konu, zorluk ve biçim seçenekleri seçime göre süzülür. Öğretmen bağlantısı seçimi `sinif=` parametresiyle taşır.
+
+- **9–11. sınıf:** MEB Türkiye Yüzyılı Maarif Modeli fizik programına (2026) göre. Her şablonun Maarif'teki sınıfı `questions/_mufredat.js` dosyasındadır (0 = programda yok). Programın 106 öğrenme çıktısının tamamı `questions/_maarif.js`'tedir.
+- **12. sınıf:** Maarif 12 ile 2018 programının 12. sınıf konularının birleşimi (2026–27'de 12. sınıflar 2018 programını okuyor).
+- **TYT / AYT:** YKS 2027 (2018 programı) konuları; şablonun `grade` alanı eski programdaki sınıfıdır (9–10 → TYT, 11–12 → AYT), yalnız çoktan seçmeli sorular.
+
+Yeni şablon eklerken `_mufredat.js`'e Maarif sınıfını da yazın; `node tools/check.js` eksik olanı hata sayar.
+
+## Özel ders buluşturma
+
+`ders.html`, ders vermek isteyenlerle ders almak isteyenleri buluşturur. Üniversite öğrencisi eğitmenler platforma ücret ödemez; diğer eğitmenler aylık üyelik ücreti öder. Ders ücretini eğitmen belirler, site komisyon almaz. Ayarlar `config.js` → `tutoring`:
+
+- `live: false` → sayfa açıkça işaretli örnek ilanlarla tanıtım modunda çalışır; mesaj ve başvuru kapalıdır, veri toplanmaz.
+- `memberFeeMonthly` → aylık üyelik ücreti (TL); `null` iken "belirlenecek" yazar.
+
+Gerçek ilan, mesajlaşma ve ödeme açılmadan önce yapılacaklar raporda (veli onayı, eğitmen doğrulama, KVKK metni, fatura kesebilecek tüzel kişilik) anlatılmıştır.
 
 ## Kalıp çeşitliliği ve yanlışları tekrar çözme
 
@@ -351,6 +366,7 @@ account.js         Hesaplar ve sınav geçmişi (tarayıcı önbelleği)
 cloud.js           E-posta ile hesap: Firebase giriş ve Firestore eşitleme
 assistant.js       Yapay zekâ asistanı paneli (öğrenci tarafı)
 laboratuvar.html   Sanal laboratuvar sayfası (lab.js + lab/)
+ders.html          Özel ders buluşturma (ders.js)
 lab/               Laboratuvar çekirdeği, çizimler, kumpas/mikrometre ve 14 deney
 worker/            Asistan ara sunucusu (Cloudflare Worker, Claude API)
 gizlilik.html      Gizlilik ve aydınlatma metni (privacy.js)
