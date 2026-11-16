@@ -4,3 +4,10 @@
 node_modules/
 .dev.vars
 .wrangler/
+
+# Ortam ve gizli anahtar dosyaları
+.env
+.env.*
+!.env.example
+*.pem
+*.key
